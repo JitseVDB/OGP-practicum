@@ -149,8 +149,12 @@ public abstract class Entity {
     }
 
     /**
-     * Reduces the hitpoints of an entity based on the amount of damage and after the speci
+     * Reduces the hitpoints of an entity based on the amount of damage and after specific calculations
      *
+     * @param damage
+     *        The amount of damage to apply.
+     *
+     * @post The hitpoints are reduced after calculations
      */
     public abstract void receiveDamage(int damage);
 
