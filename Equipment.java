@@ -209,6 +209,11 @@ public abstract class Equipment {
     private final int baseValue;
 
     /**
+     * Maximum value of a piece of equipment, in dukaten.
+     */
+    private int maximumValue = 1000;
+
+    /**
      * Returns the base value of this piece of equipment.
      */
     @Raw @Basic
@@ -235,7 +240,7 @@ public abstract class Equipment {
      *          | result == (value > 0 && value <= 1000)
      */
     protected boolean isValidValue(int value) {
-        return value > 0 && value <= 1000;
+        return value > 0 && value <= maximumValue;
     }
 
     /**
