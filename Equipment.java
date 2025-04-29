@@ -211,7 +211,7 @@ public abstract class Equipment {
     /**
      * Maximum value of a piece of equipment, in dukaten.
      */
-    private int maximumValue = 1000;
+    private final int maximumValue = 1000;
 
     /**
      * Returns the base value of this piece of equipment.
@@ -219,6 +219,14 @@ public abstract class Equipment {
     @Raw @Basic
     public int getBaseValue() {
         return baseValue;
+    }
+
+    /**
+     * Returns the maximum value of a piece of equipment
+     */
+    @Basic @Immutable
+    public int getMaximumValue() {
+        return maximumValue;
     }
 
     /**
@@ -236,8 +244,8 @@ public abstract class Equipment {
      *          The value to check.
      *
      * @return  True if and only if the given value is positive and does not
-     *          exceed 1000 dukaten.
-     *          | result == (value > 0 && value <= 1000)
+     *          exceed the maximum allowed value dukaten.
+     *          | result == (value > 0 && value <= maximumValue)
      */
     protected boolean isValidValue(int value) {
         return value > 0 && value <= maximumValue;
