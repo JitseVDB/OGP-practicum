@@ -1,7 +1,4 @@
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import be.kuleuven.cs.som.annotate.*;
 
@@ -70,16 +67,14 @@ public abstract class Equipment {
 
         if (!isValidWeight(weight))
             throw new IllegalArgumentException("Weight cannot be negative.");
-        if (!isValidIdentification(this.getClass(), identification))
-            throw new IllegalArgumentException("Identification cannot be negative and must be unique.");
         if (!isValidValue(baseValue))
             throw new IllegalArgumentException("Base value must be between 1 and 1000.");
 
         this.weight = weight;
-        this.identification = identification;
         this.baseValue = baseValue;
 
-        // Adds identification number to map to keep track of all identification numbers for each equipment type.
+        // Generates identification number and adds it to map to keep track of all identification numbers for each equipment type.
+        this.identification = generateIdentification();
         addIdentification(this.getClass(), identification);
     }
 
@@ -197,6 +192,13 @@ public abstract class Equipment {
         // If no matching ID is found, return true (ID is unique)
         return true;
 
+    }
+
+    protected long generateIdentification() {
+        long possibleID = new Random().nextLong();
+        if (isValidIdentification(this.getClass(), possibleID)) {
+            return possibleID;
+        }
     }
 
     /**********************************************************
