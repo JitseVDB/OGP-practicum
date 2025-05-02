@@ -15,7 +15,7 @@ import be.kuleuven.cs.som.annotate.*;
  *          | isValidIdentification(getClass(), getIdentification())
  *
  * @invar   Each piece of equipment must have a valid base value.
- *          | isValidValue(getValue)
+ *          | isValidValue(getCurrentValue())
  *
  * @author Jitse Vandenberghe
  *
@@ -32,19 +32,18 @@ public abstract class Equipment {
      *
      * @param   weight
      *          The weight of the new piece of equipment.
-     * @param   identification
-     *          The unique identification number for the equipment.
+     *
      * @param   baseValue
      *          The base value (in dukaten) for the equipment.
      *
      * @post    The given weight is registered as the weight of this equipment.
      *          | new.getWeight() == weight
      *
-     * @post    The given identification number is registered as the identification number.
-     *          | new.getIdentification() == identification
-     *
      * @post    The given base value is registered as the base value.
      *          | new.getBaseValue() == baseValue
+     *
+     * @post    A randomly generated identification number is registered as the identification number.
+     *          | new.getIdentification() == generateIdentification();
      *
      * @effect  The identification number is added to the map to keep track of all identification numbers
      *          for each equipment type.
@@ -62,7 +61,7 @@ public abstract class Equipment {
      *          If the given base Value is invalid.
      *          | !isValidValue(baseValue)
      */
-    public Equipment(int weight, long identification, int baseValue)
+    public Equipment(int weight, int baseValue)
             throws IllegalArgumentException {
 
         if (!isValidWeight(weight))
@@ -130,6 +129,28 @@ public abstract class Equipment {
         return identification;
     }
 
+    /**
+     * Adds a new identification number for a specific type of equipment.
+     *
+     * This method ensures that the given identification number is added to the set
+     * of identification numbers for the specified equipment type. If the set of
+     * IDs for the given equipment type does not exist, it is created.
+     *
+     * @param   equipmentType
+     *          The class type of the equipment for which the identification number is being added.
+     *
+     * @param   identification
+     *          The unique identification number to add for the specified equipment type.
+     *
+     * @post    The equipmentByType map will contain the key equipmentType after this method is executed.
+     *          | equipmentByType.containsKey(equipmentType) == true
+     *
+     * @post    The set of IDs for the given equipment type will contain the added identification number.
+     *          | equipmentByType.get(equipmentType).contains(identification) == true
+     *
+     * @post    The size of the set of IDs for the specified equipment type will increase by 1 after adding the new ID.
+     *          | (equipmentByType.get(equipmentType).size() == old(equipmentByType.get(equipmentType).size()) + 1)
+     */
     public static void addIdentification(Class<?> equipmentType, long identification) {
         // Get the existing set of ID's for the given type of equipment
         Set<Long> existingIDs = equipmentByType.get(equipmentType);
@@ -194,12 +215,32 @@ public abstract class Equipment {
 
     }
 
+    /**
+     * Generates a valid and unique identification number for this piece of equipment.
+     *
+     * A valid identification number must be non-negative and unique among all equipment of the same type.
+     * The method randomly generates identification numbers until it finds one that is valid.
+     *
+     * @return  A non-negative and unique identification number that satisfies the conditions defined by isValidIdentification.
+     *          | result >= 0 && isValidIdentification(this.getClass(), result)
+     *
+     * @post    The returned identification number is guaranteed to be unique among all equipment of the same type.
+     *          | isValidIdentification(this.getClass(), result)
+     *
+     * @note    The identification number is not automatically added to the registry; this must be done separately
+     *          (via addIdentification()).
+     */
     protected long generateIdentification() {
-        long possibleID = new Random().nextLong();
-        if (isValidIdentification(this.getClass(), possibleID)) {
-            return possibleID;
+        Random random = new Random();
+        long possibleID = Math.abs(random.nextLong());
+
+        while (!isValidIdentification(this.getClass(), possibleID)) {
+            possibleID = Math.abs(random.nextLong());
         }
+
+        return possibleID;
     }
+
 
     /**********************************************************
      * Value
