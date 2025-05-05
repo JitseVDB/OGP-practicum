@@ -114,7 +114,7 @@ public abstract class Equipment {
     /**
      * Unique identification number of this piece of equipment.
      */
-    private final long identification;
+    final long identification;
 
     /**
      * Static set containing all the identification numbers
@@ -249,7 +249,7 @@ public abstract class Equipment {
     /**
      * Base value of this piece of equipment, in dukaten.
      */
-    private final int baseValue;
+    final int baseValue;
 
     /**
      * Maximum value of a piece of equipment, in dukaten.
