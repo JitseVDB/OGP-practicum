@@ -500,7 +500,7 @@ public class Hero {
      * Computes missing hitpoints: maxHitPoints - hitpoints. If positive,
      * selects a random integer percentage in [0,100], calculates heal amount as
      * floor(missing * percentage / 100) and invokes addHitPoints(int)
-     * to restore those hitpoints.
+     * to restore those hitpoints
      *
      * @post If missing > 0 then new hitpoints == oldHitpoints + healAmount (capped and rounded per addHitPoints)
      * @effect uses addHitPoints(int) to perform the actual heal, applying its rounding logic when not fighting
