@@ -297,11 +297,13 @@ public abstract class Equipment {
 
     /**
      * Variable referencing the entity (if any) that owns this piece of equipment.
+     *
+     * @note 	This class is the controlling class for the bidirectional relationship.
      */
     private Entity owner = null;
 
     /**
-     * Returns the entity that currently owns this piece of equipment.
+     * Return the owner of this piece of equipment (if any).
      */
     @Raw @Basic
     public Entity getOwner() {
@@ -316,7 +318,32 @@ public abstract class Equipment {
      */
     @Raw @Basic
     public void setOwner(Entity owner) {
+        // Remember the previous owner
+        Entity previousOwner = getOwner();
+
+        // First, set up / break down the relationship from this side:
         this.owner = owner;
+
+        // Then, break down the old relationship from the other side, if it existed
+        if (previousOwner != null) {
+            try{
+                previousOwner.removeAsItem(this); // [!] implementatie in Entity
+                // the prime object is now in a raw state!
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
+
+        // Finally, set up the new relationship from the other side, if needed
+        if (owner != null) {
+            try{
+                owner.addAsItem(this); // [!] implementatie in Entity
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
     }
 
 }
