@@ -1,18 +1,15 @@
 import be.kuleuven.cs.som.annotate.*;
 
 /**
+ *
  * A class representing the entities (monsters and heroes) in the game.
  *
- * Every entity has a name, an amount of hitpoints, a maximum amount of hitpoints and a protection factor
- *
  * @invar  The name of the entity must be valid.
- *       | isValidName(getName())
- * @invar  The hitpoints must always be between 0 and the maximum hitpoints.
- *       | 0 <= getHitPoints() && getHitPoints() <= getMaxHitPoints()
- * @invar  The protection factor must be a strictly positive integer.
- *       | getProtection() > 0
- * @invar  The maximum number of hitpoints cannot be negative.
- *       | getMaxHitPoints() >= 0
+ *       | canHaveAsName(getName())
+ * @invar  Each entity must have a valid protection factor.
+ *       | isValidProtection(getProtection())
+ * @invar  The maximum amount of hitpoints of an entity must be valid
+ *       | isValidMaxHitPoints(getMaxHitPoints())
  *
  * @author Ernest De Gres
  *
@@ -45,15 +42,23 @@ public abstract class Entity {
      *       | new.getProtection() == protection
      *
      * @throws IllegalArgumentException
-     *         If the name is invalid, or if maxHitPoints or protection are invalid.
+     *         If the given name is invalid
+     *         | !canHaveAsName(name)
+     *
+     *         If the given amount of maximum hitpoints in invalid
+     *         | !isValidMaxHitPoints(maxHitPoints)
+     *
+     *         If the given protection factor is invalid
+     *         | !isValidProtection(protection)*
+     *
      */
     public Entity(String name, int maxHitPoints, int protection)
             throws IllegalArgumentException {
-        if (!isValidName(name))
-            throw new IllegalArgumentException("Invalid name for an entity.");
-        if (maxHitPoints < 0)
+        if (!canHaveAsName(name))
+            throw new IllegalArgumentException("Invalid name for the entity.");
+        if (!isValidMaxHitPoints(maxHitPoints))
             throw new IllegalArgumentException("Max hitpoints cannot be negative.");
-        if (protection <= 0)
+        if (!isValidProtection(protection))
             throw new IllegalArgumentException("Protection must be strictly positive.");
 
         this.name = name;
@@ -87,9 +92,8 @@ public abstract class Entity {
      *
      * @return  True if name is valid
      *
-     *
      */
-    public abstract boolean isValidName(String name);
+    public abstract boolean canHaveAsName(String name);
 
     /**********************************************************
      * HitPoints
@@ -122,6 +126,19 @@ public abstract class Entity {
     }
 
     /**
+     * Check whether the given amount of maximum hitpoints is a valid amount.
+     *
+     * @param   maxHitPoints
+     *          The amount to check.
+     *
+     * @return  True if and only if the amount of maximum hitpoints is positive.
+     *          | result == (maxHitPoints > 0)
+     */
+    public static boolean isValidMaxHitPoints(int maxHitPoints) {
+        return maxHitPoints > 0;
+    }
+
+    /**
      * Adds the hero's hitpoints by a given amount.
      * If the hero is not fighting, the result will be adjusted to the closest lower prime if necessary.
      *
@@ -130,7 +147,7 @@ public abstract class Entity {
      * @pre The resulting hitpoints after addition must not exceed the maximum hitpoints.
      *      | amount + getHitpoints() <= maxHitPoints
      */
-    public void addHitPoints(Integer amount) {
+    public void addHitPoints(int amount) {
         hitPoints += amount;
     }
 
@@ -144,7 +161,7 @@ public abstract class Entity {
      *      | getHitpoints() - amount >= 0
      */
 
-    public void removeHitPoints(Integer amount) {
+    public void removeHitPoints(int amount) {
         hitPoints -= amount;
     }
 
@@ -185,4 +202,19 @@ public abstract class Entity {
     public int getProtection() {
         return protection;
     }
+
+    /**
+     * Check whether the given protection factor is valid.
+     *
+     * @param   protection
+     *          The protection factor to check.
+     *
+     * @return  True if and only if the protection factor is strictly positive.
+     *          | result == (protection >= 0)
+     */
+    public static boolean isValidProtection(int protection) {
+        return protection >= 0;
+    }
+
 }
+
