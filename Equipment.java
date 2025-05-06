@@ -3,23 +3,19 @@ import java.util.*;
 import be.kuleuven.cs.som.annotate.*;
 
 /**
- * A class representing pieces of equipment in the game.
- *
- * Each piece of equipment has a weight, a base value, an identification number,
- * and can be owned by an entity or be stored in a backpack.
+ * A class representing pieces of equipment.
  *
  * @invar   Each piece of equipment must have a valid weight.
  *          | isValidWeight(getWeight())
  *
  * @invar   Each piece of equipment must have a valid identification number.
- *          | isValidIdentification(getClass(), getIdentification())
+ *          | canHaveAsIdentification(getClass(), getIdentification())
  *
  * @invar   Each piece of equipment must have a valid base value.
- *          | isValidValue(getCurrentValue())
+ *          | canHaveAsValue(getCurrentValue())
  *
  * @author Jitse Vandenberghe
- *
- * @version 1.1
+ * @version 1.0
  */
 public abstract class Equipment {
 
@@ -54,20 +50,16 @@ public abstract class Equipment {
      *          |!isValidWeight(weight)
      *
      * @throws  IllegalArgumentException
-     *          If the given identification number is invalid.
-     *          | !isValidIdentification(this.getClass(), identification)
-     *
-     * @throws  IllegalArgumentException
      *          If the given base Value is invalid.
-     *          | !isValidValue(baseValue)
+     *          | !canHaveAsValue(baseValue)
      */
     public Equipment(int weight, int baseValue)
             throws IllegalArgumentException {
 
         if (!isValidWeight(weight))
             throw new IllegalArgumentException("Weight cannot be negative.");
-        if (!isValidValue(baseValue))
-            throw new IllegalArgumentException("Base value must be between 1 and 1000.");
+        if (!canHaveAsValue(baseValue))
+            throw new IllegalArgumentException("Base value must be between 1 and the maximum value.");
 
         this.weight = weight;
         this.baseValue = baseValue;
@@ -78,11 +70,11 @@ public abstract class Equipment {
     }
 
     /**********************************************************
-     * Weight
+     * Weight - total programming
      **********************************************************/
 
     /**
-     * The weight of this piece of equipment.
+     * Variable referencing the weight of this piece of equipment.
      */
     private final int weight;
 
@@ -112,14 +104,14 @@ public abstract class Equipment {
      **********************************************************/
 
     /**
-     * Unique identification number of this piece of equipment.
+     * Variable referencing the unique identification number of this piece of equipment.
      */
     final long identification;
 
     /**
-     * Static set containing all the identification numbers
+     * Variable referencing a static set containing all the identification numbers
      */
-    private static Map<Class<?>, Set<Long>> equipmentByType = new HashMap<>();
+    private static final Map<Class<?>, Set<Long>> equipmentByType = new HashMap<>();
 
     /**
      * Returns the identification number of this piece of equipment.
@@ -179,7 +171,7 @@ public abstract class Equipment {
      *          false otherwise.
      *          | result == (identification >= 0) && (isUniqueForType(instance of this ,getIdentification())
      */
-    public boolean isValidIdentification(Class<?> equipmentType, long identification) {
+    public boolean canHaveAsIdentification(Class<?> equipmentType, long identification) {
         return (identification >= 0) && (isUniqueForType(equipmentType, identification));
     }
 
@@ -221,11 +213,11 @@ public abstract class Equipment {
      * A valid identification number must be non-negative and unique among all equipment of the same type.
      * The method randomly generates identification numbers until it finds one that is valid.
      *
-     * @return  A non-negative and unique identification number that satisfies the conditions defined by isValidIdentification.
-     *          | result >= 0 && isValidIdentification(this.getClass(), result)
+     * @return  A non-negative and unique identification number that satisfies the conditions defined by canHaveAsIdentification.
+     *          | result >= 0 && canHaveAsIdentification(this.getClass(), result)
      *
      * @post    The returned identification number is guaranteed to be unique among all equipment of the same type.
-     *          | isValidIdentification(this.getClass(), result)
+     *          | canHaveAsIdentification(this.getClass(), result)
      *
      * @note    The identification number is not automatically added to the registry; this must be done separately
      *          (via addIdentification()).
@@ -234,7 +226,7 @@ public abstract class Equipment {
         Random random = new Random();
         long possibleID = Math.abs(random.nextLong());
 
-        while (!isValidIdentification(this.getClass(), possibleID)) {
+        while (!canHaveAsIdentification(this.getClass(), possibleID)) {
             possibleID = Math.abs(random.nextLong());
         }
 
@@ -247,12 +239,12 @@ public abstract class Equipment {
      **********************************************************/
 
     /**
-     * Base value of this piece of equipment, in dukaten.
+     * Variable referencing the base value of this piece of equipment, in dukaten.
      */
     final int baseValue;
 
     /**
-     * Maximum value of a piece of equipment, in dukaten.
+     * Variable referencing the maximum value of a piece of equipment, in dukaten.
      */
     private final int maximumValue = 1000;
 
@@ -290,7 +282,7 @@ public abstract class Equipment {
      *          exceed the maximum allowed value dukaten.
      *          | result == (value > 0 && value <= maximumValue)
      */
-    protected boolean isValidValue(int value) {
+    protected boolean canHaveAsValue(int value) {
         return value > 0 && value <= maximumValue;
     }
 

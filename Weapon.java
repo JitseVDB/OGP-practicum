@@ -1,7 +1,4 @@
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import be.kuleuven.cs.som.annotate.*;
 
@@ -76,17 +73,45 @@ public class Weapon extends Equipment {
                 && identification % 3 == 0;
     }
 
+    /**
+     * Generates a valid and unique identification number for this weapon.
+     *
+     * A valid identification number must be non-negative and unique among all weapons.
+     * The method randomly generates identification numbers and then takes the absolute value, and multiplies it by 6 to make
+     * sure it fits the requirements of the canHaveAsIdentification().
+     *
+     * @return A non-negative and unique identification number divisble by 2 and 3 that satisfies the conditions defined by canHaveAsIdentification.
+     *         | canHaveAsIdentification(this.getClass(), result)
+     *
+     * @post   The returned identification number is guaranteed to be unique among all equipment of the same type.
+     *         | canHaveAsIdentification(this.getClass(), result)
+     *
+     * @note   The identification number is not automatically added to the registry; this must be done separately
+     *         (via addIdentification()).
+     */
+    @Override
+    protected long generateIdentification() {
+        Random random = new Random();
+        long possibleID = Math.abs(random.nextLong())*6;
+
+        while (!canHaveAsIdentification(this.getClass(), possibleID)) {
+            possibleID = Math.abs(random.nextLong())*6;
+        }
+
+        return possibleID;
+    }
+
     /**********************************************************
      * Damage - nominal programming
      **********************************************************/
 
     /**
-     * Variable expressing the damage of this weapon
+     * Variable referencing the damage of this weapon
      */
     private int damage;
 
     /**
-     * Variable expressing the maximum amount of damage a weapon can deal.
+     * Variable referencing the maximum amount of damage a weapon can deal.
      */
     private static final int maximumDamage = 100;
 
@@ -140,12 +165,12 @@ public class Weapon extends Equipment {
      **********************************************************/
 
     /**
-     * Variable expressing the maximum value of a weapon, in dukaten.
+     * Variable referencing the maximum value of a weapon, in dukaten.
      */
     protected int maximumValue = 200;
 
     /**
-     * Variable expressing the value per damage unit for a weapon.
+     * Variable referencing the value per damage unit for a weapon.
      */
     private static final int valuePerDamageUnit = 2; // Default value, 2 dukaten per damage unit
 
