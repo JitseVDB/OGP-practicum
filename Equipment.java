@@ -292,34 +292,6 @@ public abstract class Equipment {
     protected abstract int calculateCurrentValue();
 
     /**********************************************************
-     * Backpack -> verder uitwerken later
-     **********************************************************/
-
-    /**
-     * Variable referencing the backpack (if any) in which this equipment is stored.
-     */
-    private Backpack backpack = null;
-
-    /**
-     * Returns the backpack in which this equipment is stored.
-     */
-    @Raw @Basic
-    public Backpack getBackpack() {
-        return backpack;
-    }
-
-    /**
-     * Set the backpack in which this equipment is stored.
-     *
-     * @param   backpack
-     *          The new backpack to set, or null if the equipment is not stored.
-     */
-    @Raw @Basic
-    public void setBackpack(Backpack backpack) {
-        this.backpack = backpack;
-    }
-
-    /**********************************************************
      * Owner -> verder uitwerken later
      **********************************************************/
 
