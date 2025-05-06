@@ -1,28 +1,21 @@
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import be.kuleuven.cs.som.annotate.*;
 
 /**
- * A class representing pieces of equipment in the game.
- *
- * Each piece of equipment has a weight, a base value, an identification number,
- * and can be owned by an entity or be stored in a backpack.
+ * A class representing pieces of equipment.
  *
  * @invar   Each piece of equipment must have a valid weight.
  *          | isValidWeight(getWeight())
  *
  * @invar   Each piece of equipment must have a valid identification number.
- *          | isValidIdentification(getClass(), getIdentification())
+ *          | canHaveAsIdentification(getClass(), getIdentification())
  *
  * @invar   Each piece of equipment must have a valid base value.
- *          | isValidValue(getValue)
+ *          | canHaveAsValue(getCurrentValue())
  *
  * @author Jitse Vandenberghe
- *
- * @version 1.1
+ * @version 1.0
  */
 public abstract class Equipment {
 
@@ -35,19 +28,18 @@ public abstract class Equipment {
      *
      * @param   weight
      *          The weight of the new piece of equipment.
-     * @param   identification
-     *          The unique identification number for the equipment.
+     *
      * @param   baseValue
      *          The base value (in dukaten) for the equipment.
      *
      * @post    The given weight is registered as the weight of this equipment.
      *          | new.getWeight() == weight
      *
-     * @post    The given identification number is registered as the identification number.
-     *          | new.getIdentification() == identification
-     *
      * @post    The given base value is registered as the base value.
      *          | new.getBaseValue() == baseValue
+     *
+     * @post    A randomly generated identification number is registered as the identification number.
+     *          | new.getIdentification() == generateIdentification();
      *
      * @effect  The identification number is added to the map to keep track of all identification numbers
      *          for each equipment type.
@@ -58,37 +50,31 @@ public abstract class Equipment {
      *          |!isValidWeight(weight)
      *
      * @throws  IllegalArgumentException
-     *          If the given identification number is invalid.
-     *          | !isValidIdentification(this.getClass(), identification)
-     *
-     * @throws  IllegalArgumentException
      *          If the given base Value is invalid.
-     *          | !isValidValue(baseValue)
+     *          | !canHaveAsValue(baseValue)
      */
-    public Equipment(int weight, long identification, int baseValue)
+    public Equipment(int weight, int baseValue)
             throws IllegalArgumentException {
 
         if (!isValidWeight(weight))
             throw new IllegalArgumentException("Weight cannot be negative.");
-        if (!isValidIdentification(this.getClass(), identification))
-            throw new IllegalArgumentException("Identification cannot be negative and must be unique.");
-        if (!isValidValue(baseValue))
-            throw new IllegalArgumentException("Base value must be between 1 and 1000.");
+        if (!canHaveAsValue(baseValue))
+            throw new IllegalArgumentException("Base value must be between 1 and the maximum value.");
 
         this.weight = weight;
-        this.identification = identification;
         this.baseValue = baseValue;
 
-        // Adds identification number to map to keep track of all identification numbers for each equipment type.
+        // Generates identification number and adds it to map to keep track of all identification numbers for each equipment type.
+        this.identification = generateIdentification();
         addIdentification(this.getClass(), identification);
     }
 
     /**********************************************************
-     * Weight
+     * Weight - total programming
      **********************************************************/
 
     /**
-     * The weight of this piece of equipment.
+     * Variable referencing the weight of this piece of equipment.
      */
     private final int weight;
 
@@ -118,14 +104,14 @@ public abstract class Equipment {
      **********************************************************/
 
     /**
-     * Unique identification number of this piece of equipment.
+     * Variable referencing the unique identification number of this piece of equipment.
      */
-    private final long identification;
+    final long identification;
 
     /**
-     * Static set containing all the identification numbers
+     * Variable referencing a static set containing all the identification numbers
      */
-    private static Map<Class<?>, Set<Long>> equipmentByType = new HashMap<>();
+    private static final Map<Class<?>, Set<Long>> equipmentByType = new HashMap<>();
 
     /**
      * Returns the identification number of this piece of equipment.
@@ -135,6 +121,28 @@ public abstract class Equipment {
         return identification;
     }
 
+    /**
+     * Adds a new identification number for a specific type of equipment.
+     *
+     * This method ensures that the given identification number is added to the set
+     * of identification numbers for the specified equipment type. If the set of
+     * IDs for the given equipment type does not exist, it is created.
+     *
+     * @param   equipmentType
+     *          The class type of the equipment for which the identification number is being added.
+     *
+     * @param   identification
+     *          The unique identification number to add for the specified equipment type.
+     *
+     * @post    The equipmentByType map will contain the key equipmentType after this method is executed.
+     *          | equipmentByType.containsKey(equipmentType) == true
+     *
+     * @post    The set of IDs for the given equipment type will contain the added identification number.
+     *          | equipmentByType.get(equipmentType).contains(identification) == true
+     *
+     * @post    The size of the set of IDs for the specified equipment type will increase by 1 after adding the new ID.
+     *          | (equipmentByType.get(equipmentType).size() == old(equipmentByType.get(equipmentType).size()) + 1)
+     */
     public static void addIdentification(Class<?> equipmentType, long identification) {
         // Get the existing set of ID's for the given type of equipment
         Set<Long> existingIDs = equipmentByType.get(equipmentType);
@@ -163,7 +171,7 @@ public abstract class Equipment {
      *          false otherwise.
      *          | result == (identification >= 0) && (isUniqueForType(instance of this ,getIdentification())
      */
-    public boolean isValidIdentification(Class<?> equipmentType, long identification) {
+    public boolean canHaveAsIdentification(Class<?> equipmentType, long identification) {
         return (identification >= 0) && (isUniqueForType(equipmentType, identification));
     }
 
@@ -199,19 +207,43 @@ public abstract class Equipment {
 
     }
 
+    /**
+     * Generates a valid and unique identification number for this piece of equipment.
+     *
+     * @return  A non-negative and unique identification number that satisfies the conditions defined by canHaveAsIdentification.
+     *          | result >= 0 && canHaveAsIdentification(this.getClass(), result)
+     *
+     * @post    The returned identification number is guaranteed to be unique among all equipment of the same type.
+     *          | canHaveAsIdentification(this.getClass(), result)
+     *
+     * @note    The identification number is not automatically added to the registry; this must be done separately
+     *          (via addIdentification()).
+     */
+    protected long generateIdentification() {
+        Random random = new Random();
+        long possibleID = Math.abs(random.nextLong());
+
+        while (!canHaveAsIdentification(this.getClass(), possibleID)) {
+            possibleID = Math.abs(random.nextLong());
+        }
+
+        return possibleID;
+    }
+
+
     /**********************************************************
      * Value
      **********************************************************/
 
     /**
-     * Base value of this piece of equipment, in dukaten.
+     * Variable referencing the base value of this piece of equipment, in dukaten.
      */
-    private final int baseValue;
+    final int baseValue;
 
     /**
-     * Maximum value of a piece of equipment, in dukaten.
+     * Variable referencing the maximum value of a piece of equipment, in dukaten.
      */
-    private final int maximumValue = 1000;
+    final int maximumValue = 1000;
 
     /**
      * Returns the base value of this piece of equipment.
@@ -247,7 +279,7 @@ public abstract class Equipment {
      *          exceed the maximum allowed value dukaten.
      *          | result == (value > 0 && value <= maximumValue)
      */
-    protected boolean isValidValue(int value) {
+    protected boolean canHaveAsValue(int value) {
         return value > 0 && value <= maximumValue;
     }
 
