@@ -210,9 +210,6 @@ public abstract class Equipment {
     /**
      * Generates a valid and unique identification number for this piece of equipment.
      *
-     * A valid identification number must be non-negative and unique among all equipment of the same type.
-     * The method randomly generates identification numbers until it finds one that is valid.
-     *
      * @return  A non-negative and unique identification number that satisfies the conditions defined by canHaveAsIdentification.
      *          | result >= 0 && canHaveAsIdentification(this.getClass(), result)
      *
@@ -246,7 +243,7 @@ public abstract class Equipment {
     /**
      * Variable referencing the maximum value of a piece of equipment, in dukaten.
      */
-    private final int maximumValue = 1000;
+    final int maximumValue = 1000;
 
     /**
      * Returns the base value of this piece of equipment.

@@ -34,13 +34,17 @@ public class Weapon extends Equipment {
      *          (weight, base value are set and an identification number is generated and assigned)
      *          | super(weight, baseValue)
      *
-     * @post    The damage is set to the given damage
+     * @effect  The new weapon has the given damage.
      *          | setDamage(damage);
+     *
+     * @throws  IllegalArgumentException
+     *          If the given damage is invalid.
+     *          |!isValidDamge(damage)
      */
     public Weapon(int weight, int baseValue, int damage) {
         super(weight, baseValue);
 
-        if (!isValidDamage(weight))
+        if (!isValidDamage(damage))
             throw new IllegalArgumentException("Damage cannot be negative, must be below the maximum damage and must be a multiple of 7.");
 
         setDamage(damage);
@@ -76,12 +80,8 @@ public class Weapon extends Equipment {
     /**
      * Generates a valid and unique identification number for this weapon.
      *
-     * A valid identification number must be non-negative and unique among all weapons.
-     * The method randomly generates identification numbers and then takes the absolute value, and multiplies it by 6 to make
-     * sure it fits the requirements of the canHaveAsIdentification().
-     *
-     * @return A non-negative and unique identification number divisble by 2 and 3 that satisfies the conditions defined by canHaveAsIdentification.
-     *         | canHaveAsIdentification(this.getClass(), result)
+     * @return  A non-negative and unique identification number divisble by 2 and 3 that satisfies the conditions defined by canHaveAsIdentification.
+     *          | canHaveAsIdentification(this.getClass(), result)
      *
      * @post   The returned identification number is guaranteed to be unique among all equipment of the same type.
      *         | canHaveAsIdentification(this.getClass(), result)
@@ -94,8 +94,9 @@ public class Weapon extends Equipment {
         Random random = new Random();
         long possibleID = Math.abs(random.nextLong())*6;
 
+        // Keep generating a new number until we find a valid identification number
         while (!canHaveAsIdentification(this.getClass(), possibleID)) {
-            possibleID = Math.abs(random.nextLong())*6;
+            possibleID = Math.abs(random.nextLong())*6; // Generate a new number if it's not prime
         }
 
         return possibleID;
@@ -175,44 +176,11 @@ public class Weapon extends Equipment {
     private static final int valuePerDamageUnit = 2; // Default value, 2 dukaten per damage unit
 
     /**
-     * Returns the base value of this weapon.
-     */
-    @Basic
-    public int getBaseValue() {
-        return baseValue;
-    }
-
-    /**
-     * Returns the maximum value a weapon can have, in dukaten.
-     */
-    @Basic
-    public int getMaximumValue() {
-        return maximumValue;
-    }
-
-    /**
      * Returns the value per damage unit for a weapon, in dukaten.
      */
     @Basic
     public int getValuePerDamageUnit() {
         return valuePerDamageUnit;
-    }
-
-    /**
-     * Check whether the given value is a valid value for this weapon.
-     *
-     * @param   value
-     *          The value to check.
-     *
-     * @return  True if and only if the value is a valid equipment value
-     *          (in other words positive and not exceeding the maximum), and equal to
-     *          the product of this weapon's damage and the value per damage unit.
-     *          | result == (super.canHaveAsValue(value)
-     *          |            && value == damage * valuePerDamageUnit)
-     */
-    protected boolean canHaveAsValue(int value) {
-        return super.canHaveAsValue(value)
-                && value == damage * valuePerDamageUnit;
     }
 
     /**
