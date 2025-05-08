@@ -9,6 +9,8 @@ import java.util.List;
  *
  * @invar  The name of the entity must be valid.
  *       | canHaveAsName(getName())
+ * @invar  The amount of hitpoints must be valid.
+ *       | isValidHitPoints(getHitPoints())
  * @invar  Each entity must have a valid protection factor.
  *       | isValidProtection(getProtection())
  * @invar  The maximum amount of hitpoints of an entity must be valid
@@ -143,6 +145,20 @@ public abstract class Entity {
         return maxHitPoints > 0;
     }
 
+
+    /**
+     * Check whether the amount of hitpoints is a valid amount.
+     *
+     * @param   hitPoints
+     *          The amount to check.
+     *
+     * @return  True if and only if the amount of hitpoints is positive and less than the maximun amount of hitpoints.
+     *          | result == (hitPoints >= 0 &&  hitpoints <= maxHitPoints)
+     */
+    public boolean isValidHitPoints(int hitPoints) {
+        return ((hitPoints >= 0) && (hitPoints <= maxHitPoints));
+    }
+
     /**
      * Adds the hero's hitpoints by a given amount.
      * If the hero is not fighting, the result will be adjusted to the closest lower prime if necessary.
@@ -238,4 +254,3 @@ public abstract class Entity {
 
     public abstract void initializeAnchorPoints();
 }
-
