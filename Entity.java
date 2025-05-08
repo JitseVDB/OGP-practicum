@@ -1,5 +1,8 @@
 import be.kuleuven.cs.som.annotate.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * A class representing the entities (monsters and heroes) in the game.
@@ -12,6 +15,7 @@ import be.kuleuven.cs.som.annotate.*;
  *       | isValidMaxHitPoints(getMaxHitPoints())
  *
  * @author Ernest De Gres
+ * @author Jitse Vandenberghe
  *
  * @version 1.1
  */
@@ -65,6 +69,7 @@ public abstract class Entity {
         this.maxHitPoints = maxHitPoints;
         this.hitPoints = maxHitPoints;
         this.protection = protection;
+        this.anchorPoints = new ArrayList<>();
     }
 
     /**********************************************************
@@ -216,5 +221,21 @@ public abstract class Entity {
         return protection >= 0;
     }
 
+    /**********************************************************
+     * Anchors
+     **********************************************************/
+
+    /**
+     * Variable referencing a list collecting all anchor points of this entity.
+     *
+     * @invar  ... -> indien nodig aanvullen
+     */
+    protected List<AnchorPoint> anchorPoints;
+
+    public void addAnchorPoint(AnchorPoint anchorPoint){
+        anchorPoints.add(anchorPoint);
+    }
+
+    public abstract void initializeAnchorPoints();
 }
 
