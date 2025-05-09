@@ -76,7 +76,7 @@ public abstract class Equipment {
     /**
      * Variable referencing the weight of this piece of equipment.
      */
-    private final int weight;
+    final int weight;
 
     /**
      * Returns the weight of this piece of equipment.
@@ -241,9 +241,12 @@ public abstract class Equipment {
     final int baseValue;
 
     /**
-     * Variable referencing the maximum value of a piece of equipment, in dukaten.
+     * Returns the maximum value of a piece of equipment.
      */
-    final int maximumValue = 1000;
+    @Basic
+    public int getMaximumValue() {
+        return Integer.MAX_VALUE;
+    }
 
     /**
      * Returns the base value of this piece of equipment.
@@ -251,14 +254,6 @@ public abstract class Equipment {
     @Raw @Basic
     public int getBaseValue() {
         return baseValue;
-    }
-
-    /**
-     * Returns the maximum value of a piece of equipment
-     */
-    @Basic @Immutable
-    public int getMaximumValue() {
-        return maximumValue;
     }
 
     /**
@@ -280,7 +275,7 @@ public abstract class Equipment {
      *          | result == (value > 0 && value <= maximumValue)
      */
     protected boolean canHaveAsValue(int value) {
-        return value > 0 && value <= maximumValue;
+        return value > 0 && value <= getMaximumValue();
     }
 
     /**

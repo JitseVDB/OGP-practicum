@@ -1,8 +1,7 @@
 
 /**
- * A class of armor, involving protection.
+ * A class of storage items, involving capacity.
  *
- * @invar   ...
  *
  * @note    The content attribute is not implemented in the superclass because its implementation
  *          differs significantly between Backpack and Purse.
@@ -57,6 +56,20 @@ public abstract class StorageItem extends Equipment{
      */
     public static int getCapacity() {
         return capacity;
+    }
+
+    /**
+     * Checks whether a given capacity is a valid capacity.
+     *
+     * @param 	capacity
+     * 			The capacity to check.
+     * @return	True if the capacity is a positive number
+     * 			| result == (capacity >= 0)
+     *
+     */
+    @Override
+    public static boolean isValidCapacity(int capacity) {
+        return capacity >= 0;
     }
 
 

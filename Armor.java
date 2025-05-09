@@ -225,6 +225,14 @@ public class Armor extends Equipment {
      **********************************************************/
 
     /**
+     * Returns the maximum value of a piece of equipment.
+     */
+    @Basic
+    public int getMaximumValue() {
+        return 1000;
+    }
+
+    /**
      * Calculate the current value of this piece of armor.
      *
      * @return  The calculated current value, guaranteed to be greater or equal to zero and at most 100.
