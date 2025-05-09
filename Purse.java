@@ -5,8 +5,14 @@ import be.kuleuven.cs.som.annotate.*;
  *
  * @invar	The capacity of a purse is a positive number.
  * 			| isValidCapacity(getCapacity())
+ *
  * @invar	The contents of a purse is a positive number, less than or equal to the capacity of the purse.
  * 			| canHaveAsContents(getContents())
+ *
+ * @invar   If this purse is destroyed, its contents must be 0.
+ *          | if (getCondition() == Condition.DESTROYED)
+ *          |       then this.getContents == 0
+ *
  *
  * @author  Jitse Vandenberghe
  * @version 1.0
@@ -74,7 +80,7 @@ public class Purse extends StorageItem {
      * 			|		then new.getContents() == amount
      * 			|		else if (amount < 0)
      * 			|			 	then new.getContents() == 0
-     * 			|				else new.getContents() == 0 and new.getCondition = DESTROYED
+     * 			|				else new.getContents() == 0 and new.getCondition = Condtion.DESTROYED
      *
      * @note	The setters should always ensure that the class invariants are not violated.
      * 			Their job is to only set the value if it is allowed.
@@ -194,7 +200,7 @@ public class Purse extends StorageItem {
      * 			|		then (if (getFreeSpace() >= other.getContents())
      * 			|				then (new.getContents() == getContents() + other.getContents()
      * 			|					  and (new other).getContents() == 0 )
-     * 			|				else (new.getContents() == 0 and new.getCondition() == DESTROYED
+     * 			|				else (new.getContents() == 0 and new.getCondition() == Condtion.DESTROYED
      * 			|			 		  and (new other).getContents() == other.getContents() - getFreeSpace() ))
      */
     public void transferFrom(Purse other) {
