@@ -41,10 +41,6 @@ public class Armor extends Equipment {
      *
      * @effect  The new piece of armor is initialized with the maximal protection as current protection.
      *          | setCurrentProtection(maximalProtection)
-     *
-     * @throws  IllegalArgumentException
-     *          If the given maximal protection is invalid.
-     *          |!isValidMaximalProtection(maximalProtection)
      */
     public Armor(int weight, int baseValue, ArmorType type) {
         super(weight, baseValue);
