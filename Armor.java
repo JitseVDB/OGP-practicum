@@ -29,8 +29,8 @@ public class Armor extends Equipment {
      * @param   baseValue
      *          The base value of the piece of armor, in dukaten.
      *
-     * @param   maximalProtection
-     *          The maximal protection this piece of armor can provide.
+     * @param   type
+     *          The type of this piece of armor (Tin / Bronze).
      *
      * @effect  The piece of armor is initialized as a piece of equipment.
      *          (weight, base value are set and an identification number is generated and assigned)
@@ -46,13 +46,11 @@ public class Armor extends Equipment {
      *          If the given maximal protection is invalid.
      *          |!isValidMaximalProtection(maximalProtection)
      */
-    public Armor(int weight, int baseValue, int maximalProtection) {
+    public Armor(int weight, int baseValue, ArmorType type) {
         super(weight, baseValue);
 
-        if (!isValidMaximalProtection(maximalProtection))
-            throw new IllegalArgumentException("The maximal protection must be between 1 and the maximum value.");
-
-        this.maximalProtection = maximalProtection;
+        this.type = type;
+        this.maximalProtection = type.getMaxProtection();
         setCurrentProtection(maximalProtection);
     }
 
@@ -209,7 +207,7 @@ public class Armor extends Equipment {
      */
     public void setCurrentProtection(int currentProtection) {
         if (!isValidCurrentProtection(currentProtection))
-            throw new IllegalArgumentException("The current protection must be between 0 and the maximal protection.");
+            throw new IllegalArgumentException("The current protection must be between 0 and " + maximalProtection);
         this.currentProtection = currentProtection;
     }
 
@@ -238,6 +236,22 @@ public class Armor extends Equipment {
      */
     protected int calculateCurrentValue() {
         return baseValue * currentProtection/maximalProtection;
+    }
+
+    /**********************************************************
+     * Armor Type
+     **********************************************************/
+
+    /**
+     * Variable referencing the type of armor (Tin/Bronze)
+     */
+    private final ArmorType type;
+
+    /**
+     * Return the type of armor of this piece of armor.
+     */
+    public ArmorType getType() {
+        return type;
     }
 
 }
