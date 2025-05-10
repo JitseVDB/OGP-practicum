@@ -190,8 +190,7 @@ public class Backpack extends StorageItem {
      * 			parent and not yet terminated, or a new parent that doesn't point back, etc.).
      * 			All methods called with this raw item thus require a raw annotation of their parameter.
      */
-    @Model
-    @Raw
+    @Model @Raw
     protected void removeItem(@Raw Equipment item) throws IllegalArgumentException, IllegalStateException {
         if(!hasAsItem(item))
             throw new IllegalArgumentException("This item is not present in this backpack.");
