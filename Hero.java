@@ -1,50 +1,32 @@
+
 /**
- * A class representing heroic characters with a name, hitpoints, and strength.
- * Each hero has a name that must follow specific formatting rules, a maximum number
- * of hitpoints (fixed at 50), and a current amount of hitpoints that may change
- * depending on combat situations. Strength is defined as an additional characteristic
+ * A class representing heroic characters with a name, dynamic hit points, strength, and carrying capacity.
  *
- * @author	Guillaume Vandemoortele
+ * <p>Each hero has a name that must follow specific formatting rules, a maximum number of hit points
+ * supplied at construction, and a current amount of hit points that may change during combat.
+ * The hero's intrinsic strength is stored with two decimal places and determines the hero's carrying capacity.
  *
+ * @author Guillaume Vandemoortele
  * @version 1.0
  *
- * @invar	The name of a hero is valid according to custom-defined format rules.
- * 			| isValidName(getName())
- * @invar	The hitpoints of a hero are always between 0 and the maximum hitpoints.
- * 			| 0 <= getHitpoints() && getHitpoints() <= maxHitPoints
- * @invar   If the hero is not fighting, their hitpoints are always a prime number.
- *          | !isFighting() ==> isPrime(getHitpoints())
- * @invar   The intrinsic strength of a hero is always stored with two decimal places.
- *          | Math.round(intrinsicStrength * 100) / 100.0 == intrinsicStrength
- * @invar   The capacity of a hero is always between 0 and its maximum capacity.
- *          | 0 <= getCapacity() && getCapacity() <= getMaxCapacity()
+ * @invar The hero's name must be valid according to the custom-defined format rules.
+ *        | canHaveAsName(getName())
+ * @invar The hero's hit points are always between 0 and the maximum hit points.
+ *        | 0 <= getHitPoints() && getHitPoints() <= getMaxHitPoints()
+ * @invar If the hero is not fighting, their hit points are always a prime number.
+ *        | !isFighting() ==> isPrime(getHitPoints())
+ * @invar The hero's intrinsic strength is always stored with two decimal places.
+ *        | Math.round(intrinsicStrength * 100) / 100.0 == intrinsicStrength
+ * @invar The hero's capacity is always between 0 and its maximum capacity.
+ *        | 0 <= getCapacity() && getCapacity() <= getMaxCapacity()
  */
-public class Hero {
-    /**
-     * Variable setting the name of the hero
-     */
-    private final String name;
-
-    /**
-     * Variable setting the maximum number of hitpoints a hero can take
-     */
-    private int maxHitPoints;
-
-    /**
-     * Variable setting the number of hitpoints that the hero can take
-     */
-    private int hitpoints;
+public class Hero extends Entity {
 
     /**
      * The intrinsic strength of the hero.
      * Must be a positive decimal number, typically with 2 digits after the comma.
      */
-    private Double intrinsicStrength;
-
-    /**
-     * Variable setting the attack strength of the hero
-     */
-    private int attackStrength;
+    private double intrinsicStrength;
 
     /**
      * Stands for which weapon is carried in the left and right hand.
@@ -71,37 +53,48 @@ public class Hero {
     private int maxCapacity;
 
     /**
-     * Initializes a hero with a given name and maximum amount of hitpoints
+     * Initializes a hero with the given name, maximum hit points, and intrinsic strength.
      *
      * @param name
-     *        the name of the hero
+     *     the hero's name (must satisfy canHaveAsName)
      * @param maxHitPoints
-     *        the max amount of hitpoints a hero can take
-     * @throws IllegalArgumentException if name is invalid or maxHitPoints < 0
+     *     the maximum number of hit points (must be >= 0)
+     * @param strength
+     *     the hero's intrinsic strength (must be > 0); stored rounded to two decimal places
+     * @throws IllegalArgumentException
+     *     if the name is invalid, maxHitPoints is negative, or strength is not positive
+     *
+     * @post  getName().equals(name)
+     * @post  getMaxHitPoints() == maxHitPoints
+     * @post  getIntrinsicStrength() == Math.round(strength * 100) / 100.0
+     * @implNote If the initial hit points are not a prime number (hero not fighting at start),
+     *           they are adjusted to the closest lower prime. Anchor points are then initialized.
      */
-    public Hero(String name, int maxHitPoints, double intrinsicStrength) {
-        if (!isValidName(name))
-            throw new IllegalArgumentException("Invalid hero name: " + name);
-        if (maxHitPoints < 0)
-            throw new IllegalArgumentException("maxHitPoints must be a positive number");
-
-        this.name = name;
-        this.maxHitPoints = maxHitPoints;
+    public Hero(String name, int maxHitPoints, double strength) {
+        super(name, maxHitPoints, 10);
+        if (strength <= 0)
+            throw new IllegalArgumentException("Strength must be positive");// standaard protection=10
         this.isFighting = false;
-        this.hitpoints = maxHitPoints;
-        // Check's if hitpoints is a prime number after initialization, because he is not fighting
-        if (!isPrime(this.hitpoints)) {
-            this.hitpoints = getClosestLowerPrime(this.hitpoints);
-        }
-        this.intrinsicStrength = Math.round(intrinsicStrength * 100) / 100.0;
+        this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.capacity = 0;
-        this.maxCapacity = (int) (20 * this.intrinsicStrength);
+        this.maxCapacity = (int)(20 * this.intrinsicStrength);
 
+        // Prime-correctie bij start, omdat niet vechtend
+        if (!isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            super.removeHitPoints(getHitPoints() - p);
+        }
+        // Anchor points initialiseren
+        initializeAnchorPoints();
     }
 
+
+
     /**
-     * Checks whether the given name is valid according to specific rules.
-     *
+     * Checks whether the given name is valid according to these specific rules=
+     *      non-null, non-empty, starts with an uppercase letter
+     *      and contains only letters, spaces, colons (each followed by a space),
+     *      and at most two apostrophes
      * @param	name
      * 			The name to be validated.
      *
@@ -124,7 +117,8 @@ public class Hero {
      *          if the name is valid and gives back true or false.
      * 			| result == true <==> name is valid according to the defined format
      */
-    private boolean isValidName(String name) {
+    @Override
+    public boolean canHaveAsName(String name) {
         char[] allowedChars = {' ', ':', '\''};
 
         if (name == null || name.isEmpty() || !Character.isUpperCase(name.charAt(0))) {
@@ -169,67 +163,37 @@ public class Hero {
         return true;
     }
 
-
-    /**
-     * Return the name of this hero
-     */
-    public String getName() {
-        return this.name;
+    @Override
+    public void initializeAnchorPoints() {
+        addAnchorPoint(new AnchorPoint("leftHand"));
+        addAnchorPoint(new AnchorPoint("rightHand"));
+        addAnchorPoint(new AnchorPoint("back"));
+        addAnchorPoint(new AnchorPoint("body"));
+        addAnchorPoint(new AnchorPoint("belt"));
     }
 
-    /**
-     * Return the number of hitpoints that this hero has
-     */
-    public int getHitpoints() {
-        return this.hitpoints;
+    @Override
+    public void receiveDamage(int damage) {
+        int actual = damage - getProtection();
+        if (actual < 0) actual = 0;
+        super.removeHitPoints(actual);
     }
 
-    /**
-     * Adds the hero's hitpoints by a given amount.
-     * If the hero is not fighting, the result will be adjusted to the closest lower prime if necessary.
-     *
-     * @pre The given amount must be a positive number.
-     *      | amount > 0
-     * @pre The resulting hitpoints after addition must not exceed the maximum hitpoints.
-     *      | amount + getHitpoints() <= maxHitPoints
-     */
-    public void addHitPoints(Integer amount) {
-        this.hitpoints += amount;
-
-        if (!isFighting && !isPrime(hitpoints)) {
-            hitpoints = getClosestLowerPrime(hitpoints);
-        }
-    }
 
     /**
-     * Decreases the hero's hitpoints by a given amount.
-     * If the hero is not fighting, the result will be adjusted to the closest lower prime if necessary.
-     *
-     * @pre The given amount must be a positive number.
-     *      | amount > 0
-     * @pre The resulting hitpoints after subtraction must not fall below zero.
-     *      | getHitpoints() - amount >= 0
-     */
-
-    public void removeHitPoints(Integer amount) {
-        this.hitpoints -= amount;
-
-        if (!isFighting && !isPrime(hitpoints)) {
-            hitpoints = getClosestLowerPrime(hitpoints);
-        }
-    }
-
-    /**
-     * Sets the fighting status of the hero.
-     * If the hero stops fighting, their hitpoints will be adjusted to the closest lower prime if necessary.
+     * Zet de vechtstatus. Stopt de held met vechten of hervat vechten.
      *
      * @param status
-     *        true if the hero is fighting, false otherwise.
+     *        true als de held gaat vechten, false als hij stopt
+     * @post   isFighting() == status
+     * @post   als status == false en !isPrime(getHitPoints()),
+     *         dan is getHitPoints() gelijk aan de dichtst lagere priem
      */
     public void setFighting(boolean status) {
         this.isFighting = status;
-        if (!status && !isPrime(hitpoints)) {
-            this.hitpoints = getClosestLowerPrime(hitpoints);
+        if (!status && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            super.removeHitPoints(getHitPoints() - p);
         }
     }
 
@@ -262,10 +226,29 @@ public class Hero {
         return 2; // fallback
     }
 
+    @Override
+    public void addHitPoints(int amount) {
+        super.addHitPoints(amount);
+        if (!isFighting && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            super.removeHitPoints(getHitPoints() - p);
+        }
+    }
+
+    @Override
+    public void removeHitPoints(int amount) {
+        super.removeHitPoints(amount);
+        if (!isFighting && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            super.removeHitPoints(getHitPoints() - p);
+        }
+    }
+
     /**
      * Multiply the strength by a given integer.
      *
-     * @param factor A non-zero integer.
+     * @param factor
+     *        A non-zero integer.
      * @throws IllegalArgumentException if factor is zero.
      */
     public void multiplyStrength(int factor) {
@@ -329,7 +312,7 @@ public class Hero {
     /**
      * Return the intrinsic strength of this hero
      */
-    protected Double getIntrinsicStrength() {
+    protected double getIntrinsicStrength() {
         return this.intrinsicStrength;
     }
 
@@ -347,20 +330,5 @@ public class Hero {
         return (int)(20 * intrinsicStrength);
     }
 
-    /**
-     * Return the maximum of hitpoints of this hero
-     */
-    public Integer getMaxHitPoints() {
-        return maxHitPoints;
-    }
 
-    /**
-     * Return the maximum of hitpoints of this hero
-     *
-     * @param maxHitPoints
-     *        amount of hitpoints will be set for the maximum amount of hitpoints of this hero
-     */
-    public void setMaxHitPoints(Integer maxHitPoints) {
-        this.maxHitPoints = maxHitPoints;
-    }
 }
