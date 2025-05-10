@@ -1,10 +1,7 @@
 import be.kuleuven.cs.som.annotate.*;
 
 /**
- * A class of purses, involving content.
- *
- * @invar	The capacity of a purse is a positive number.
- * 			| isValidCapacity(getCapacity())
+ * A class of purses, involving contents.
  *
  * @invar	The contents of a purse is a positive number, less than or equal to the capacity of the purse.
  * 			| canHaveAsContents(getContents())
@@ -15,7 +12,7 @@ import be.kuleuven.cs.som.annotate.*;
  *
  *
  * @author  Jitse Vandenberghe
- * @version 1.0
+ * @version 1.1
  */
 public class Purse extends StorageItem {
 
@@ -38,8 +35,6 @@ public class Purse extends StorageItem {
      * @effect  The purse is initialized as a storage item.
      *          (weight, base value are set and an identification number is generated and assigned)
      *          | super(weight, baseValue, capacity)
-     *
-     * @post
      *
      * @note    The owner of the purse is initialized to null.
      */

@@ -2,6 +2,8 @@
 /**
  * A class of storage items, involving capacity.
  *
+ * @invar	The capacity of a purse is a positive number.
+ * 			| isValidCapacity(getCapacity())
  *
  * @note    The content attribute is not implemented in the superclass because its implementation
  *          differs significantly between Backpack and Purse.
@@ -47,12 +49,12 @@ public abstract class StorageItem extends Equipment{
      **********************************************************/
 
     /**
-     * Variable referencing the weight capacity of this storage item.
+     * Variable referencing the capacity of this storage item.
      */
     private static final int capacity;
 
     /**
-     * Return the weight capacity of this backpack.
+     * Return the capacity of this storage item.
      */
     public static int getCapacity() {
         return capacity;
