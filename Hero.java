@@ -1,24 +1,23 @@
-
 /**
  * A class representing heroic characters with a name, dynamic hit points, strength, and carrying capacity.
  *
- * <p>Each hero has a name that must follow specific formatting rules, a maximum number of hit points
+ * Each hero has a name that must follow specific formatting rules, a maximum number of hit points
  * supplied at construction, and a current amount of hit points that may change during combat.
  * The hero's intrinsic strength is stored with two decimal places and determines the hero's carrying capacity.
  *
  * @author Guillaume Vandemoortele
- * @version 1.0
+ * @version 1.6
  *
  * @invar The hero's name must be valid according to the custom-defined format rules.
  *        | canHaveAsName(getName())
  * @invar The hero's hit points are always between 0 and the maximum hit points.
- *        | 0 <= getHitPoints() && getHitPoints() <= getMaxHitPoints()
+ *        | 0 <= getHitPoints() <= getMaxHitPoints()
  * @invar If the hero is not fighting, their hit points are always a prime number.
  *        | !isFighting() ==> isPrime(getHitPoints())
  * @invar The hero's intrinsic strength is always stored with two decimal places.
  *        | Math.round(intrinsicStrength * 100) / 100.0 == intrinsicStrength
  * @invar The hero's capacity is always between 0 and its maximum capacity.
- *        | 0 <= getCapacity() && getCapacity() <= getMaxCapacity()
+ *        | 0 <= getCapacity() <= getMaxCapacity()
  */
 public class Hero extends Entity {
 
@@ -51,6 +50,10 @@ public class Hero extends Entity {
      * Variable setting the maximum capacity of the hero
      */
     private int maxCapacity;
+
+    /**********************************************************
+     *                      Constructors
+     **********************************************************/
 
     /**
      * Initializes a hero with the given name, maximum hit points, and intrinsic strength.
@@ -88,13 +91,15 @@ public class Hero extends Entity {
         initializeAnchorPoints();
     }
 
-
+    /**********************************************************
+     *                          Name
+     **********************************************************/
 
     /**
-     * Checks whether the given name is valid according to these specific rules=
+     * Checks whether the given name is valid according to these specific rules:
      *      non-null, non-empty, starts with an uppercase letter
      *      and contains only letters, spaces, colons (each followed by a space),
-     *      and at most two apostrophes
+     *      and at maximum 2 apostrophes
      * @param	name
      * 			The name to be validated.
      *
@@ -163,6 +168,13 @@ public class Hero extends Entity {
         return true;
     }
 
+    /**********************************************************
+     *                      AnchorPoints
+     **********************************************************/
+
+    /**
+     *  Initializes anchor points for the hero. For his left hand, right hand, back, body and belt
+     */
     @Override
     public void initializeAnchorPoints() {
         addAnchorPoint(new AnchorPoint("leftHand"));
@@ -172,6 +184,14 @@ public class Hero extends Entity {
         addAnchorPoint(new AnchorPoint("belt"));
     }
 
+    /**
+     * Player gets damaged and loses his hitpoints
+     * if the given damage is greater than the hero's protection.
+     * @param damage
+     *        The amount of damage to apply.
+     *
+     * @effect The hero’s hit points are reduced by this value.
+     */
     @Override
     public void receiveDamage(int damage) {
         int actual = damage - getProtection();
@@ -179,15 +199,17 @@ public class Hero extends Entity {
         super.removeHitPoints(actual);
     }
 
+    /**********************************************************
+     *                      Hitpoints
+     **********************************************************/
 
     /**
-     * Zet de vechtstatus. Stopt de held met vechten of hervat vechten.
+     * Sets the fighting status.
      *
      * @param status
-     *        true als de held gaat vechten, false als hij stopt
-     * @post   isFighting() == status
-     * @post   als status == false en !isPrime(getHitPoints()),
-     *         dan is getHitPoints() gelijk aan de dichtst lagere priem
+     *        true if the hero is fighting, false if he is not
+     * @post   If the hero stops fighting and their hit points are not prime,
+     *  *      they are adjusted to the closest lower prime number.
      */
     public void setFighting(boolean status) {
         this.isFighting = status;
@@ -226,6 +248,10 @@ public class Hero extends Entity {
         return 2; // fallback
     }
 
+    /**
+     * Adds a number of hitpoints to this hero
+     * @param amount
+     */
     @Override
     public void addHitPoints(int amount) {
         super.addHitPoints(amount);
@@ -235,6 +261,10 @@ public class Hero extends Entity {
         }
     }
 
+    /**
+     * Removes a number of hitpoints to this hero
+     * @param amount
+     */
     @Override
     public void removeHitPoints(int amount) {
         super.removeHitPoints(amount);
@@ -243,6 +273,10 @@ public class Hero extends Entity {
             super.removeHitPoints(getHitPoints() - p);
         }
     }
+
+    /**********************************************************
+     *                      Strenght
+     **********************************************************/
 
     /**
      * Multiply the strength by a given integer.
@@ -275,25 +309,6 @@ public class Hero extends Entity {
 
     }
 
-
-    /**
-     * Equip a weapon in the left hand.
-     *
-     * @param weapon The weapon to equip (can be null to unequipped).
-     */
-    public void equipLeftHand(Weapon weapon) {
-        this.leftHandWeapon = weapon;
-    }
-
-    /**
-     * Equip a weapon in the right hand.
-     *
-     * @param weapon The weapon to equip (can be null to unequipped).
-     */
-    public void equipRightHand(Weapon weapon) {
-        this.rightHandWeapon = weapon;
-    }
-
     /**
      * Calculates the attack power of the hero.
      * It includes the hero's current strength and the damage from the weapons held in both hands.
@@ -315,6 +330,32 @@ public class Hero extends Entity {
     protected double getIntrinsicStrength() {
         return this.intrinsicStrength;
     }
+
+    /**********************************************************
+     *                   Weapon Equipment
+     **********************************************************/
+
+    /**
+     * Equip a weapon in the left hand.
+     *
+     * @param weapon The weapon to equip (can be null to unequipped).
+     */
+    public void equipLeftHand(Weapon weapon) {
+        this.leftHandWeapon = weapon;
+    }
+
+    /**
+     * Equip a weapon in the right hand.
+     *
+     * @param weapon The weapon to equip (can be null to unequipped).
+     */
+    public void equipRightHand(Weapon weapon) {
+        this.rightHandWeapon = weapon;
+    }
+
+    /**********************************************************
+     *                      Capacity
+     **********************************************************/
 
     /**
      * Return the capacity of this hero
