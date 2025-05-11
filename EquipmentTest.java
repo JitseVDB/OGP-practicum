@@ -157,6 +157,15 @@ public class EquipmentTest {
         assertTrue(backpack_A.getCurrentValue() >= 0);
     }
 
+    @Test
+    public void testCanHaveAsValue_allCases() {
+        assertTrue(weapon_A.canHaveAsValue(weapon_A.getMaximumValue()-1));
+        assertTrue(backpack_A.canHaveAsValue(backpack_A.getMaximumValue()));
+        assertTrue(purse_A.canHaveAsValue(0));
+        assertFalse(armor_A.canHaveAsValue(armor_A.getMaximumValue()+1));
+        assertFalse(weapon_A.canHaveAsValue(-armor_A.getMaximumValue()));
+    }
+
     /**
      * BACKPACK
      */
@@ -204,9 +213,4 @@ public class EquipmentTest {
         // 2. Adding item equalling capacity
         assertThrows(IllegalArgumentException.class, () -> weapon_C.setBackpack(backpack_A));
     }
-
-
-
-
-
 }
