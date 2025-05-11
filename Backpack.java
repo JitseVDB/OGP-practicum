@@ -147,7 +147,7 @@ public class Backpack extends StorageItem {
             throw new IllegalArgumentException("The given item already exists in this backpack.");
         if(!canHaveAsItem(item))
             throw new IllegalArgumentException("The given item is not allowed in this backpack.");
-        if ((item != null) || item.getBackpack() != this)
+        if ((item == null) || item.getBackpack() != this)
             throw new IllegalStateException("The given item does not yet reference this backpack.");
 
         // Get the existing list of items stored in the backpack with the given ID

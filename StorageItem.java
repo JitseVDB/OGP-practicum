@@ -51,12 +51,12 @@ public abstract class StorageItem extends Equipment{
     /**
      * Variable referencing the capacity of this storage item.
      */
-    private static final int capacity;
+    private final int capacity;
 
     /**
      * Return the capacity of this storage item.
      */
-    public static int getCapacity() {
+    public int getCapacity() {
         return capacity;
     }
 
@@ -69,8 +69,7 @@ public abstract class StorageItem extends Equipment{
      * 			| result == (capacity >= 0)
      *
      */
-    @Override
-    public static boolean isValidCapacity(int capacity) {
+    public boolean isValidCapacity(int capacity) {
         return capacity >= 0;
     }
 

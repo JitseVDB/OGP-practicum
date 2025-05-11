@@ -127,7 +127,7 @@ public class Armor extends Equipment {
      *         (via addIdentification()).
      */
     @Override
-    protected long generateIdentification() {
+    public long generateIdentification() {
         Random random = new Random();
         long possibleID = Math.abs(random.nextLong() % 1_000_000);
 

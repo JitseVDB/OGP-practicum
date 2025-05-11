@@ -275,7 +275,7 @@ public abstract class Equipment {
      *          | result == (value > 0 && value <= maximumValue)
      */
     public boolean canHaveAsValue(int value) {
-        return value > 0 && value <= getMaximumValue();
+        return value >= 0 && value <= getMaximumValue();
     }
 
     /**
@@ -307,42 +307,6 @@ public abstract class Equipment {
     @Raw @Basic
     public Entity getOwner() {
         return owner;
-    }
-
-    /**
-     * Sets the owner of this piece of equipment.
-     *
-     * @param   owner
-     *          The entity that will own this equipment, or null if the item doesn't have an owner.
-     */
-    @Raw @Basic
-    public void setOwner(Entity owner) {
-        // Remember the previous owner
-        Entity previousOwner = getOwner();
-
-        // First, set up / break down the relationship from this side:
-        this.owner = owner;
-
-        // Then, break down the old relationship from the other side, if it existed
-        if (previousOwner != null) {
-            try{
-                previousOwner.removeAsItem(this); // [!] implementatie in Entity
-                // the prime object is now in a raw state!
-            }catch(IllegalArgumentException e) {
-                // Should never occur!
-                assert false;
-            }
-        }
-
-        // Finally, set up the new relationship from the other side, if needed
-        if (owner != null) {
-            try{
-                owner.addAsItem(this); // [!] implementatie in Entity
-            }catch(IllegalArgumentException e) {
-                // Should never occur!
-                assert false;
-            }
-        }
     }
 
     /**********************************************************
@@ -417,7 +381,7 @@ public abstract class Equipment {
     protected void setBackpack(Backpack backpack)
             throws IllegalArgumentException {
         if (backpack != null && !backpack.canHaveAsItem(this))
-            throw new IllegalArgumentException("This item is not allowed by the given parent directory!");
+            throw new IllegalArgumentException("This item is not allowed by the given parent backpack!");
 
         // Remember the old parent directory
         Backpack oldBackpack = getBackpack();
