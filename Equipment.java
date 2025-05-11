@@ -76,7 +76,7 @@ public abstract class Equipment {
     /**
      * Variable referencing the weight of this piece of equipment.
      */
-    private final int weight;
+    final int weight;
 
     /**
      * Returns the weight of this piece of equipment.
@@ -111,7 +111,7 @@ public abstract class Equipment {
     /**
      * Variable referencing a static set containing all the identification numbers
      */
-    private static final Map<Class<?>, Set<Long>> equipmentByType = new HashMap<>();
+    static final Map<Class<?>, Set<Long>> equipmentByType = new HashMap<>();
 
     /**
      * Returns the identification number of this piece of equipment.
@@ -143,7 +143,7 @@ public abstract class Equipment {
      * @post    The size of the set of IDs for the specified equipment type will increase by 1 after adding the new ID.
      *          | (equipmentByType.get(equipmentType).size() == old(equipmentByType.get(equipmentType).size()) + 1)
      */
-    public static void addIdentification(Class<?> equipmentType, long identification) {
+    private static void addIdentification(Class<?> equipmentType, long identification) {
         // Get the existing set of ID's for the given type of equipment
         Set<Long> existingIDs = equipmentByType.get(equipmentType);
 
@@ -213,13 +213,13 @@ public abstract class Equipment {
      * @return  A non-negative and unique identification number that satisfies the conditions defined by canHaveAsIdentification.
      *          | result >= 0 && canHaveAsIdentification(this.getClass(), result)
      *
-     * @post    The returned identification number is guaranteed to be unique among all equipment of the same type.
+     * @post    The returned identification number is guaranteed to be unique among all equipment of the same type and positive.
      *          | canHaveAsIdentification(this.getClass(), result)
      *
      * @note    The identification number is not automatically added to the registry; this must be done separately
      *          (via addIdentification()).
      */
-    protected long generateIdentification() {
+    public long generateIdentification() {
         Random random = new Random();
         long possibleID = Math.abs(random.nextLong());
 
@@ -241,9 +241,12 @@ public abstract class Equipment {
     final int baseValue;
 
     /**
-     * Variable referencing the maximum value of a piece of equipment, in dukaten.
+     * Returns the maximum value of a piece of equipment.
      */
-    final int maximumValue = 1000;
+    @Basic
+    public int getMaximumValue() {
+        return Integer.MAX_VALUE;
+    }
 
     /**
      * Returns the base value of this piece of equipment.
@@ -251,14 +254,6 @@ public abstract class Equipment {
     @Raw @Basic
     public int getBaseValue() {
         return baseValue;
-    }
-
-    /**
-     * Returns the maximum value of a piece of equipment
-     */
-    @Basic @Immutable
-    public int getMaximumValue() {
-        return maximumValue;
     }
 
     /**
@@ -279,45 +274,21 @@ public abstract class Equipment {
      *          exceed the maximum allowed value dukaten.
      *          | result == (value > 0 && value <= maximumValue)
      */
-    protected boolean canHaveAsValue(int value) {
-        return value > 0 && value <= maximumValue;
+    public boolean canHaveAsValue(int value) {
+        return value > 0 && value <= getMaximumValue();
     }
 
     /**
      * Calculate the current value of this piece of equipment.
      *
-     * @return  The calculated current value, guaranteed to be positive and at most 1000.
-     *          | result > 0 && result <= 1000
+     * @return  the current value in dukaten (always positive and less than the maximum value)
+     *          | result > 0 && result <= maximumValue
+     *
+     * @note    We can say here that the result will be positive,
+     * 	        there's not much more known at this level.
+     * 	        (It is not really necessary to say this here.)
      */
     protected abstract int calculateCurrentValue();
-
-    /**********************************************************
-     * Backpack -> verder uitwerken later
-     **********************************************************/
-
-    /**
-     * Variable referencing the backpack (if any) in which this equipment is stored.
-     */
-    private Backpack backpack = null;
-
-    /**
-     * Returns the backpack in which this equipment is stored.
-     */
-    @Raw @Basic
-    public Backpack getBackpack() {
-        return backpack;
-    }
-
-    /**
-     * Set the backpack in which this equipment is stored.
-     *
-     * @param   backpack
-     *          The new backpack to set, or null if the equipment is not stored.
-     */
-    @Raw @Basic
-    public void setBackpack(Backpack backpack) {
-        this.backpack = backpack;
-    }
 
     /**********************************************************
      * Owner -> verder uitwerken later
@@ -325,11 +296,13 @@ public abstract class Equipment {
 
     /**
      * Variable referencing the entity (if any) that owns this piece of equipment.
+     *
+     * @note 	This class is the controlling class for the bidirectional relationship.
      */
     private Entity owner = null;
 
     /**
-     * Returns the entity that currently owns this piece of equipment.
+     * Return the owner of this piece of equipment (if any).
      */
     @Raw @Basic
     public Entity getOwner() {
@@ -344,7 +317,133 @@ public abstract class Equipment {
      */
     @Raw @Basic
     public void setOwner(Entity owner) {
+        // Remember the previous owner
+        Entity previousOwner = getOwner();
+
+        // First, set up / break down the relationship from this side:
         this.owner = owner;
+
+        // Then, break down the old relationship from the other side, if it existed
+        if (previousOwner != null) {
+            try{
+                previousOwner.removeAsItem(this); // [!] implementatie in Entity
+                // the prime object is now in a raw state!
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
+
+        // Finally, set up the new relationship from the other side, if needed
+        if (owner != null) {
+            try{
+                owner.addAsItem(this); // [!] implementatie in Entity
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
     }
 
+    /**********************************************************
+     * Backpack
+     **********************************************************/
+
+    /**
+     * Variable referencing the backpack (if any) to which this
+     * equipment belongs. (Default = null)
+     *
+     * @note 	This class is the controlling class for the bidirectional relationship.
+     */
+    private Backpack backpack = null;
+
+    /**
+     * Check whether the bidirectional relationship between this disk item and its parent directory is consistent.
+     *
+     * @return  True if the backpack has registered this item in its contents,
+     *          false otherwise.
+     *          | result == (getParentDirectory().hasAsItem(this))
+     *
+     * @note    This checker ensures that the parent directory has this item in its contents, maintaining the consistency
+     *          of the bidirectional relationship between the item and its parent directory.
+     */
+    @Raw
+    public boolean hasProperBackpack() {
+        return getBackpack().hasAsItem(this);
+    }
+
+    /**
+     * Returns the backpack in which this equipment is stored (if any).
+     */
+    @Raw @Basic
+    public Backpack getBackpack() {
+        return backpack;
+    }
+
+    /**
+     * Set the backpack in which this item is stored to the given backpack.
+     * This setter maintains the bidirectional relationship in both directions
+     * and ensures that invariants on both ends are satisfied.
+     *
+     * @param   backpack
+     *          The new backpack in which this item is stored.
+     *
+     * @post    The backpack of this item is set to the given
+     *          backpack.
+     *          | new.getBackpack() == backpack
+     *
+     * @effect	If the given backpack is different from the current backpack, this item is
+     *          removed from the current backpack.
+     * 			| if (getBackpack() != backpack)
+     * 			| then getBackpack().removeItem(this)
+     *
+     * @effect	If the given backpack is effective and not yet registered as
+     * 			the current backpack of this item, this item is added to the backpack.
+     * 			| if (backpack != null && getBackpack() != backpack)
+     * 			| then backpack.addItem(this)
+     *
+     * @throws  IllegalArgumentException
+     *          The backpack is effective, but cannot have this item in its contents.
+     *          | (backpack != null) && !backpack.canHaveAsItem(this)
+     *
+     * @note	The setter is only responsible to satisfy the invariants w.r.t. the bidirectional relationship.
+     * 			It ensures both the consistency of the relationship and
+     * 			the restrictions on the actual referenced parent.
+     *
+     * @note	The exception clauses that come in through the effects are all
+     * 			cancelled out by the throws clauses here.
+     */
+    @Raw @Model
+    protected void setBackpack(Backpack backpack)
+            throws IllegalArgumentException {
+        if (backpack != null && !backpack.canHaveAsItem(this))
+            throw new IllegalArgumentException("This item is not allowed by the given parent directory!");
+
+        // Remember the old parent directory
+        Backpack oldBackpack = getBackpack();
+
+        // First, set up / break down the relationship from this side:
+        this.backpack = backpack;
+
+        // Then, break down the old relationship from the other side, if it existed
+        if (oldBackpack != null) {
+            try{
+                oldBackpack.removeItem(this);
+                // the prime object is now in a raw state!
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
+
+        // Finally, set up the new relationship from the other side, if needed
+        if (backpack != null) {
+            try{
+                backpack.addItem(this);
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
+    }
 }

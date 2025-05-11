@@ -166,9 +166,12 @@ public class Weapon extends Equipment {
      **********************************************************/
 
     /**
-     * Variable referencing the maximum value of a weapon, in dukaten.
+     * Returns the maximum value of a piece of equipment.
      */
-    protected int maximumValue = 200;
+    @Basic
+    public int getMaximumValue() {
+        return 200;
+    }
 
     /**
      * Variable referencing the value per damage unit for a weapon.
@@ -193,4 +196,6 @@ public class Weapon extends Equipment {
         return damage * valuePerDamageUnit;
     }
 }
+
+
 
