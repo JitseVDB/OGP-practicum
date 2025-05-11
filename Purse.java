@@ -26,20 +26,17 @@ public class Purse extends StorageItem {
      * @param   weight
      *          The weight of the purse.
      *
-     * @param   baseValue
-     *          The base value of the purse, in dukaten.
-     *
      * @param   capacity
      *          The maximal amount of dukaten the purse can carry.
      *
      * @effect  The purse is initialized as a storage item.
      *          (weight, base value are set and an identification number is generated and assigned)
-     *          | super(weight, baseValue, capacity)
+     *          | super(weight, 0, capacity)
      *
      * @note    The owner of the purse is initialized to null.
      */
-    public Purse(int weight, int baseValue, int capacity) {
-        super(weight, baseValue, capacity);
+    public Purse(int weight, int capacity) {
+        super(weight, 0, capacity);
     }
 
     /**********************************************************
@@ -235,7 +232,7 @@ public class Purse extends StorageItem {
      */
     @Override
     protected int calculateCurrentValue() {
-        return getBaseValue() + getContents();
+        return getContents();
     }
 
     /**********************************************************
