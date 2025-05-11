@@ -111,7 +111,7 @@ public abstract class Equipment {
     /**
      * Variable referencing a static set containing all the identification numbers
      */
-    private static final Map<Class<?>, Set<Long>> equipmentByType = new HashMap<>();
+    static final Map<Class<?>, Set<Long>> equipmentByType = new HashMap<>();
 
     /**
      * Returns the identification number of this piece of equipment.
@@ -143,7 +143,7 @@ public abstract class Equipment {
      * @post    The size of the set of IDs for the specified equipment type will increase by 1 after adding the new ID.
      *          | (equipmentByType.get(equipmentType).size() == old(equipmentByType.get(equipmentType).size()) + 1)
      */
-    public static void addIdentification(Class<?> equipmentType, long identification) {
+    private static void addIdentification(Class<?> equipmentType, long identification) {
         // Get the existing set of ID's for the given type of equipment
         Set<Long> existingIDs = equipmentByType.get(equipmentType);
 
@@ -213,13 +213,13 @@ public abstract class Equipment {
      * @return  A non-negative and unique identification number that satisfies the conditions defined by canHaveAsIdentification.
      *          | result >= 0 && canHaveAsIdentification(this.getClass(), result)
      *
-     * @post    The returned identification number is guaranteed to be unique among all equipment of the same type.
+     * @post    The returned identification number is guaranteed to be unique among all equipment of the same type and positive.
      *          | canHaveAsIdentification(this.getClass(), result)
      *
      * @note    The identification number is not automatically added to the registry; this must be done separately
      *          (via addIdentification()).
      */
-    protected long generateIdentification() {
+    public long generateIdentification() {
         Random random = new Random();
         long possibleID = Math.abs(random.nextLong());
 
@@ -274,12 +274,19 @@ public abstract class Equipment {
      *          exceed the maximum allowed value dukaten.
      *          | result == (value > 0 && value <= maximumValue)
      */
-    protected boolean canHaveAsValue(int value) {
+    public boolean canHaveAsValue(int value) {
         return value > 0 && value <= getMaximumValue();
     }
 
     /**
      * Calculate the current value of this piece of equipment.
+     *
+     * @return  the current value in dukaten (always positive and less than the maximum value)
+     *          | result > 0 && result <= maximumValue
+     *
+     * @note    We can say here that the result will be positive,
+     * 	        there's not much more known at this level.
+     * 	        (It is not really necessary to say this here.)
      */
     protected abstract int calculateCurrentValue();
 
@@ -361,7 +368,7 @@ public abstract class Equipment {
      *          of the bidirectional relationship between the item and its parent directory.
      */
     @Raw
-    public boolean hasProperParentDirectory() {
+    public boolean hasProperBackpack() {
         return getBackpack().hasAsItem(this);
     }
 
