@@ -13,19 +13,7 @@ import org.junit.jupiter.api.Test;
 public class WeaponTest {
 
     // WEAPONS
-    private static Weapon weapon_A, weapon_B, weapon_C;
-
-    // ARMOR
-    private static Armor armor_A;
-
-    // PURSE
-    private static Purse purse_A;
-
-    // BACKPACK
-    private static Backpack backpack_A, backpack_B;
-
-    // TESTING EQUIPMENT
-    private Equipment equipment;
+    private static Weapon weapon_A;
 
     @BeforeEach
     public void setUpEquipment() {

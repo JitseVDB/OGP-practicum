@@ -36,6 +36,9 @@ public class Armor extends Equipment {
      *          (weight, base value are set and an identification number is generated and assigned)
      *          | super(weight, baseValue)
      *
+     * @post    The type of armor is set to the given type.
+     *          | new.GetType = type
+     *
      * @post    The maximal protection is set to the given maximal protection.
      *          | new.getMaximalProtection() == maximalProtection
      *
@@ -71,7 +74,7 @@ public class Armor extends Equipment {
     @Override
     public boolean canHaveAsIdentification(Class<?> equipmentType, long identification) {
         return super.canHaveAsIdentification(equipmentType, identification)
-                // The identification number must be divisible by 2 and 3.
+                // The identification number must be a prime number.
                 && isPrime(identification);
     }
 
@@ -82,7 +85,7 @@ public class Armor extends Equipment {
      *
      * @return  True if the number is prime, false otherwise.
      */
-    public static boolean isPrime(long number) {
+    public boolean isPrime(long number) {
         // Numbers less than or equal to 1 are not prime
         if (number <= 1) {
             return false;
@@ -201,7 +204,8 @@ public class Armor extends Equipment {
      * @post    The given damage is registered as the damage of this piece of armor.
      *          | new.getDamage() == damage
      */
-    public void setCurrentProtection(int currentProtection) {
+    public void setCurrentProtection(int currentProtection)
+            throws IllegalArgumentException {
         if (!isValidCurrentProtection(currentProtection))
             throw new IllegalArgumentException("The current protection must be between 0 and " + maximalProtection);
         this.currentProtection = currentProtection;
@@ -217,7 +221,7 @@ public class Armor extends Equipment {
      *          | result == (value >= 0 && value <= maximalProtection)
      */
     public boolean isValidCurrentProtection(int currentProtection) {
-        return maximalProtection >= 0 && currentProtection <= maximalProtection;
+        return currentProtection >= 0 && currentProtection <= maximalProtection;
     }
 
     /**********************************************************
