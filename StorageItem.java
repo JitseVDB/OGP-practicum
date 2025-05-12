@@ -38,8 +38,12 @@ public abstract class StorageItem extends Equipment{
      *
      * @note    The owner of the storage item is initialized to null.
      */
-    public StorageItem(int weight, int baseValue, int capacity) {
+    public StorageItem(int weight, int baseValue, int capacity)
+            throws IllegalArgumentException {
         super(weight, baseValue);
+
+        if (!isValidCapacity(capacity))
+            throw new IllegalArgumentException("Capacity cannot be negative.");
 
         this.capacity = capacity;
     }
