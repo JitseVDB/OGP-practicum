@@ -203,7 +203,7 @@ public class Purse extends StorageItem {
                 // VERDER UITWERKEN LATER : "Lege geldbeurs moet op de grond gegooid worden."
             } else {
                 other.removeFromContents(this.getFreeSpace());
-                destroy();
+                this.destroy();
             }
         }
     }
@@ -273,7 +273,7 @@ public class Purse extends StorageItem {
      *          | setCondition(Condition.DESTROYED)
      */
     @Model
-    private void destroy() {
+    void destroy() {
         empty();
         setCondition(Condition.DESTROYED);
     }
