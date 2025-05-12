@@ -268,7 +268,7 @@ public class Purse extends StorageItem {
      * Set this purse to destroyed and empty its contents.
      *
      * @effect  The contents of the purse is set to zero.
-     *          | new.getContents() == 0
+     *          | empty()
      *
      * @effect  The condition is set to DESTROYED
      *          | setCondition(Condition.DESTROYED)

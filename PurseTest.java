@@ -348,21 +348,33 @@ public class PurseTest {
     @Test
     public void testDestroy_GoodConditionWithContent() {
         purseWithCap1000AndContents250.destroy();
+        // 1. effect of empty
         assertEquals(0, purseWithCap1000AndContents250.getContents());
+        // 2. effect of setCondition
+        // 2.1 effect of setContents
+        // 2.1.1 postcondition on contents
         assertEquals(Condition.DESTROYED, purseWithCap1000AndContents250.getCondition());
     }
 
     @Test
     public void testDestroy_GoodConditionWithoutContent() {
         emptyPurse500.destroy();
+        // 1. effect of empty
         assertEquals(0, emptyPurse500.getContents());
+        // 2. effect of setCondition
+        // 2.1 effect of setContents
+        // 2.1.1 postcondition on contents
         assertEquals(Condition.DESTROYED, emptyPurse500.getCondition());
     }
 
     @Test
     public void testDestroy_DestroyedCondition() {
         destroyedPurse.destroy();
+        // 1. effect of empty
         assertEquals(0, destroyedPurse.getContents());
+        // 2. effect of setCondition
+        // 2.1 effect of setContents
+        // 2.1.1 postcondition on contents
         assertEquals(Condition.DESTROYED, destroyedPurse.getCondition());
     }
 
