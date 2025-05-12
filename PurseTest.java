@@ -312,4 +312,65 @@ public class PurseTest {
         fullPurse500.transferFrom(null);
         assertEquals(500, fullPurse500.getContents());
     }
+
+    /**
+     * WEIGHT
+     */
+
+    @Test
+    public void testGetTotalWeight_allCases() {
+        // 1. Empty purse
+        assertEquals(10, emptyPurse500.getTotalWeight());
+        // 2. Full purse
+        assertEquals(25010, fullPurse500.getTotalWeight());
+        // 3. Quarter full purse
+        assertEquals(12510, purseWithCap500AndContents250.getTotalWeight());
+    }
+
+    /**
+     * VALUE
+     */
+
+    @Test
+    public void testCalculateCurrentValue_allCases() {
+        // 1. Empty purse
+        assertEquals(0, emptyPurse500.getCurrentValue());
+        // 2. Full purse
+        assertEquals(500, fullPurse500.getCurrentValue());
+        // 3. Quarter full purse
+        assertEquals(250, purseWithCap1000AndContents250.getCurrentValue());
+    }
+
+    /**
+     * CONDITION
+     */
+
+    @Test
+    public void testDestroy_GoodConditionWithContent() {
+        purseWithCap1000AndContents250.destroy();
+        assertEquals(0, purseWithCap1000AndContents250.getContents());
+        assertEquals(Condition.DESTROYED, purseWithCap1000AndContents250.getCondition());
+    }
+
+    @Test
+    public void testDestroy_GoodConditionWithoutContent() {
+        emptyPurse500.destroy();
+        assertEquals(0, emptyPurse500.getContents());
+        assertEquals(Condition.DESTROYED, emptyPurse500.getCondition());
+    }
+
+    @Test
+    public void testDestroy_DestroyedCondition() {
+        destroyedPurse.destroy();
+        assertEquals(0, destroyedPurse.getContents());
+        assertEquals(Condition.DESTROYED, destroyedPurse.getCondition());
+    }
+
+    @Test
+    public void testIsDestroyed_allCases() {
+        assertTrue(destroyedPurse.isDestroyed());
+        assertFalse(fullPurse500.isDestroyed());
+
+    }
+
 }

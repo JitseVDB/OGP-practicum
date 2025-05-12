@@ -83,5 +83,4 @@ public class StorageItemTest {
         assertFalse(backpack_A.isValidCapacity(-10));
     }
 
-
 }

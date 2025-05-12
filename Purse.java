@@ -227,8 +227,9 @@ public class Purse extends StorageItem {
     /**
      * Calculate the current value of this purse.
      *
-     * @return  The calculated current value of the purse, by adding the value of the purse and its contents.
-     *          | result == getBaseValue() + getContents()
+     * @return  The calculated current value of the purse, by adding the value of its contents.
+     *          Since the base value of the purse itself is 0.
+     *          | result == getContents()
      */
     @Override
     protected int calculateCurrentValue() {
