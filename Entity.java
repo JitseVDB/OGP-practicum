@@ -253,4 +253,183 @@ public abstract class Entity {
     }
 
     public abstract void initializeAnchorPoints();
+
+    /**********************************************************
+     * Equipment
+     **********************************************************/
+
+    /**
+     * Add the given item to the anchor points registered to this entity.
+     *
+     * @param   item
+     *          The equipment to be added.
+     *
+     * @effect  The equipment is added to available anchor point.
+     *        | addToAnchorPoint(item)
+     *
+     * @throws  IllegalArgumentException
+     *          The item is already stored in this entity.
+     *        | hasAsItem(item)
+     * @throws  IllegalArgumentException
+     *          The item cannot be added to this entity (illegal equipment).
+     *        | !canHaveAsItem(item)
+     * @throws  IllegalStateException
+     *          The reference from the item to this entity has not yet been set.
+     *        | (item != null) && !item.getOwner() == this
+     *
+     * @note    This is an auxiliary method that completes a bidirectional relationship.
+     *          It should only be called from within the controlling class.
+     *          At that point, the other direction of the relationship is already set up,
+     *          so the given item is in a raw state.
+     *          All methods called with this raw item thus require a raw annotation of their parameter.
+     * @note    The throws clauses of the effects are cancelled by the throws clauses of this method.
+     */
+    @Model
+    public void addAsItem(Equipment item) throws IllegalArgumentException, IllegalStateException {
+        if (hasAsItem(item))
+            throw new IllegalArgumentException("This item is already attached.");
+
+        if (!canHaveAsItem(item))
+            throw new IllegalArgumentException("This item is not allowed.");
+
+        if (item != null && item.getOwner() != this)
+            throw new IllegalStateException("Item does not reference this entity as its owner.");
+
+        try {
+            addToAnchorPoint(item);
+        } catch (IllegalArgumentException e) {
+            // Should not occur
+            assert false;
+        }
+    }
+
+    /**
+     * Check whether the given item is assigned to this entity.
+     *
+     * @param item
+     *        The equipment to be checked.
+     *
+     * @return True if and only if the given item is attached to one of this entity's anchor points.
+     *         False otherwise
+     *       | result ==
+     *       |   for some I in 1..getNbAnchorPoints():
+     *       |     getAnchorPointAt(i).getItem() == item
+     */
+    @Raw
+    public boolean hasAsItem(@Raw Equipment item) {
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            if (getAnchorPointAt(i).getItem() == item)
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Return the number of anchor points of this entity.
+     */
+    @Basic @Raw
+    public int getNbAnchorPoints() {
+        return anchorPoints.size();
+    }
+
+    /**
+     * Return the anchor point at the given position in this entity.
+     *
+     * @param index
+     *        The index of the anchor point to be returned.
+     *
+     * @throws IllegalArgumentException
+     *         If the given index is not strictly positive or exceeds the number of anchor points
+     *         registered to this entity.
+     *       | (index < 1) || (index > getNbAnchorPoints())
+     *
+     * @note	We catch the exception that could be thrown when accessing the internal representation
+     * 			and formulate a better suited one for the user of this class.
+     * 			This adds to the encapsulation of the internal representation of this class. *
+     */
+    @Basic @Raw
+    public AnchorPoint getAnchorPointAt(int index) throws IndexOutOfBoundsException {
+        try {
+            return anchorPoints.get(index - 1);
+        } catch (IndexOutOfBoundsException e) {
+            //The exception e contains a message indicating that 'index-1' is out of bounds
+            //Here, we throw a new Exception with the right information
+            throw new IndexOutOfBoundsException("Index out of bounds: " + index);
+        }
+    }
+
+
+    public abstract boolean canHaveAsItem(Equipment item);
+
+    /**
+     * Add the given item to the first anchorpoint of this entity that accepts it.
+     *
+     * @param item
+     *        The equipment to add.
+     *
+     * @effect The item is added to the first valid anchor point.
+     *       | anchorpoint.setItem(item)
+     *
+     * @throws IllegalArgumentException
+     *         If no valid anchor point is found.
+     *       |    for I in 1..getNbAnchorPoints() :
+     * 	     | 	      (!canHaveAsItemAt(item, i))
+     */
+    public void addToAnchorPoint(Equipment item) throws IllegalArgumentException {
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            AnchorPoint anchorpoint = getAnchorPointAt(i);
+
+            if (anchorpoint.isEmpty() && canHaveAsItemAt(item, anchorpoint)) {
+                anchorpoint.setItem(item);
+                return;
+            }
+        }
+
+        throw new IllegalArgumentException("No valid anchor point available.");
+    }
+
+    public abstract boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorpoint);
+
+    /**
+     * Remove the given item from this entity.
+     *
+     * @param item
+     *        The equipment to remove.
+     *
+     * @effect The item is removed from the anchor point it was registered at.
+     *         | anchorpoint.setItem(null)
+     *
+     * @throws IllegalArgumentException
+     *        Entity does not have the given item.
+     *       | !hasAsItem(item)
+     * @throws IllegalStateException
+     *         The reference of the given (effective) item to its owner must already be broken down.
+     *       | (item != null) && item.getOwner() == this
+     *
+     * @note This is an auxiliary method used to break a bidirectional relationship.
+     *       It should only be called from within the controlling class.
+     *       At that point, the reference from the item to this entity must already be cleared.
+     */
+    @Model
+    @Raw
+    protected void removeAsItem(@Raw Equipment item) throws IllegalArgumentException, IllegalStateException {
+
+        if (!hasAsItem(item))
+            throw new IllegalArgumentException("This entity does not have the item.");
+
+        if (item != null && item.getOwner() == this)
+            throw new IllegalStateException("Item still references this entity as its owner.");
+
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            AnchorPoint anchorpoint = getAnchorPointAt(i);
+            if (anchorpoint.getItem() == item) {
+                anchorpoint.setItem(null);
+                return;
+
+    }
+
 }
+
+
+
+
