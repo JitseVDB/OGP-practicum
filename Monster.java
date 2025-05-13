@@ -5,7 +5,6 @@ import java.util.Random;
  *
  */
 public class Monster extends Entity {
-    private final double strength;
 
     /**
      * Variable that indicates whether the hero is currently fighting. He is initialized as not fighting
@@ -29,7 +28,6 @@ public class Monster extends Entity {
      */
     public Monster(String name, int maxHitPoints, double strength) {
         super(name, maxHitPoints, 10);
-        this.strength = strength;
 
         initializeAnchorPoints();
     }
