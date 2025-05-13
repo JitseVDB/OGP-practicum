@@ -4,11 +4,8 @@ import be.kuleuven.cs.som.annotate.*;
  * A class of purses, involving contents.
  *
  * @invar	The contents of a purse is a positive number, less than or equal to the capacity of the purse.
+ *          Or 0 if the purse is destroyed.
  * 			| canHaveAsContents(getContents())
- *
- * @invar   If this purse is destroyed, its contents must be 0.
- *          | if (getCondition() == Condition.DESTROYED)
- *          |       then this.getContents == 0
  *
  *
  * @author  Jitse Vandenberghe
@@ -98,12 +95,19 @@ public class Purse extends StorageItem {
      *
      * @param	contents
      * 			The contents to check.
-     * @return	True if the given contents is a positive integer less than or equal to the capacity of this purse.
-     * 			| result == (contents >= 0 && contents <= this.getCapacity())
+     *
+     * @return	True if the purse is destroyed and the given content is 0 or if the purse is not destroyed,
+     *          and the contents is between 0 and the capacity, false otherwise.
+     *          | if (isDestroyed())
+     *          |		then results == (contents == 0)
+     *          | else results == (contents >= 0 && contents <= getCapacity())
      *
      */
     @Raw
     public boolean canHaveAsContents(int contents) {
+        if (isDestroyed()) {
+            return contents == 0;
+        }
         return contents >= 0 && contents <= getCapacity();
     }
 

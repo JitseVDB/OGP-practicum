@@ -107,6 +107,10 @@ public class PurseTest {
         assertTrue(fullPurse500.canHaveAsContents(250));
         assertTrue(fullPurse500.canHaveAsContents(500));
         assertFalse(fullPurse500.canHaveAsContents(5000));
+
+        assertTrue(destroyedPurse.canHaveAsContents(0));
+        assertFalse(destroyedPurse.canHaveAsContents(-5));
+        assertFalse(destroyedPurse.canHaveAsContents(5));
     }
 
     @Test
