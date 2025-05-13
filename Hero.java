@@ -353,7 +353,7 @@ public class Hero {
     public Integer getMaxHitPoints() {
         return maxHitPoints;
     }
-
+    
     /**
      * Return the maximum of hitpoints of this hero
      *
@@ -363,4 +363,96 @@ public class Hero {
     public void setMaxHitPoints(Integer maxHitPoints) {
         this.maxHitPoints = maxHitPoints;
     }
+
+    /**********************************************************
+     * Equipment
+     **********************************************************/
+
+    /**
+     * Check whether this hero can have the given item as one of its items.
+     *
+     * @param item
+     *        The item to be checked.
+     *
+     * @return False if the item is null or if the item is invalid for this hero.
+     *       | if (item == null) then result == false
+     *       | else if (item instanceof Armor) then result == (getNbArmors() < 2)
+     *       | else if (item instanceof Purse) then result == (hasPurse())
+     *       | else result == true
+     *
+     * @note	This checker does not verify the consistency of the bidirectional relationship,
+     * 			nor the ordering in this directory.
+     * @note	This checker can be used to verify existing items in this directory, as well as to verify whether
+     * 			a new item can be added to this directory.
+     */
+    @Raw @Override
+    public boolean canHaveAsItem(@Raw Equipment item) {
+        if (item == null)
+            return false;
+
+        // Maximum 2 harnassen
+        if (item instanceof Armor && getNbArmors() >= 2)
+            return false;
+
+        // Maximum 1 geldbeurs
+        if (item instanceof Purse && hasPurse())
+            return false;
+
+        return true;
+    }
+
+    /**
+     * Return the number of armors held by this hero.
+     */
+    public int getNbArmors() {
+        int amount = 0;
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            Equipment item = getAnchorPointAt(i).getItem();
+            if (item instanceof Armor)
+                amount++;
+        }
+        return amount;
+    }
+
+    /**
+     * Check if this hero has a purse.
+     *
+     * @return True if hero holds a purse.
+     *       | result ==
+     *       |   for some I in 1..getNbAnchorPoints() :
+     *       |       getAnchorPointAt(i).getItem() instanceof Purse
+     */
+    public boolean hasPurse() {
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            Equipment item = getAnchorPointAt(i).getItem();
+            if (item instanceof Purse)
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check whether the given item can be added in the given anchor point.
+     *
+     * @param item
+     *        The equipment to add.
+     * @param anchorpoint
+     *        The anchor point to check.
+     *
+     * @return True if and only if the item is allowed on the given anchor point.
+     *       | if point.getName().equals("belt") then result == (item instanceof Purse)
+     *       | else result == true
+     *
+     * @note We have already checked if item != null, anchorpoint.isEmpty(), canHaveAsItem() and !hasAsItem().
+     */
+    @Override
+    public boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorpoint) {
+        String name = anchorpoint.getName();
+
+        if (name.equals("belt"))
+            return item instanceof Purse;
+
+        return true;
+    }
+
 }
