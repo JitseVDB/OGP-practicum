@@ -17,7 +17,7 @@ public class WeaponTest {
 
     @BeforeEach
     public void setUpEquipment() {
-        weapon_A = new Weapon(50, 100, 91);
+        weapon_A = new Weapon(50,  91);
     }
 
     /**
@@ -27,13 +27,13 @@ public class WeaponTest {
     @Test
     void testConstructor_ValidArguments_ShouldInitializeFields() {
         int oldSizeIdentificationOfWeaponB4B = Equipment.equipmentByType.get(Weapon.class).size();
-        Weapon weapon_B = new Weapon(50, 30, 70);
+        Weapon weapon_B = new Weapon(50, 70);
 
         // 1. effect of super(weight, baseValue)
         // 1.1. postcondition on weight
         assertEquals(50, weapon_A.getWeight());
         // 1.2. postcondition on base value
-        assertEquals(100, weapon_A.getBaseValue());
+        assertEquals(0, weapon_A.getBaseValue());
         // 1.3 Postcondition on identification
         // 1.3.1 Postcondition on the uniqueness of the ID and on the fact that the ID is positive
         // Check that the assigned identification is strictly positive and divisible by 2 and 3
@@ -56,25 +56,17 @@ public class WeaponTest {
 
     @Test
     void testConstructor_InvalidWeight_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> new Weapon(-100, 100, 91));
-    }
-
-    @Test
-    void testConstructor_InvalidBaseValue_ShouldThrowException() {
-        // Test upper limit
-        assertThrows(IllegalArgumentException.class, () -> new Weapon(50, 201, 91));
-        // Test lower limit
-        assertThrows(IllegalArgumentException.class, () -> new Weapon(50, -10, 91));
+        assertThrows(IllegalArgumentException.class, () -> new Weapon(-100,  91));
     }
 
     @Test
     void testConstructor_InvalidDamage_ShouldThrowException() {
         // Test upper limit
-        assertThrows(IllegalArgumentException.class, () -> new Weapon(50, 100, Weapon.getMaximumDamage()+1));
+        assertThrows(IllegalArgumentException.class, () -> new Weapon(50, Weapon.getMaximumDamage()+1));
         // Test lower limit
-        assertThrows(IllegalArgumentException.class, () -> new Weapon(50, 100, 0));
+        assertThrows(IllegalArgumentException.class, () -> new Weapon(50, 0));
         // Test divisble by 7
-        assertThrows(IllegalArgumentException.class, () -> new Weapon(50, 100, 96));
+        assertThrows(IllegalArgumentException.class, () -> new Weapon(50, 96));
     }
 
     /**

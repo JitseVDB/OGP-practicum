@@ -40,8 +40,8 @@ public class Weapon extends Equipment {
      *          If the given damage is invalid.
      *          |!isValidDamge(damage)
      */
-    public Weapon(int weight, int baseValue, int damage) {
-        super(weight, baseValue);
+    public Weapon(int weight, int damage) {
+        super(weight, 0);
 
         if (!isValidDamage(damage))
             throw new IllegalArgumentException("Damage cannot be negative, must be below the maximum damage and must be a multiple of 7.");

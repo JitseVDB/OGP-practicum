@@ -30,9 +30,9 @@ public class EquipmentTest {
 
     @BeforeEach
     public void setUpEquipment() {
-        weapon_A = new Weapon(50, 30, 70);
-        weapon_B = new Weapon(150, 28, 63);
-        weapon_C = new Weapon(140, 28, 63);
+        weapon_A = new Weapon(50, 70);
+        weapon_B = new Weapon(150, 63);
+        weapon_C = new Weapon(140, 63);
         armor_A = new Armor(75, 100, ArmorType.BRONZE);
         purse_A = new Purse(50, 100);
         backpack_A = new Backpack(10, 50, 150);
@@ -52,13 +52,13 @@ public class EquipmentTest {
     @Test
     void testConstructor_ValidArguments_ShouldInitializeFields() {
         int oldSizeEquipmentByType = Equipment.equipmentByType.get(weapon_A.getClass()).size();
-        Equipment equipment_B = new Weapon(50, 30, 70);
+        Equipment equipment_B = new Weapon(50, 70);
 
         // 1. postcondition on weight
         assertEquals(50, weapon_A.getWeight());
 
         // 2. postcondition on base value
-        assertEquals(30, weapon_A.getBaseValue());
+        assertEquals(0, weapon_A.getBaseValue());
 
         // 3. Postcondition on identification
         // 3.1 Postcondition on the uniqueness of the ID and on the fact that the ID is positive

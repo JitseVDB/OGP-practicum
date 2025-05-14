@@ -17,7 +17,7 @@ public class ArmorTest {
         return Math.multiplyExact(x, x);
     }
 
-    // WEAPONS
+    // ARMOR
     private static Armor armor_A, armor_B;
 
     @BeforeEach
@@ -33,7 +33,7 @@ public class ArmorTest {
     @Test
     void testConstructor_ValidArguments_ShouldInitializeFields() {
         int oldSizeIdentificationOfArmorB4C = Equipment.equipmentByType.get(Armor.class).size();
-        Armor weapon_C = new Armor(35, 75, ArmorType.TIN);
+        Armor armor_C = new Armor(35, 75, ArmorType.TIN);
 
         // 1. effect of super(weight, baseValue)
         // 1.1. postcondition on weight

@@ -22,15 +22,15 @@ public class BackpackTest {
 
     @BeforeEach
     public void setUpEquipment() {
-        weapon40 = new Weapon(40, 30, 70);
-        weapon115 = new Weapon(115, 30, 70);
-        weapon240A = new Weapon(240, 30, 70);
-        weapon240B = new Weapon(240, 30, 70);
-        weapon490 = new Weapon(490, 30, 70);
-        weapon790 = new Weapon(790, 30, 70);
-        weapon990 = new Weapon(990, 30, 70);
-        weapon10A = new Weapon(10, 30, 70);
-        weapon10B = new Weapon(10, 30, 70);
+        weapon40 = new Weapon(40, 70);
+        weapon115 = new Weapon(115, 70);
+        weapon240A = new Weapon(240, 70);
+        weapon240B = new Weapon(240, 70);
+        weapon490 = new Weapon(490, 70);
+        weapon790 = new Weapon(790, 70);
+        weapon990 = new Weapon(990, 70);
+        weapon10A = new Weapon(10, 70);
+        weapon10B = new Weapon(10, 70);
 
         backpack_A = new Backpack(15, 250, 500);
         fullBackpack500 = new Backpack(10,250, 500);
@@ -108,7 +108,7 @@ public class BackpackTest {
      */
 
     @Test
-    public void testCanHaveAsItem_AllCases() {
+    public void testCanHaveAsItem_allCases() {
         // 1. null items
         assertFalse(backpack_A.canHaveAsItem(null));
         // 2. weight capacity
@@ -116,6 +116,63 @@ public class BackpackTest {
         assertFalse(backpackWithCap1000AndTotalWeight250.canHaveAsItem(weapon790));
         // 2.2 below capacity
         assertTrue(backpackWithCap500AndTotalWeight250.canHaveAsItem(weapon115));
+    }
+
+    @Test
+    public void testGetNbItemsWithID_allCases() {
+        assertEquals(1, fullBackpack500.getNbItemsWithID(weapon490.getIdentification()));
+        assertEquals(0, fullBackpack500.getNbItemsWithID(weapon990.getIdentification()));
+        assertEquals(0, fullBackpack500.getNbItemsWithID(weapon490.generateIdentification()));
+        assertEquals(1, backpack2Items.getNbItemsWithID(weapon10A.getIdentification()));
+        assertEquals(1, backpack2Items.getNbItemsWithID(weapon10B.getIdentification()));
+        assertEquals(0, backpack2Items.getNbItemsWithID(weapon790.getIdentification()));
+    }
+
+    @Test
+    public void testGetItemAtWithID_ValidIDAndIndex() {
+        Backpack testBackpack = new Backpack(10, 100, 1000);
+        Weapon weapon1 = new Weapon(100, 21);
+        Weapon weapon2 = new Weapon(100, 21); // same ID
+
+        weapon1.setBackpack(testBackpack);
+        weapon2.setBackpack(testBackpack);
+
+        long id1 = weapon1.getIdentification();
+        long id2 = weapon2.getIdentification();
+
+        assertEquals(weapon1, testBackpack.getItemAtWithID(id1, 1));
+        assertEquals(weapon2, testBackpack.getItemAtWithID(id2, 1));
+    }
+
+    @Test
+    public void testGetItemAtWithID_UnknownIdentification_ThrowsIllegalStateException() {
+        long unknownID = 100;
+
+        assertThrows(IllegalStateException.class, () -> {
+            emptyBackpack300.getItemAtWithID(unknownID, 1);
+        });
+    }
+
+    @Test
+    public void testGetItemAtWithID_IndexLessThanOne_ThrowsIndexOutOfBoundsException() {
+        weapon115.setBackpack(emptyBackpack500);
+
+        long id = weapon115.getIdentification();
+
+        assertThrows(IndexOutOfBoundsException.class, () -> {
+            emptyBackpack500.getItemAtWithID(id, 0);
+        });
+    }
+
+    @Test
+    public void testGetItemAtWithID_IndexTooLarge_ThrowsIndexOutOfBoundsException() {
+        weapon240B.setBackpack(emptyBackpack300);
+
+        long id = weapon240B.getIdentification();
+
+        assertThrows(IndexOutOfBoundsException.class, () -> {
+            emptyBackpack300.getItemAtWithID(id, 2);
+        });
     }
 
     @Test
@@ -161,8 +218,8 @@ public class BackpackTest {
         // 1. Empty backpack
         assertEquals(250, emptyBackpack300.getCurrentValue());
         // 2. Full purse
-        assertEquals(280, fullBackpack500.getCurrentValue());
+        assertEquals(390, fullBackpack500.getCurrentValue());
         // 3. Purse with multiple items
-        assertEquals(310, backpack2Items.getCurrentValue());
+        assertEquals(530, backpack2Items.getCurrentValue());
     }
 }
