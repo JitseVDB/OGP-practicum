@@ -24,15 +24,21 @@ public class Monster extends Entity {
      **********************************************************/
 
     /**
-     * Creates a new monster with the given name, maximum hit points and strength.
-     * The monster's protection is fixed at 10 due to its natural armor.
+     * Initialize a new monster with the given name, maximum hitpoints, and strength.
      *
-     * @param name
-     *        The name of the monster (must be valid).
-     * @param maxHitPoints
-     *        The maximum number of hit points (must be positive).
-     * @param strength
-     *        The intrinsic strength of the monster.
+     * @param   name
+     *          The name of the monster.
+     * @param   maxHitPoints
+     *          The base value of the monster.
+     * @param   strength
+     *          The strength of the monster.
+     *
+     * @effect  The monster is initialized as an entity with the given
+     *          name, max hitpoints and protection.
+     *          | super(name, maxHitPoints, 10)
+     *
+     * @effect  The anchor points are initialized.
+     *          | initializeAnchorpoints();
      */
     public Monster(String name, int maxHitPoints, double strength) {
         super(name, maxHitPoints, 10);
@@ -62,6 +68,38 @@ public class Monster extends Entity {
         return (name != null && name.matches("[A-Za-z '’]+") && Character.isUpperCase(name.charAt(0)));
     }
 
+    /**********************************************************
+     * Anchors
+     **********************************************************/
+
+    /**
+     * Initializes a random number of anchor points for this monster.
+     *
+     * This method generates a random number between 0 (inclusive) and Integer.MAX_VALUE (exclusive),
+     * and adds that many anchor points to this monster. Each anchor point is initialized with null
+     * as its name.
+     *
+     * @effect  Each newly created anchor point is added to this monster using addAnchorPoint.
+     *          | for each i in 1..amount:
+     *          |   addAnchorPoint(new AnchorPoint(null))
+     *
+     * @post    The total number of anchor points for this monster will increase by the generated amount.
+     *          | getNbAnchorPoints() == amount
+     */
+    @Override
+    public void initializeAnchorPoints() {
+        Random random = new Random();
+        int amount = random.nextInt(Integer.MAX_VALUE);
+
+        for (int i = 1; i <= amount; i++) {
+            addAnchorPoint(new AnchorPoint(null));
+        }
+    }
+
+    /**********************************************************
+     * Damage
+     **********************************************************/
+
     /**
      * Applies damage to this monster.
      * The effective damage is reduced by the monster's protection factor.
@@ -81,24 +119,6 @@ public class Monster extends Entity {
         }
 
         removeHitPoints(getHitPoints() - newHitPoints);
-    }
-
-    /**********************************************************
-     * Anchors
-     **********************************************************/
-
-    /**
-     * Initializes a random number of anchor points between 1 and 5.
-     * Anchor points are named "point1", "point2", etc.
-     */
-    @Override
-    public void initializeAnchorPoints() {
-        Random random = new Random();
-        int amount = random.nextInt(5) + 1; // tussen 2 en 5 anchor points
-
-        for (int i = 1; i <= amount; i++) {
-            addAnchorPoint(new AnchorPoint("point" + i));
-        }
     }
 
     /**********************************************************
