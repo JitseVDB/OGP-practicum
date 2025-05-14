@@ -88,22 +88,18 @@ public class Backpack extends StorageItem {
      * @param   item
      *          The item to be checked.
      *
-     * @return 	If storing the item results in surpassing the weight capacity of the backpack, then false,
-     *          otherwise true.
-     * 			| result == (getTotalWeight() + item.getWeight() < getCapacity()
-     *
-     * @throws  IllegalArgumentException
-     *          If the item is null.
-     *          | item == null
+     * @return 	If storing the item results in surpassing the weight capacity of the backpack or the item is null,
+     *          then false, otherwise true.
+     * 			| result == ((getTotalWeight() + item.getWeight() < getCapacity()) && (item != null))
      */
     @Raw
-    public boolean canHaveAsItem(@Raw Equipment item) throws IllegalArgumentException {
+    public boolean canHaveAsItem(@Raw Equipment item) {
         // Check if the item is null, which would be an invalid input
         if (item == null) {
-            throw new IllegalArgumentException("Item cannot be null.");
+            return false;
         }
 
-        return getTotalWeight() + item.getWeight() < getCapacity();
+        return getTotalWeight() + item.getWeight() <= getCapacity();
     }
 
     /**

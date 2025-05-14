@@ -209,8 +209,5 @@ public class EquipmentTest {
     void testSetBackpack_InvalidBackpack_ShouldThrowException() {
         // 1. Adding item exceeding capacity
         assertThrows(IllegalArgumentException.class, () -> weapon_B.setBackpack(backpack_A));
-
-        // 2. Adding item equalling capacity
-        assertThrows(IllegalArgumentException.class, () -> weapon_C.setBackpack(backpack_A));
     }
 }

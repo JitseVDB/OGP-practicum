@@ -378,7 +378,7 @@ public abstract class Equipment {
      * 			cancelled out by the throws clauses here.
      */
     @Raw @Model
-    protected void setBackpack(Backpack backpack)
+    public void setBackpack(Backpack backpack)
             throws IllegalArgumentException {
         if (backpack != null && !backpack.canHaveAsItem(this))
             throw new IllegalArgumentException("This item is not allowed by the given parent backpack!");
