@@ -26,15 +26,12 @@ public class Weapon extends Equipment {
      * @param   weight
      *          The weight of the weapon.
      *
-     * @param   baseValue
-     *          The base value of the weapon, in dukaten.
-     *
      * @param   damage
      *          The damage this weapon can inflict.
      *
      * @effect  The weapon is initialized as a piece of equipment.
      *          (weight, base value are set and an identification number is generated and assigned)
-     *          | super(weight, baseValue)
+     *          | super(weight, 0)
      *
      * @effect  The new weapon has the given damage.
      *          | setDamage(damage);
@@ -134,6 +131,7 @@ public class Weapon extends Equipment {
      *
      * @pre     The given damage must be legal.
      *          | isValidDamage(damage)
+     *
      * @post    The given damage is registered as the damage of this weapon.
      *          | new.getDamage() == damage
      */
