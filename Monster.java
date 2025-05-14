@@ -1,8 +1,16 @@
 import java.util.Random;
+import be.kuleuven.cs.som.annotate.*;
 
 /**
  * A class representing monsters in the game
  *
+ * @invar	Each monster must have a properly spelled name.
+ * 			| canHaveAsName(getName())
+ *
+ * @author  Jitse Vandenberghe
+ * @author  Guillaume Vandemoortele
+ *
+ * @version 1.1
  */
 public class Monster extends Entity {
 
@@ -12,7 +20,7 @@ public class Monster extends Entity {
     private boolean isFighting;
 
     /**********************************************************
-     *                     Constructor
+     * Constructors
      **********************************************************/
 
     /**
@@ -33,35 +41,25 @@ public class Monster extends Entity {
     }
 
     /**********************************************************
-     *                        Name
+     * Name
      **********************************************************/
 
     /**
-     * Checks whether the given name is valid for a monster.
-     * A valid name must: be non-null and non-empty, starts with an uppercase letter
-     *                    and only contains letters, spaces, or apostrophes
-     * @param name
-     *        The name to validate.
-     * @return true if the name is valid, false otherwise.
+     * Check whether the given name is a legal name for a monster.
+     *
+     * @param  	name
+     *			The name to be checked
+     *
+     * @return	True if the given string is effective, not
+     * 			empty, consisting only of letters, spaces
+     * 			and apostrophes, and the name start
+     * 			with a capital letter; false otherwise.
+     * 			| result ==
+     * 			|	(name != null) && name.matches("[A-Za-z '’]+") && (Character.isUpperCase(name.charAt(0)))
      */
-    @Override
+    @Override @Raw
     public boolean canHaveAsName(String name) {
-        if (name == null || name.isEmpty()) {
-            return false;
-        }
-
-        if (!Character.isUpperCase(name.charAt(0))) {
-            return false;
-        }
-
-        for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-            if (!Character.isLetter(c) && c != ' ' && c != '\'') {
-                return false;
-            }
-        }
-
-        return true;
+        return (name != null && name.matches("[A-Za-z '’]+") && Character.isUpperCase(name.charAt(0)));
     }
 
     /**
@@ -86,7 +84,7 @@ public class Monster extends Entity {
     }
 
     /**********************************************************
-     *                     Anchors
+     * Anchors
      **********************************************************/
 
     /**
@@ -104,7 +102,7 @@ public class Monster extends Entity {
     }
 
     /**********************************************************
-     *                     Hitpoints
+     * Hitpoints
      **********************************************************/
 
     /**
