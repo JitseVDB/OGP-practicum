@@ -446,4 +446,140 @@ public abstract class Equipment {
             }
         }
     }
+
+    /**********************************************************
+     * Owner
+     **********************************************************/
+
+    @Raw @Basic
+    public void setOwner(Entity owner) {
+        // Remember the previous owner
+        Entity previousOwner = getOwner();
+
+        // First, set up / break down the relationship from this side:
+        this.owner = owner;
+
+        // Then, break down the old relationship from the other side, if it existed
+        if (previousOwner != null) {
+            try{
+                previousOwner.removeAsItem(this);
+                // the prime object is now in a raw state!
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
+
+        // Finally, set up the new relationship from the other side, if needed
+        if (owner != null) {
+            try{
+                owner.addAsItem(this);
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
+    }
+
+    /**********************************************************
+     * Backpack
+     **********************************************************/
+
+    /**
+     * Variable referencing the backpack (if any) to which this
+     * equipment belongs. (Default = null)
+     *
+     * @note 	This class is the controlling class for the bidirectional relationship.
+     */
+    private Backpack backpack = null;
+
+    /**
+     * Check whether the bidirectional relationship between this disk item and its parent directory is consistent.
+     *
+     * @return  True if the backpack has registered this item in its contents,
+     *          false otherwise.
+     *          | result == (getParentDirectory().hasAsItem(this))
+     *
+     * @note    This checker ensures that the parent directory has this item in its contents, maintaining the consistency
+     *          of the bidirectional relationship between the item and its parent directory.
+     */
+    @Raw
+    public boolean hasProperBackpack() {
+        return getBackpack().hasAsItem(this);
+    }
+
+    /**
+     * Returns the backpack in which this equipment is stored (if any).
+     */
+    @Raw @Basic
+    public Backpack getBackpack() {
+        return backpack;
+    }
+
+    /**
+     * Set the backpack in which this item is stored to the given backpack.
+     * This setter maintains the bidirectional relationship in both directions
+     * and ensures that invariants on both ends are satisfied.
+     *
+     * @param   backpack
+     *          The new backpack in which this item is stored.
+     *
+     * @post    The backpack of this item is set to the given
+     *          backpack.
+     *          | new.getBackpack() == backpack
+     *
+     * @effect	If the given backpack is different from the current backpack, this item is
+     *          removed from the current backpack.
+     * 			| if (getBackpack() != backpack)
+     * 			| then getBackpack().removeItem(this)
+     *
+     * @effect	If the given backpack is effective and not yet registered as
+     * 			the current backpack of this item, this item is added to the backpack.
+     * 			| if (backpack != null && getBackpack() != backpack)
+     * 			| then backpack.addItem(this)
+     *
+     * @throws  IllegalArgumentException
+     *          The backpack is effective, but cannot have this item in its contents.
+     *          | (backpack != null) && !backpack.canHaveAsItem(this)
+     *
+     * @note	The setter is only responsible to satisfy the invariants w.r.t. the bidirectional relationship.
+     * 			It ensures both the consistency of the relationship and
+     * 			the restrictions on the actual referenced parent.
+     *
+     * @note	The exception clauses that come in through the effects are all
+     * 			cancelled out by the throws clauses here.
+     */
+    @Raw @Model
+    public void setBackpack(Backpack backpack)
+            throws IllegalArgumentException {
+        if (backpack != null && !backpack.canHaveAsItem(this))
+            throw new IllegalArgumentException("This item is not allowed by the given parent directory!");
+
+        // Remember the old parent directory
+        Backpack oldBackpack = getBackpack();
+
+        // First, set up / break down the relationship from this side:
+        this.backpack = backpack;
+
+        // Then, break down the old relationship from the other side, if it existed
+        if (oldBackpack != null) {
+            try{
+                oldBackpack.removeItem(this);
+                // the prime object is now in a raw state!
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
+
+        // Finally, set up the new relationship from the other side, if needed
+        if (backpack != null) {
+            try{
+                backpack.addItem(this);
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
+        }
+    }
 }
