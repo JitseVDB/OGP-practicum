@@ -309,6 +309,12 @@ public abstract class Equipment {
         return owner;
     }
 
+    /**
+     * Sets the owner of this piece of equipment.
+     *
+     * @param   owner
+     *          The entity that will own this equipment, or null if the item doesn't have an owner.
+     */
     
     @Raw @Basic
     public void setOwner(Entity owner) {
