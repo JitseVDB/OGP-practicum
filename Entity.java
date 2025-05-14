@@ -285,7 +285,7 @@ public abstract class Entity {
      * @note    The throws clauses of the effects are cancelled by the throws clauses of this method.
      */
     @Model
-    public void addAsItem(Equipment item) throws IllegalArgumentException, IllegalStateException {
+    protected void addAsItem(Equipment item) throws IllegalArgumentException, IllegalStateException {
         if (hasAsItem(item))
             throw new IllegalArgumentException("This item is already attached.");
 
