@@ -426,9 +426,15 @@ public abstract class Entity {
                 anchorpoint.setItem(null);
                 return;
 
+            }
+
+        }
+
     }
 
 }
+
+
 
 
 
