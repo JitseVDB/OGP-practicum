@@ -78,7 +78,7 @@ public abstract class Entity {
         // Prime-correctie bij start, omdat niet vechtend
         if (!isPrime(getHitPoints())) {
             int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
+            removeHitPoints(getHitPoints() - p);
         }
 
         // Anchor points initialiseren
