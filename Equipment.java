@@ -299,13 +299,13 @@ public abstract class Equipment {
      *
      * @note 	This class is the controlling class for the bidirectional relationship.
      */
-    private Entity owner = null;
+    private static Entity owner = null;
 
     /**
      * Return the owner of this piece of equipment (if any).
      */
     @Raw @Basic
-    public Entity getOwner() {
+    public static Entity getOwner() {
         return owner;
     }
 
@@ -317,14 +317,17 @@ public abstract class Equipment {
      * @param   owner
      *          The new owner to which this item belongs.
      *
-     * @post    The owner of this item is set to the given
-     *          owner.
+     * @post    The owner of this item is set to the given owner.
      *          | new.getOwner() == owner
      *
-     * @effect	If the given owner is different from the current owner, this item is
-     *          removed from the current owner.
-     * 			| if (getOwner() != owner)
+     * @effect	If the given owner is different from the current owner and the item is not
+     *          stored in a backpack, this item is removed from the current owner.
+     * 			| if (getOwner() != owner && !hasProperBackpack())
      * 			| then getOwner().removeAsItem(this)
+     *
+     * @effect  If the item is stored in a backpack, the item is removed from
+     *          the backpack.
+     *          | if hasProperBackpack() then setBackpack(null)
      *
      * @effect	If the given owner is effective and not yet registered as
      * 			the current owner of this item, this item is added to the owner.
@@ -346,14 +349,17 @@ public abstract class Equipment {
     public void setOwner(Entity owner) {
         if (owner != null && !owner.canHaveAsItem(this))
             throw new IllegalArgumentException("This item can not belong to the given owner.");
+
         // Remember the previous owner
         Entity previousOwner = getOwner();
 
         // First, set up / break down the relationship from this side:
         this.owner = owner;
 
+
         // Then, break down the old relationship from the other side, if it existed
-        if (previousOwner != null) {
+        // if item in backpack, you do not have to remove item from owner
+        if ((previousOwner != null) && (!hasProperBackpack())){
             try{
                 previousOwner.removeAsItem(this);
                 // the prime object is now in a raw state!
@@ -362,6 +368,12 @@ public abstract class Equipment {
                 assert false;
             }
         }
+
+        // if item in backpack, then remove item from backpack
+        if (hasProperBackpack()) {
+            setBackpack(null);
+        }
+
 
         // Finally, set up the new relationship from the other side, if needed
         if (owner != null) {
@@ -417,9 +429,11 @@ public abstract class Equipment {
      * @param   backpack
      *          The new backpack in which this item is stored.
      *
-     * @post    The backpack of this item is set to the given
-     *          backpack.
+     * @post    The backpack of this item is set to the given backpack.
      *          | new.getBackpack() == backpack
+     *
+     * @post    The owner of this item is set to the owner of the backpack.
+     *          | new.getOwner() == backpack.getOwner()
      *
      * @effect	If the given backpack is different from the current backpack, this item is
      *          removed from the current backpack.
@@ -453,6 +467,7 @@ public abstract class Equipment {
 
         // First, set up / break down the relationship from this side:
         this.backpack = backpack;
+        this.owner = Backpack.getOwner();
 
         // Then, break down the old relationship from the other side, if it existed
         if (oldBackpack != null) {
