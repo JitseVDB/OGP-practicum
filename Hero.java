@@ -82,22 +82,7 @@ public class Hero extends Entity {
         this(name, maxHitPoints, strength); // Roep de eenvoudige constructor aan
 
         for (Equipment item : startItems) {
-            if (item == null) continue;
-
-            // Voeg het item toe als het mag
-            for (AnchorPoint ap : anchorPoints) {
-                if (ap.isEmpty() && canHaveAsItemAt(item, ap)) {
-                    ap.setItem(item);
-                    item.setOwner(this);
-                    this.capacity += item.getWeight();
-
-                    if (ap.getName().equals("body") && item instanceof Armor) {
-                        this.armor = (Armor) item;
-                    }
-
-                    break; // ga naar volgend item
-                }
-            }
+            item.setOwner(this);
         }
     }
 
@@ -656,7 +641,6 @@ public class Hero extends Entity {
      *
      * @return true if the item is allowed at the given anchor point, false otherwise.
      */
-    @Override
     public boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorpoint) {
         if (item == null || anchorpoint == null || anchorpoint.getName() == null) {
             return false;

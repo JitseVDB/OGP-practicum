@@ -15,8 +15,6 @@ import java.util.List;
  *       | isValidProtection(getProtection())
  * @invar  The maximum amount of hitpoints of an entity must be valid
  *       | isValidMaxHitPoints(getMaxHitPoints())
- * @invar If the entity is not fighting, their hitpoints are always a prime number.
- *        | !isFighting() ==> isPrime(getHitPoints())
  *
  * @author Ernest De Gres
  * @author Jitse Vandenberghe
@@ -51,7 +49,7 @@ public abstract class Entity {
      *       | new.getHitPoints() == maxHitPoints
      * @post The protection factor is set to the given value.
      *       | new.getProtection() == protection
-     * @post !isFighting()
+     * @post The new entity is not fighting. | !new.isFighting()
      *
      * @throws IllegalArgumentException
      *         If the given name is invalid
@@ -75,13 +73,13 @@ public abstract class Entity {
         this.anchorPoints = new ArrayList<>();
         this.isFighting = false;
 
-        // Prime-correctie bij start, omdat niet vechtend
+        // Prime-correction at initialization, because not fighting
         if (!isPrime(getHitPoints())) {
             int p = getClosestLowerPrime(getHitPoints());
             removeHitPoints(getHitPoints() - p);
         }
 
-        // Anchor points initialiseren
+        // Initialize AnchorPoints
         initializeAnchorPoints();
     }
 
@@ -202,7 +200,16 @@ public abstract class Entity {
      *          | result == (hitPoints >= 0 &&  hitpoints <= maxHitPoints)
      */
     public boolean isValidHitPoints(int hitPoints) {
-        return ((hitPoints >= 0) && (hitPoints <= maxHitPoints));
+        if ((hitPoints >= 0) && (hitPoints <= maxHitPoints)){
+            if (!isFighting && isPrime(getHitPoints())){
+                return true;
+            }
+            if (!isFighting && !isPrime(getHitPoints())){
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -225,6 +232,11 @@ public abstract class Entity {
     public boolean isAlive() {
         return hitPoints > 0;
     }
+
+    /**********************************************************
+     * isFighting
+     **********************************************************/
+
 
     /**
      * Updates the fighting status of this hero.
@@ -485,7 +497,7 @@ public abstract class Entity {
         for (int i = 1; i <= getNbAnchorPoints(); i++) {
             AnchorPoint anchorpoint = getAnchorPointAt(i);
 
-            if (anchorpoint.isEmpty() && canHaveAsItemAt(item, anchorpoint)) {
+            if (anchorpoint.isEmpty()) {
                 anchorpoint.setItem(item);
                 return;
             }
@@ -494,7 +506,6 @@ public abstract class Entity {
         throw new IllegalArgumentException("No valid anchor point available.");
     }
 
-    public abstract boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorpoint);
 
     /**
      * Remove the given item from this entity.
