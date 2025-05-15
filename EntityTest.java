@@ -103,11 +103,11 @@ public class EntityTest {
     @Test
     void testIsValidProtection_allCases() {
         // 1. Valid cases
-        assertTrue(Entity.isValidProtection(0));
         assertTrue(Entity.isValidProtection(5));
 
         // 2. Invalid case
         assertFalse(Entity.isValidProtection(-1));
+        assertFalse(Entity.isValidProtection(0));
     }
 
     // ANCHOR POINTS
