@@ -39,6 +39,9 @@ public abstract class Entity {
      * @param protection
      *        The protection factor of the entity.
      *
+     * @pre The maximum amount of hitpoints must be positive
+     *       | maxHitPoints >= 0
+     *
      * @post The name of the entity is set to the given name.
      *       | new.getName() == name
      * @post The maximum and current hitpoints are set to the given value.
@@ -51,9 +54,6 @@ public abstract class Entity {
      *         If the given name is invalid
      *         | !canHaveAsName(name)
      *
-     *         If the given amount of maximum hitpoints in invalid
-     *         | !isValidMaxHitPoints(maxHitPoints)
-     *
      *         If the given protection factor is invalid
      *         | !isValidProtection(protection)*
      *
@@ -62,8 +62,6 @@ public abstract class Entity {
             throws IllegalArgumentException {
         if (!canHaveAsName(name))
             throw new IllegalArgumentException("Invalid name for the entity.");
-        if (!isValidMaxHitPoints(maxHitPoints))
-            throw new IllegalArgumentException("Max hitpoints cannot be negative.");
         if (!isValidProtection(protection))
             throw new IllegalArgumentException("Protection must be strictly positive.");
 
@@ -114,7 +112,7 @@ public abstract class Entity {
     /**
      * The maximum number of hitpoints of the entity.
      */
-    private final int maxHitPoints;
+    private int maxHitPoints;
 
     /**
      * Returns the current hitpoints.
@@ -130,6 +128,36 @@ public abstract class Entity {
     @Raw @Basic
     public int getMaxHitPoints() {
         return maxHitPoints;
+    }
+
+        /**
+     * Sets the hitpoints of entity.
+     *
+     * @param   hitPoints
+     *          The entity that will own this equipment, or null if the item doesn't have an owner.
+     *
+     * @pre hitPoints >= 0 and hitPoints <= maxHitPoints
+     *
+     * @post hitpoints is set to the given amount
+     */
+    @Raw @Basic
+    public void setHitPoints(int hitPoints) {
+        this.hitPoints = hitPoints;
+    }
+
+    /**
+     * Sets the hitpoints of entity.
+     *
+     * @param   maxHitPoints
+     *          The entity that will own this equipment, or null if the item doesn't have an owner.
+     *
+     * @pre maxHitPoints >= 0
+     *
+     * @post maximum hitpoints is set to the given amount
+     */
+    @Raw @Basic
+    public void setMaxHitPoints(int maxHitPoints) {
+        this.maxHitPoints = maxHitPoints;
     }
 
     /**
