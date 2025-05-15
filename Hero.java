@@ -75,8 +75,6 @@ public class Hero extends Entity {
      */
     public Hero(String name, int maxHitPoints, double strength) {
         super(name, maxHitPoints, 10);
-        if (strength <= 0)
-            throw new IllegalArgumentException("Strength must be positive");// standaard protection=10
         this.isFighting = false;
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.capacity = 0;
