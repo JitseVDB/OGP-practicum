@@ -15,6 +15,8 @@ import java.util.List;
  *       | isValidProtection(getProtection())
  * @invar  The maximum amount of hitpoints of an entity must be valid
  *       | isValidMaxHitPoints(getMaxHitPoints())
+ * @invar If the entity is not fighting, their hitpoints are always a prime number.
+ *        | !isFighting() ==> isPrime(getHitPoints())
  *
  * @author Ernest De Gres
  * @author Jitse Vandenberghe
@@ -49,13 +51,14 @@ public abstract class Entity {
      *       | new.getHitPoints() == maxHitPoints
      * @post The protection factor is set to the given value.
      *       | new.getProtection() == protection
+     * @post !isFighting()
      *
      * @throws IllegalArgumentException
      *         If the given name is invalid
      *         | !canHaveAsName(name)
      *
      *         If the given protection factor is invalid
-     *         | !isValidProtection(protection)*
+     *         | !isValidProtection(protection)
      *
      */
     public Entity(String name, int maxHitPoints, int protection)
@@ -70,6 +73,16 @@ public abstract class Entity {
         this.hitPoints = maxHitPoints;
         this.protection = protection;
         this.anchorPoints = new ArrayList<>();
+        this.isFighting = false;
+
+        // Prime-correctie bij start, omdat niet vechtend
+        if (!isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            super.removeHitPoints(getHitPoints() - p);
+        }
+
+        // Anchor points initialiseren
+        initializeAnchorPoints();
     }
 
     /**********************************************************
@@ -103,6 +116,11 @@ public abstract class Entity {
     /**********************************************************
      * HitPoints
      **********************************************************/
+
+    /**
+     * Variable that indicates whether the entity is currently fighting. He is initialized as not fighting
+     */
+    private boolean isFighting;
 
     /**
      * The current number of hitpoints of the entity.
@@ -188,33 +206,6 @@ public abstract class Entity {
     }
 
     /**
-     * Adds the hero's hitpoints by a given amount.
-     * If the hero is not fighting, the result will be adjusted to the closest lower prime if necessary.
-     *
-     * @pre The given amount must be a positive number.
-     *      | amount > 0
-     * @pre The resulting hitpoints after addition must not exceed the maximum hitpoints.
-     *      | amount + getHitpoints() <= maxHitPoints
-     */
-    public void addHitPoints(int amount) {
-        hitPoints += amount;
-    }
-
-    /**
-     * Decreases the hero's hitpoints by a given amount.
-     * If the hero is not fighting, the result will be adjusted to the closest lower prime if necessary.
-     *
-     * @pre The given amount must be a positive number.
-     *      | amount > 0
-     * @pre The resulting hitpoints after subtraction must not fall below zero.
-     *      | getHitpoints() - amount >= 0
-     */
-
-    public void removeHitPoints(int amount) {
-        hitPoints -= amount;
-    }
-
-    /**
      * Reduces the hitpoints of an entity based on the amount of damage and after specific calculations
      *
      * @param damage
@@ -233,6 +224,93 @@ public abstract class Entity {
     @Raw @Basic
     public boolean isAlive() {
         return hitPoints > 0;
+    }
+
+    /**
+     * Updates the fighting status of this hero.
+     *
+     * @param status
+     *        true if the hero enters combat, false if they exit combat.
+     * @post isFighting() == status
+     *
+     * @effect If status == false and current hit points are not prime,
+     *         the hit points are reduced to the nearest lower prime.
+     */
+    public void setFighting(boolean status) {
+        this.isFighting = status;
+        if (!status && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            removeHitPoints(getHitPoints() - p);
+        }
+    }
+
+    /**
+     * Determines if a given number is a prime number.
+     *
+     * @param number
+     *        The number to check.
+     * @return true if the number is prime; false otherwise.
+     */
+    public boolean isPrime(int number) {
+        if (number < 2) return false;
+        for (int i = 2; i <= Math.sqrt(number); i++) {
+            if (number % i == 0) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns the closest lower prime number less than the given starting value.
+     *
+     * @param start
+     *        The starting value.
+     * @return The closest lower prime number.
+     */
+    public int getClosestLowerPrime(int start) {
+        for (int i = start - 1; i >= 2; i--) {
+            if (isPrime(i)) return i;
+        }
+        return 2; // fallback
+    }
+
+    /**
+     * Increases the hero’s current hit points by the given amount.
+     * If the hero is not fighting, and the result is not a prime number,
+     * the hit points are reduced to the closest lower prime.
+     * @param amount
+     *        The number of hit points to add
+     *
+     * @post getHitPoints() is increased by amount, but not beyond getMaxHitPoints()
+     * @effect If not fighting and the result is not prime, hit points are reduced
+     *         to the closest lower prime.
+     */
+    public void addHitPoints(int amount) {
+        this.hitPoints += amount;
+        if (!isFighting && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            removeHitPoints(getHitPoints() - p);
+        }
+    }
+
+    /**
+     * Decreases the hero’s current hit points by the given amount.
+     * If the hero is not fighting, and the result is not a prime number,
+     * the hit points are further reduced to the closest lower prime.
+     *
+     * @param amount
+     *        The number of hit points to remove
+     *
+     * @post getHitPoints() is decreased by amount, but not below zero.
+     * @effect If not fighting and the result is not prime,
+     *         hit points are reduced to the closest lower prime.
+     */
+    public void removeHitPoints(int amount) {
+        this.hitPoints -= amount;
+        if (!isFighting && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            removeHitPoints(getHitPoints() - p);
+        }
+
     }
 
     /**********************************************************

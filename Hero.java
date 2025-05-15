@@ -13,12 +13,6 @@ import java.util.ArrayList;
  * @author Guillaume Vandemoortele
  * @version 1.9
  *
- * @invar The hero's name must be valid according to the custom-defined format rules.
- *        | canHaveAsName(getName())
- * @invar The hero's hit points are always between 0 and the maximum hit points.
- *        | 0 <= getHitPoints() <= getMaxHitPoints()
- * @invar If the hero is not fighting, their hit points are always a prime number.
- *        | !isFighting() ==> isPrime(getHitPoints())
  * @invar The hero's intrinsic strength is always stored with two decimal places.
  *        | Math.round(intrinsicStrength * 100) / 100.0 == intrinsicStrength
  * @invar The hero's capacity is always between 0 and its maximum capacity.
@@ -48,35 +42,18 @@ public class Hero extends Entity {
      * @param strength
      *        the hero's intrinsic strength (stored rounded to two decimal places)
      *
-     * @throws IllegalArgumentException
-     *         If the name is invalid, or if maxHitPoints < 0, or if strength ≤ 0.
-     *
-     * @pre name != null
-     * @pre maxHitPoints >= 0
      * @pre strength > 0
      *
-     * @post getName().equals(name)
-     * @post getMaxHitPoints() == maxHitPoints
-     * @post getHitPoints() == maxHitPoints
      * @post getIntrinsicStrength() == Math.round(strength * 100) / 100.0
-     * @post !isFighting()
      * @post getLeftHandWeapon() == null
      * @post getRightHandWeapon() == null
      * @post getArmor() == null
      */
     public Hero(String name, int maxHitPoints, double strength) {
         super(name, maxHitPoints, 10);
-        this.isFighting = false;
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.capacity = 0;
 
-        // Prime-correctie bij start, omdat niet vechtend
-        if (!isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-        // Anchor points initialiseren
-        initializeAnchorPoints();
     }
 
     /**
@@ -95,16 +72,10 @@ public class Hero extends Entity {
      * @throws IllegalArgumentException
      *         If any argument is invalid, or if items cannot be assigned due to weight or anchor conflicts
      *
-     * @pre name != null
      * @pre initialEquipment != null
-     * @pre maxHitPoints >= 0
      * @pre strength > 0
      *
-     * @post getName().equals(name)
-     * @post getMaxHitPoints() == maxHitPoints
-     * @post getHitPoints() == maxHitPoints
      * @post getIntrinsicStrength() == Math.round(strength * 100) / 100.0
-     * @post !isFighting()
      * @post All equipment is validly assigned to appropriate anchors
      */
     public Hero(String name, int maxHitPoints, double strength, Equipment... startItems) {
@@ -117,7 +88,7 @@ public class Hero extends Entity {
             for (AnchorPoint ap : anchorPoints) {
                 if (ap.isEmpty() && canHaveAsItemAt(item, ap)) {
                     ap.setItem(item);
-                    item.setOwner(this); // Zorg voor bidirectionele relatie
+                    item.setOwner(this);
                     this.capacity += item.getWeight();
 
                     if (ap.getName().equals("body") && item instanceof Armor) {
@@ -206,104 +177,6 @@ public class Hero extends Entity {
         }
 
         return true;
-    }
-
-
-    /**********************************************************
-     *                      Hitpoints
-     **********************************************************/
-
-    /**
-     * Variable that indicates whether the hero is currently fighting. He is initialized as not fighting
-     */
-    private boolean isFighting;
-
-    /**
-     * Updates the fighting status of this hero.
-     *
-     * @param status
-     *        true if the hero enters combat, false if they exit combat.
-     * @post isFighting() == status
-     *
-     * @effect If status == false and current hit points are not prime,
-     *         the hit points are reduced to the nearest lower prime.
-     */
-    public void setFighting(boolean status) {
-        this.isFighting = status;
-        if (!status && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-    }
-
-    /**
-     * Determines if a given number is a prime number.
-     *
-     * @param number
-     *        The number to check.
-     * @return true if the number is prime; false otherwise.
-     */
-    public boolean isPrime(int number) {
-        if (number < 2) return false;
-        for (int i = 2; i <= Math.sqrt(number); i++) {
-            if (number % i == 0) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Returns the closest lower prime number less than the given starting value.
-     *
-     * @param start
-     *        The starting value.
-     * @return The closest lower prime number.
-     */
-    public int getClosestLowerPrime(int start) {
-        for (int i = start - 1; i >= 2; i--) {
-            if (isPrime(i)) return i;
-        }
-        return 2; // fallback
-    }
-
-    /**
-     * Increases the hero’s current hit points by the given amount.
-     * If the hero is not fighting, and the result is not a prime number,
-     * the hit points are reduced to the closest lower prime.
-     * @param amount
-     *        The number of hit points to add
-     *
-     * @post getHitPoints() is increased by amount, but not beyond getMaxHitPoints()
-     * @effect If not fighting and the result is not prime, hit points are reduced
-     *         to the closest lower prime.
-     */
-    @Override
-    public void addHitPoints(int amount) {
-        super.addHitPoints(amount);
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-    }
-
-    /**
-     * Decreases the hero’s current hit points by the given amount.
-     * If the hero is not fighting, and the result is not a prime number,
-     * the hit points are further reduced to the closest lower prime.
-     *
-     * @param amount
-     *        The number of hit points to remove
-     *
-     * @post getHitPoints() is decreased by amount, but not below zero.
-     * @effect If not fighting and the result is not prime,
-     *         hit points are reduced to the closest lower prime.
-     */
-    @Override
-    public void removeHitPoints(int amount) {
-        super.removeHitPoints(amount);
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
     }
 
     /**********************************************************
@@ -440,7 +313,7 @@ public class Hero extends Entity {
 
 
     /**********************************************************
-     *                      Amor
+     *                      Armor
      **********************************************************/
 
     /**
