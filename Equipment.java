@@ -447,4 +447,53 @@ public abstract class Equipment {
             }
         }
     }
+
+    /**********************************************************
+     * Condition
+     **********************************************************/
+
+    /**
+     * The condition of the equipment, either GOOD or DESTROYED.
+     */
+    private Condition condition = Condition.GOOD;
+
+    /**
+     * Return the condition of this equipment.
+     */
+    @Basic
+    public Condition getCondition() {
+        return condition;
+    }
+
+    /**
+     * Set the condition of this equipment.
+     *
+     * @param   condition
+     *          The new condition to set.
+     */
+    @Model
+    void setCondition(Condition condition) {
+        this.condition = condition;
+    }
+
+    /**
+     * Set this equipment to destroyed.
+     *
+     * @effect  The condition is set to DESTROYED
+     *          | setCondition(Condition.DESTROYED)
+     */
+    @Model
+    void destroy() {
+        setCondition(Condition.DESTROYED);
+    }
+
+    /**
+     * Check if this equipment is destroyed.
+     *
+     * @return  If and only if the equipment is destroyed, false otherwise.
+     *          | result == (this.condition == Condition.DESTROYED)
+     */
+    public boolean isDestroyed() {
+        return this.condition == Condition.DESTROYED;
+    }
 }

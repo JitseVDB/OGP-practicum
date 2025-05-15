@@ -166,7 +166,7 @@ public class Weapon extends Equipment {
      **********************************************************/
 
     /**
-     * Returns the maximum value of a piece of equipment.
+     * Returns the maximum value of a weapon.
      */
     @Override @Basic
     public int getMaximumValue() {

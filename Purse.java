@@ -245,30 +245,6 @@ public class Purse extends StorageItem {
      **********************************************************/
 
     /**
-     * The condition of the purse, either GOOD or DESTROYED.
-     */
-    private Condition condition = Condition.GOOD;
-
-    /**
-     * Return the condition of this purse.
-     */
-    @Basic
-    public Condition getCondition() {
-        return condition;
-    }
-
-    /**
-     * Set the condition of this purse.
-     *
-     * @param   condition
-     *          The new condition to set.
-     */
-    @Model
-    private void setCondition(Condition condition) {
-        this.condition = condition;
-    }
-
-    /**
      * Set this purse to destroyed and empty its contents.
      *
      * @effect  The contents of the purse is set to zero.
@@ -277,19 +253,10 @@ public class Purse extends StorageItem {
      * @effect  The condition is set to DESTROYED
      *          | setCondition(Condition.DESTROYED)
      */
-    @Model
+    @Override @Model
     void destroy() {
         empty();
         setCondition(Condition.DESTROYED);
     }
 
-    /**
-     * Check if this purse is destroyed.
-     *
-     * @return  If and only if the purse is destroyed, false otherwise.
-     *          | result == (this.condition == Condition.DESTROYED)
-     */
-    public boolean isDestroyed() {
-        return this.condition == Condition.DESTROYED;
-    }
 }

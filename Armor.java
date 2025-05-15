@@ -229,7 +229,7 @@ public class Armor extends Equipment {
      **********************************************************/
 
     /**
-     * Returns the maximum value of a piece of equipment.
+     * Returns the maximum value of a backpack.
      */
     @Basic
     public int getMaximumValue() {
