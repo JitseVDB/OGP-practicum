@@ -432,6 +432,24 @@ public abstract class Entity {
 
     }
 
+    /**
+     * Checks whether the entity has a free anchorpoint available.
+     *
+     * @return true if entity has an empty anchorpoint, false otherwise.
+     *          | result == (anchorpoint.isEmpty())
+     *
+     */
+    public boolean hasFreeAnchorPoint(){
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            AnchorPoint anchorpoint = getAnchorPointAt(i);
+            if (anchorpoint.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }
 
 
