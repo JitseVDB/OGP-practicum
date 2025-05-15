@@ -275,7 +275,7 @@ public abstract class Equipment {
      *          | result == (value > 0 && value <= maximumValue)
      */
     public boolean canHaveAsValue(int value) {
-        return value > 0 && value <= getMaximumValue();
+        return value >= 0 && value <= getMaximumValue();
     }
 
     /**
@@ -418,7 +418,7 @@ public abstract class Equipment {
     public void setBackpack(Backpack backpack)
             throws IllegalArgumentException {
         if (backpack != null && !backpack.canHaveAsItem(this))
-            throw new IllegalArgumentException("This item is not allowed by the given parent directory!");
+            throw new IllegalArgumentException("This item is not allowed by the given parent backpack!");
 
         // Remember the old parent directory
         Backpack oldBackpack = getBackpack();

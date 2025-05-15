@@ -4,11 +4,8 @@ import be.kuleuven.cs.som.annotate.*;
  * A class of purses, involving contents.
  *
  * @invar	The contents of a purse is a positive number, less than or equal to the capacity of the purse.
+ *          Or 0 if the purse is destroyed.
  * 			| canHaveAsContents(getContents())
- *
- * @invar   If this purse is destroyed, its contents must be 0.
- *          | if (getCondition() == Condition.DESTROYED)
- *          |       then this.getContents == 0
  *
  *
  * @author  Jitse Vandenberghe
@@ -98,12 +95,19 @@ public class Purse extends StorageItem {
      *
      * @param	contents
      * 			The contents to check.
-     * @return	True if the given contents is a positive integer less than or equal to the capacity of this purse.
-     * 			| result == (contents >= 0 && contents <= this.getCapacity())
+     *
+     * @return	True if the purse is destroyed and the given content is 0 or if the purse is not destroyed,
+     *          and the contents is between 0 and the capacity, false otherwise.
+     *          | if (isDestroyed())
+     *          |		then results == (contents == 0)
+     *          | else results == (contents >= 0 && contents <= getCapacity())
      *
      */
     @Raw
     public boolean canHaveAsContents(int contents) {
+        if (isDestroyed()) {
+            return contents == 0;
+        }
         return contents >= 0 && contents <= getCapacity();
     }
 
@@ -203,7 +207,7 @@ public class Purse extends StorageItem {
                 // VERDER UITWERKEN LATER : "Lege geldbeurs moet op de grond gegooid worden."
             } else {
                 other.removeFromContents(this.getFreeSpace());
-                destroy();
+                this.destroy();
             }
         }
     }
@@ -227,8 +231,9 @@ public class Purse extends StorageItem {
     /**
      * Calculate the current value of this purse.
      *
-     * @return  The calculated current value of the purse, by adding the value of the purse and its contents.
-     *          | result == getBaseValue() + getContents()
+     * @return  The calculated current value of the purse, by adding the value of its contents.
+     *          Since the base value of the purse itself is 0.
+     *          | result == getContents()
      */
     @Override
     protected int calculateCurrentValue() {
@@ -267,13 +272,13 @@ public class Purse extends StorageItem {
      * Set this purse to destroyed and empty its contents.
      *
      * @effect  The contents of the purse is set to zero.
-     *          | new.getContents() == 0
+     *          | empty()
      *
      * @effect  The condition is set to DESTROYED
      *          | setCondition(Condition.DESTROYED)
      */
     @Model
-    private void destroy() {
+    void destroy() {
         empty();
         setCondition(Condition.DESTROYED);
     }

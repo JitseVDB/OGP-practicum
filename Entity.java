@@ -477,6 +477,64 @@ public abstract class Entity {
         return false;
     }
 
+    /*****************************************************************
+     *               Protection + GetAnchorPoints
+     *****************************************************************/
+    /**
+     * Variable for the
+     */
+    private int realProtection;
+
+    /**
+     * Returns the raw protection value of this entity.
+     *
+     * @return The entity’s raw protection value.
+     *
+     * @post result == realProtection
+     */
+    @Raw @Basic
+    public int getRealProtection() { return realProtection; }
+
+    /**
+     * Sets the raw protection value of this entity.
+     *
+     * @param protection
+     *        The new base protection value.
+     *
+     * @post getRealProtection() == protection
+     */
+    public void setRealProtection(int protection) {
+        this.realProtection = protection;
+    }
+
+
+    /**
+     * Returns the anchor point with the given name, if it exists.
+     *
+     * @param name
+     *        The name of the anchor point to retrieve
+     *
+     * @return The matching AnchorPoint, or null if no such anchor exists.
+     *
+     * @post If an anchor point exists with a name equal to the given name,
+     *       it is returned. Otherwise, the result is null.
+     *     | if (name == null)
+     *     |     then result == null
+     *     | else if (exists ap in anchorPoints where ap.getName().equalsIgnoreCase(name))
+     *     |     then result == that ap
+     *     | else result == null
+     */
+    public AnchorPoint getAnchorPoint(String name) {
+        if (name == null) return null;
+        for (AnchorPoint ap : anchorPoints) {
+            if (ap.getName().equalsIgnoreCase(name)) {
+                return ap;
+            }
+        }
+        return null;
+    }
+
+
 
 }
 
