@@ -39,6 +39,9 @@ public abstract class Entity {
      * @param protection
      *        The protection factor of the entity.
      *
+     * @pre The maximum amount of hitpoints must be positive
+     *       | maxHitPoints >= 0
+     *
      * @post The name of the entity is set to the given name.
      *       | new.getName() == name
      * @post The maximum and current hitpoints are set to the given value.
@@ -46,24 +49,20 @@ public abstract class Entity {
      *       | new.getHitPoints() == maxHitPoints
      * @post The protection factor is set to the given value.
      *       | new.getProtection() == protection
+     * @post The new entity is not fighting. | !new.isFighting()
      *
      * @throws IllegalArgumentException
      *         If the given name is invalid
      *         | !canHaveAsName(name)
      *
-     *         If the given amount of maximum hitpoints in invalid
-     *         | !isValidMaxHitPoints(maxHitPoints)
-     *
      *         If the given protection factor is invalid
-     *         | !isValidProtection(protection)*
+     *         | !isValidProtection(protection)
      *
      */
     public Entity(String name, int maxHitPoints, int protection)
             throws IllegalArgumentException {
         if (!canHaveAsName(name))
             throw new IllegalArgumentException("Invalid name for the entity.");
-        if (!isValidMaxHitPoints(maxHitPoints))
-            throw new IllegalArgumentException("Max hitpoints cannot be negative.");
         if (!isValidProtection(protection))
             throw new IllegalArgumentException("Protection must be strictly positive.");
 
@@ -72,6 +71,16 @@ public abstract class Entity {
         this.hitPoints = maxHitPoints;
         this.protection = protection;
         this.anchorPoints = new ArrayList<>();
+        this.isFighting = false;
+
+        // Prime-correction at initialization, because not fighting
+        if (!isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            removeHitPoints(getHitPoints() - p);
+        }
+
+        // Initialize AnchorPoints
+        initializeAnchorPoints();
     }
 
     /**********************************************************
@@ -107,6 +116,11 @@ public abstract class Entity {
      **********************************************************/
 
     /**
+     * Variable that indicates whether the entity is currently fighting. He is initialized as not fighting
+     */
+    private boolean isFighting;
+
+    /**
      * The current number of hitpoints of the entity.
      */
     private int hitPoints;
@@ -114,7 +128,7 @@ public abstract class Entity {
     /**
      * The maximum number of hitpoints of the entity.
      */
-    private final int maxHitPoints;
+    private int maxHitPoints;
 
     /**
      * Returns the current hitpoints.
@@ -130,6 +144,36 @@ public abstract class Entity {
     @Raw @Basic
     public int getMaxHitPoints() {
         return maxHitPoints;
+    }
+
+        /**
+     * Sets the hitpoints of entity.
+     *
+     * @param   hitPoints
+     *          The entity that will own this equipment, or null if the item doesn't have an owner.
+     *
+     * @pre hitPoints >= 0 and hitPoints <= maxHitPoints
+     *
+     * @post hitpoints is set to the given amount
+     */
+    @Raw @Basic
+    public void setHitPoints(int hitPoints) {
+        this.hitPoints = hitPoints;
+    }
+
+    /**
+     * Sets the hitpoints of entity.
+     *
+     * @param   maxHitPoints
+     *          The entity that will own this equipment, or null if the item doesn't have an owner.
+     *
+     * @pre maxHitPoints >= 0
+     *
+     * @post maximum hitpoints is set to the given amount
+     */
+    @Raw @Basic
+    public void setMaxHitPoints(int maxHitPoints) {
+        this.maxHitPoints = maxHitPoints;
     }
 
     /**
@@ -156,34 +200,16 @@ public abstract class Entity {
      *          | result == (hitPoints >= 0 &&  hitpoints <= maxHitPoints)
      */
     public boolean isValidHitPoints(int hitPoints) {
-        return ((hitPoints >= 0) && (hitPoints <= maxHitPoints));
-    }
-
-    /**
-     * Adds the hero's hitpoints by a given amount.
-     * If the hero is not fighting, the result will be adjusted to the closest lower prime if necessary.
-     *
-     * @pre The given amount must be a positive number.
-     *      | amount > 0
-     * @pre The resulting hitpoints after addition must not exceed the maximum hitpoints.
-     *      | amount + getHitpoints() <= maxHitPoints
-     */
-    public void addHitPoints(int amount) {
-        hitPoints += amount;
-    }
-
-    /**
-     * Decreases the hero's hitpoints by a given amount.
-     * If the hero is not fighting, the result will be adjusted to the closest lower prime if necessary.
-     *
-     * @pre The given amount must be a positive number.
-     *      | amount > 0
-     * @pre The resulting hitpoints after subtraction must not fall below zero.
-     *      | getHitpoints() - amount >= 0
-     */
-
-    public void removeHitPoints(int amount) {
-        hitPoints -= amount;
+        if ((hitPoints >= 0) && (hitPoints <= maxHitPoints)){
+            if (!isFighting && isPrime(getHitPoints())){
+                return true;
+            }
+            if (!isFighting && !isPrime(getHitPoints())){
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -205,6 +231,98 @@ public abstract class Entity {
     @Raw @Basic
     public boolean isAlive() {
         return hitPoints > 0;
+    }
+
+    /**********************************************************
+     * isFighting
+     **********************************************************/
+
+
+    /**
+     * Updates the fighting status of this hero.
+     *
+     * @param status
+     *        true if the hero enters combat, false if they exit combat.
+     * @post isFighting() == status
+     *
+     * @effect If status == false and current hit points are not prime,
+     *         the hit points are reduced to the nearest lower prime.
+     */
+    public void setFighting(boolean status) {
+        this.isFighting = status;
+        if (!status && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            removeHitPoints(getHitPoints() - p);
+        }
+    }
+
+    /**
+     * Determines if a given number is a prime number.
+     *
+     * @param number
+     *        The number to check.
+     * @return true if the number is prime; false otherwise.
+     */
+    public boolean isPrime(int number) {
+        if (number < 2) return false;
+        for (int i = 2; i <= Math.sqrt(number); i++) {
+            if (number % i == 0) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns the closest lower prime number less than the given starting value.
+     *
+     * @param start
+     *        The starting value.
+     * @return The closest lower prime number.
+     */
+    public int getClosestLowerPrime(int start) {
+        for (int i = start - 1; i >= 2; i--) {
+            if (isPrime(i)) return i;
+        }
+        return 2; // fallback
+    }
+
+    /**
+     * Increases the hero’s current hit points by the given amount.
+     * If the hero is not fighting, and the result is not a prime number,
+     * the hit points are reduced to the closest lower prime.
+     * @param amount
+     *        The number of hit points to add
+     *
+     * @post getHitPoints() is increased by amount, but not beyond getMaxHitPoints()
+     * @effect If not fighting and the result is not prime, hit points are reduced
+     *         to the closest lower prime.
+     */
+    public void addHitPoints(int amount) {
+        this.hitPoints += amount;
+        if (!isFighting && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            removeHitPoints(getHitPoints() - p);
+        }
+    }
+
+    /**
+     * Decreases the hero’s current hit points by the given amount.
+     * If the hero is not fighting, and the result is not a prime number,
+     * the hit points are further reduced to the closest lower prime.
+     *
+     * @param amount
+     *        The number of hit points to remove
+     *
+     * @post getHitPoints() is decreased by amount, but not below zero.
+     * @effect If not fighting and the result is not prime,
+     *         hit points are reduced to the closest lower prime.
+     */
+    public void removeHitPoints(int amount) {
+        this.hitPoints -= amount;
+        if (!isFighting && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            removeHitPoints(getHitPoints() - p);
+        }
+
     }
 
     /**********************************************************
@@ -379,7 +497,7 @@ public abstract class Entity {
         for (int i = 1; i <= getNbAnchorPoints(); i++) {
             AnchorPoint anchorpoint = getAnchorPointAt(i);
 
-            if (anchorpoint.isEmpty() && canHaveAsItemAt(item, anchorpoint)) {
+            if (anchorpoint.isEmpty()) {
                 anchorpoint.setItem(item);
                 return;
             }
@@ -388,7 +506,6 @@ public abstract class Entity {
         throw new IllegalArgumentException("No valid anchor point available.");
     }
 
-    public abstract boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorpoint);
 
     /**
      * Remove the given item from this entity.

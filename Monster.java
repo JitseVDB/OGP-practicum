@@ -7,9 +7,6 @@ import be.kuleuven.cs.som.annotate.*;
 /**
  * A class representing monsters in the game
  *
- * @invar	Each monster must have a properly spelled name.
- * 			| canHaveAsName(getName())
- *
  * @invar   Each weapon must have a valid damage.
  *          | isValidDamage(getDamage());
  *
@@ -19,11 +16,6 @@ import be.kuleuven.cs.som.annotate.*;
  * @version 1.1
  */
 public class Monster extends Entity {
-
-    /**
-     * Variable that indicates whether the hero is currently fighting. He is initialized as not fighting
-     */
-    private boolean isFighting;
 
     /**********************************************************
      * Constructors
@@ -55,7 +47,7 @@ public class Monster extends Entity {
      *
      * @throws  IllegalArgumentException
      *          If the given damage is invalid.
-     *          |!isValidDamge(damage)
+     *          |!isValidDamage(damage)
      */
     public Monster(String name, int maxHitPoints, List<Equipment> initialItems) {
         super(name, maxHitPoints, 10);
@@ -63,7 +55,6 @@ public class Monster extends Entity {
         if (!isValidDamage(damage))
             throw new IllegalArgumentException("Damage cannot be negative, must be below the maximum damage and must be a multiple of 7.");
 
-        initializeAnchorPoints();
         distributeInitialItems(initialItems);
         setDamage(damage);
     }
@@ -132,21 +123,15 @@ public class Monster extends Entity {
      *          | for each i in 0 .. min(items.size(), getNbAnchorPoints()):
      *          |   getAnchorPointAt(i).setItem(items.get(i))
      *
-     * @effect  The capacity is set to the total weight of all the items it carries.
-     *          | setCapacity(totalWeight)
      */
     public void distributeInitialItems(List<Equipment> items) {
         int maxItems = Math.min(items.size(), getNbAnchorPoints());
-        int totalWeight = 0;
 
         for (int i = 0; i < maxItems; i++) {
             Equipment item = items.get(i);
             AnchorPoint anchorPoint = getAnchorPointAt(i);
             anchorPoint.setItem(item);
-            totalWeight += item.getWeight();
         }
-
-        setCapacity(totalWeight);
     }
 
     /**********************************************************
@@ -229,80 +214,6 @@ public class Monster extends Entity {
         removeHitPoints(getHitPoints() - newHitPoints);
     }
 
-    /**********************************************************
-     * Hitpoints
-     **********************************************************/
-
-    /**
-     * Sets the fighting status.
-     *
-     * @param status
-     *        true if the monster is fighting, false if he is not
-     * @post   If the monster stops fighting and their hit points are not prime,
-     *  *      they are adjusted to the closest lower prime number.
-     */
-    public void setFighting(boolean status) {
-        this.isFighting = status;
-        if (!status && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-    }
-
-    /**
-     * Determines if a given number is a prime number.
-     *
-     * @param number
-     *        The number to check.
-     * @return true if the number is prime; false otherwise.
-     */
-    private boolean isPrime(int number) {
-        if (number < 2) return false;
-        for (int i = 2; i <= Math.sqrt(number); i++) {
-            if (number % i == 0) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Returns the closest lower prime number less than the given starting value.
-     *
-     * @param start
-     *        The starting value.
-     * @return The closest lower prime number.
-     */
-    private int getClosestLowerPrime(int start) {
-        for (int i = start - 1; i >= 2; i--) {
-            if (isPrime(i)) return i;
-        }
-        return 2; // fallback
-    }
-
-    /**
-     * Adds a number of hitpoints to this monster
-     * @param amount
-     */
-    @Override
-    public void addHitPoints(int amount) {
-        super.addHitPoints(amount);
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-    }
-
-    /**
-     * Removes a number of hitpoints to this monster
-     * @param amount
-     */
-    @Override
-    public void removeHitPoints(int amount) {
-        super.removeHitPoints(amount);
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-    }
 
     /**********************************************************
      * Hit
