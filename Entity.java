@@ -234,7 +234,7 @@ public abstract class Entity {
      *          | result == (protection >= 0)
      */
     public static boolean isValidProtection(int protection) {
-        return protection >= 0;
+        return protection > 0;
     }
 
     /**********************************************************
