@@ -299,13 +299,13 @@ public abstract class Equipment {
      *
      * @note 	This class is the controlling class for the bidirectional relationship.
      */
-    private Entity owner = null;
+    private static Entity owner = null;
 
     /**
      * Return the owner of this piece of equipment (if any).
      */
     @Raw @Basic
-    public Entity getOwner() {
+    public static Entity getOwner() {
         return owner;
     }
 
@@ -324,8 +324,10 @@ public abstract class Equipment {
         // First, set up / break down the relationship from this side:
         this.owner = owner;
 
+
         // Then, break down the old relationship from the other side, if it existed
-        if (previousOwner != null) {
+        // if item in backpack, you do not have to remove item from owner
+        if ((previousOwner != null) && (!hasProperBackpack())){
             try{
                 previousOwner.removeAsItem(this);
                 // the prime object is now in a raw state!
@@ -334,6 +336,12 @@ public abstract class Equipment {
                 assert false;
             }
         }
+
+        // if item in backpack, then remove item from backpack
+        if (hasProperBackpack()) {
+            setBackpack(null);
+        }
+
 
         // Finally, set up the new relationship from the other side, if needed
         if (owner != null) {
@@ -441,6 +449,7 @@ public abstract class Equipment {
         if (backpack != null) {
             try{
                 backpack.addItem(this);
+                this.owner = Backpack.getOwner();
             }catch(IllegalArgumentException e) {
                 // Should never occur!
                 assert false;
