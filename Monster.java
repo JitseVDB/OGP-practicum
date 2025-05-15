@@ -1,5 +1,6 @@
 import java.util.Random;
 import java.util.List;
+import java.util.ArrayList;
 
 import be.kuleuven.cs.som.annotate.*;
 
@@ -300,6 +301,130 @@ public class Monster extends Entity {
         if (!isFighting && !isPrime(getHitPoints())) {
             int p = getClosestLowerPrime(getHitPoints());
             super.removeHitPoints(getHitPoints() - p);
+        }
+    }
+
+    /**********************************************************
+     * Hit
+     **********************************************************/
+
+    /**
+     * Performs a single hit from this monster to the given opponent.
+     *
+     * @param opponent
+     *        The entity that is the target of the hit.
+     *
+     * @effect  The monster will loot the defeated opponent when a fatal blow is dealt.
+     *          | if opponent.getHitPoints() - damage <= 0 then loot(opponent)
+     *
+     * @post    If the hit is successful and fatal, opponent's hit points are zero.
+     *          | if opponent.getHitPoints() - damage <= 0 then opponent.getHitPoints() == 0
+     *
+     * @post    If the hit is successful but not fatal, opponent's hit points decrease by the damage amount.
+     *          | if opponent.getHitPoints() - damage > 0 then opponent.getHitPoints() == old opponent.getHitPoints() - getDamage()
+     *
+     * @post    If the hit misses, opponent's hit points remain unchanged.
+     *          | if impact < opponent.getProtection() then opponent.getHitPoints() == old opponent.getHitPoints()
+     */
+    public void hit(Entity opponent) {
+        Random random = new Random();
+
+        int impact = random.nextInt(101); // between 0 (inclusive) and bound value '101' (exclusive)
+
+
+        if (impact >= getHitPoints()) {
+            impact = getHitPoints();
+        }
+
+        if (impact >= opponent.getHitPoints())
+
+
+            if (impact >= opponent.getProtection()) {
+                // land a succesful hit
+                int damage = getDamage();
+                int newHitPoints = opponent.getHitPoints() - damage;
+
+                if (newHitPoints <= 0) {
+                    // Final blow: opponent defeated
+                    opponent.setHitPoints(0);
+
+                    // Let monster take any possessions and destroy any weapons/armor left behind
+                    loot(opponent);
+
+                } else {
+                    // Regular hit, adjust life points
+                    opponent.setHitPoints(newHitPoints);
+                }
+            } else {
+                // Miss the target: no effect
+            }
+    }
+
+    /**
+     * Attempt to loot items from a defeated opponent.
+     *
+     * This method is called after the monster deals a fatal blow.
+     * The monster attempts to pick up as many weapons and armors as possible from the opponent,
+     * given its available anchor points.
+     *
+     * Weapons and armors that are not looted are destroyed.
+     * Backpacks and purses that are not looted remain behind on the ground.
+     *
+     * @param   opponent
+     *          The defeated opponent from which to loot.
+     *
+     * @effect  The items carried by the opponent are collected and removed from the opponent.
+     *          | for each item in opponent.getAnchorPointAt(i).getItem():
+     *          |     item.setOwner(null)
+     *          |     opponent.getAnchorPointAt(i).setItem(null)
+     *
+     * @effect  Attempts to add each item to the monster's inventory if there is a free anchor point.
+     *          | if hasFreeAnchorPoint() then addToAnchorPoint(item) and item.setOwner(this)
+     *
+     * @effect  All non-looted weapons and armors are destroyed.
+     *          | if item instanceof Weapon or Armor and not looted then item.destroy()
+     *
+     * @post    All looted items are removed from the opponent.
+     *          | for each item looted:
+     *          |     item.getOwner() == this
+     *          |     opponent does not have the item anymore in any anchor point
+     *
+     * @post    All looted items are removed from the opponent.
+     *          | for each item looted:
+     *          |     item.getOwner() == this
+     *          |     opponent does not have the item anymore in any anchor point
+     *
+     * @post    All non-looted weapons and armors from the opponent are destroyed.
+     *          | for each non-looted weapon or armor item:
+     *          |     item.isDestroyed() == true
+     *
+     * @post    The monster may have looted up to its available capacity.
+     *          | getNbItemsCarried() <= getNbAnchorPoints()
+     */
+    public void loot(Entity opponent) {
+        List<Equipment> potentialLoot = new ArrayList<>();
+
+        // Step 1: Collect all items from opponent's anchor points
+        for (int i = 0; i < opponent.getNbAnchorPoints(); i++) {
+            AnchorPoint ap = opponent.getAnchorPointAt(i);
+            Equipment item = ap.getItem();
+            if (item != null) {
+                potentialLoot.add(item); // Add item to list containing potential loot
+                ap.setItem(null);        // Remove item from opponent
+                item.setOwner(null);     // Remove ownership from opponent
+            }
+        }
+
+        // Step 2: Loot equipment if there is space
+        for (Equipment item : potentialLoot) {
+            if (hasFreeAnchorPoint()) {
+                addToAnchorPoint(item);
+                item.setOwner(this);
+            } else if ((item instanceof Weapon || item instanceof Armor)) {
+                // Destroy non-looted weapons and armors only
+                item.destroy();
+            }
+            // Backpacks and purses not looted remain on the ground, do nothing
         }
     }
 }
