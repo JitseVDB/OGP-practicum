@@ -484,7 +484,7 @@ public class Monster extends Entity {
                 item.setOwner(this);
             } else if ((item instanceof Weapon || item instanceof Armor)) {
                 // Destroy non-looted weapons and armors only
-                // item.destroy();
+                item.destroy();
             }
             // Backpacks and purses not looted remain on the ground, do nothing
         }
