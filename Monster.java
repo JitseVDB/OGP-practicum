@@ -405,7 +405,7 @@ public class Monster extends Entity {
         List<Equipment> potentialLoot = new ArrayList<>();
 
         // Step 1: Collect all items from opponent's anchor points
-        for (int i = 0; i < opponent.getNbAnchorPoints(); i++) {
+        for (int i = 1; i < opponent.getNbAnchorPoints(); i++) {
             AnchorPoint ap = opponent.getAnchorPointAt(i);
             Equipment item = ap.getItem();
             if (item != null) {
