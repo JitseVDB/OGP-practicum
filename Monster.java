@@ -10,8 +10,11 @@ import be.kuleuven.cs.som.annotate.*;
  * @invar	Each monster must have a properly spelled name.
  * 			| canHaveAsName(getName())
  *
- * @invar   Each weapon must have a valid damage.
+ * @invar   Each monster must have a valid damage.
  *          | isValidDamage(getDamage());
+ *
+ * @invar   Each monster must have a valid capacity.
+ *          | isValidCapacity(getCapacity());
  *
  * @author  Jitse Vandenberghe
  * @author  Guillaume Vandemoortele
@@ -53,19 +56,25 @@ public class Monster extends Entity {
      * @effect  The new monster has the given damage.
      *          | setDamage(damage)
      *
+     * @post    The new capacity is set to the given capacity.
+     *          | new.getCapacity() = capacity
+     *
      * @throws  IllegalArgumentException
      *          If the given damage is invalid.
-     *          |!isValidDamge(damage)
+     *          |!isValidDamage(damage)
      */
     public Monster(String name, int maxHitPoints, List<Equipment> initialItems) {
         super(name, maxHitPoints, 10);
 
         if (!isValidDamage(damage))
             throw new IllegalArgumentException("Damage cannot be negative, must be below the maximum damage and must be a multiple of 7.");
+        if (!isValidCapacity(capacity))
+            throw new IllegalArgumentException("Capacity cannot be negative.");
 
         initializeAnchorPoints();
         distributeInitialItems(initialItems);
         setDamage(damage);
+        this.capacity = getTotalWeight();
     }
 
     /**********************************************************
@@ -137,16 +146,69 @@ public class Monster extends Entity {
      */
     public void distributeInitialItems(List<Equipment> items) {
         int maxItems = Math.min(items.size(), getNbAnchorPoints());
-        int totalWeight = 0;
 
         for (int i = 0; i < maxItems; i++) {
             Equipment item = items.get(i);
             AnchorPoint anchorPoint = getAnchorPointAt(i);
             anchorPoint.setItem(item);
-            totalWeight += item.getWeight();
         }
+    }
 
-        setCapacity(totalWeight);
+    /**
+     * Determines whether this monster is allowed to carry the given item
+     * by checking if there exists any anchor point where it can be legally placed
+     *
+     * @param   item
+     *          The item to check
+     *
+     * @post    The result is true if there exists at least one anchor point such that:
+     *          the anchor is empty and the capacity is not exceeded.
+     *          | result == (exists ap in anchorPoints:
+     *          |               ap.isEmpty() && getTotalWeight() + item.getWeight() <= getCapacity)
+     *
+     * @return  true if the item if there adding the item does not exceed the capacity and
+     *          there is an empty anchorpoint, false otherwise.
+     */
+    @Override
+    public boolean canHaveAsItem(Equipment item) {
+
+        if (getTotalWeight() + item.getWeight()) <= getCapacity()) {
+            for (AnchorPoint ap : anchorPoints) {
+                if (ap.isEmpty())
+                    return true;
+            }
+            return false;
+        }
+    }
+
+    /**********************************************************
+     * Capacity
+     **********************************************************/
+
+    /**
+     * Variable referencing the capacity of this monster.
+     */
+    private int capacity;
+
+    /**
+     * Return the capacity of this monster.
+     */
+    @Raw @Basic
+    public int getCapacity() {
+        return capacity;
+    }
+
+    /**
+     * Checks whether a given capacity is a valid capacity.
+     *
+     * @param 	capacity
+     * 			The capacity to check.
+     * @return	True if the capacity is a positive number
+     * 			| result == (capacity >= 0)
+     *
+     */
+    public boolean isValidCapacity(int capacity) {
+        return capacity >= 0;
     }
 
     /**********************************************************
@@ -422,7 +484,7 @@ public class Monster extends Entity {
                 item.setOwner(this);
             } else if ((item instanceof Weapon || item instanceof Armor)) {
                 // Destroy non-looted weapons and armors only
-                item.destroy();
+                // item.destroy();
             }
             // Backpacks and purses not looted remain on the ground, do nothing
         }
