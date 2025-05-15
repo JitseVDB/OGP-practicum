@@ -1,4 +1,6 @@
 import java.util.Random;
+import java.util.List;
+
 import be.kuleuven.cs.som.annotate.*;
 
 /**
@@ -6,6 +8,9 @@ import be.kuleuven.cs.som.annotate.*;
  *
  * @invar	Each monster must have a properly spelled name.
  * 			| canHaveAsName(getName())
+ *
+ * @invar   Each weapon must have a valid damage.
+ *          | isValidDamage(getDamage());
  *
  * @author  Jitse Vandenberghe
  * @author  Guillaume Vandemoortele
@@ -24,26 +29,42 @@ public class Monster extends Entity {
      **********************************************************/
 
     /**
-     * Initialize a new monster with the given name, maximum hitpoints, and strength.
+     * Initialize a new monster with the given name, maximum hitpoints, strength, and initial items.
      *
      * @param   name
      *          The name of the monster.
+     * @param   initialItems
+     *          A list of equipment items to randomly distribute over anchor points.
      * @param   maxHitPoints
      *          The base value of the monster.
-     * @param   strength
-     *          The strength of the monster.
      *
      * @effect  The monster is initialized as an entity with the given
      *          name, max hitpoints and protection.
      *          | super(name, maxHitPoints, 10)
      *
      * @effect  The anchor points are initialized.
-     *          | initializeAnchorpoints();
+     *          | initializeAnchorPoints()
+     *
+     * @effect  The given items are randomly distributed over the anchor points,
+     *          and the capacity is set accordingly.
+     *          | distributeInitialItems(initialItems)
+     *
+     * @effect  The new monster has the given damage.
+     *          | setDamage(damage)
+     *
+     * @throws  IllegalArgumentException
+     *          If the given damage is invalid.
+     *          |!isValidDamge(damage)
      */
-    public Monster(String name, int maxHitPoints, double strength) {
+    public Monster(String name, int maxHitPoints, List<Equipment> initialItems) {
         super(name, maxHitPoints, 10);
 
+        if (!isValidDamage(damage))
+            throw new IllegalArgumentException("Damage cannot be negative, must be below the maximum damage and must be a multiple of 7.");
+
         initializeAnchorPoints();
+        distributeInitialItems(initialItems);
+        setDamage(damage);
     }
 
     /**********************************************************
@@ -96,9 +117,95 @@ public class Monster extends Entity {
         }
     }
 
+    /**
+     * Distribute the given items across this monster's anchor points in order.
+     *
+     * The items are assigned to anchor points in the order they appear in the list.
+     * If there are more items than anchor points, only the first items up to the number of anchor points
+     * will be assigned. If there are fewer items than anchor points, some anchor points will remain empty.
+     *
+     * @param items
+     *        The items to distribute.
+     *
+     * @post  Each item is assigned to one of this monster's anchor points.
+     *          | for each i in 0 .. min(items.size(), getNbAnchorPoints()):
+     *          |   getAnchorPointAt(i).setItem(items.get(i))
+     *
+     * @effect  The capacity is set to the total weight of all the items it carries.
+     *          | setCapacity(totalWeight)
+     */
+    public void distributeInitialItems(List<Equipment> items) {
+        int maxItems = Math.min(items.size(), getNbAnchorPoints());
+        int totalWeight = 0;
+
+        for (int i = 0; i < maxItems; i++) {
+            Equipment item = items.get(i);
+            AnchorPoint anchorPoint = getAnchorPointAt(i);
+            anchorPoint.setItem(item);
+            totalWeight += item.getWeight();
+        }
+
+        setCapacity(totalWeight);
+    }
+
     /**********************************************************
      * Damage
      **********************************************************/
+
+    /**
+     * Variable referencing the maximum amount of damage a weapon can deal.
+     */
+    private static final int maximumDamage = 100;
+
+    /**
+     * Return the maximum damage a weapon can deal.
+     */
+    @Basic @Immutable
+    public static int getMaximumDamage() {
+        return maximumDamage;
+    }
+
+    /**
+     * Variable registering the damage of this monster
+     */
+    private int damage;
+
+    /**
+     * Return the damage of this monster.
+     */
+    @Raw @Basic
+    public int getDamage() {
+        return damage;
+    }
+
+    /**
+     * Set the damage of this monster to the given damage.
+     *
+     * @param   damage
+     *          The new damage for this monster.
+     *
+     * @pre     The given damage must be legal.
+     *          | isValidDamage(damage)
+     * @post    The given damage is registered as the damage of this monster.
+     *          | new.getDamage() == damage
+     */
+    @Raw
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    /**
+     * Check whether the given damage is valid for this monster.
+     *
+     * @param   damage The damage to check.
+     *
+     * @return  True if and only if the given damage is positive, does not exceed the maximum allowed damage,
+     *          and is a multiple of 7.
+     *          | result == (damage > 0 && damage <= maximumDamage && damage % 7 == 0)
+     */
+    public boolean isValidDamage(int damage) {
+        return damage > 0 && damage <= maximumDamage && damage % 7 == 0;
+    }
 
     /**
      * Applies damage to this monster.
