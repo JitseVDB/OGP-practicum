@@ -449,6 +449,37 @@ public abstract class Equipment {
     }
 
     /**********************************************************
+     * Shininess
+     **********************************************************/
+
+    /**
+     * Indicates whether this equipment is shiny.
+     */
+    boolean isShiny = false;
+
+    /**
+     * Return whether this equipment is shiny.
+     *
+     * @return True if the equipment is shiny, false otherwise.
+     *         | result == isShiny
+     */
+    @Basic
+    public boolean isShiny() {
+        return isShiny;
+    }
+
+    /**
+     * Set whether this equipment is shiny.
+     *
+     * @param   shiny
+     *          True if the equipment should be shiny, false otherwise.
+     */
+    @Model
+    void setShiny(boolean shiny) {
+        this.isShiny = shiny;
+    }
+
+    /**********************************************************
      * Condition
      **********************************************************/
 

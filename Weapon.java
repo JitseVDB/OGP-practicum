@@ -36,6 +36,9 @@ public class Weapon extends Equipment {
      * @effect  The new weapon has the given damage.
      *          | setDamage(damage);
      *
+     * @post    The shininess is set to true.
+     *          | new.isShiny() = true
+     *
      * @throws  IllegalArgumentException
      *          If the given damage is invalid.
      *          |!isValidDamge(damage)
@@ -47,6 +50,7 @@ public class Weapon extends Equipment {
             throw new IllegalArgumentException("Damage cannot be negative, must be below the maximum damage and must be a multiple of 7.");
 
         setDamage(damage);
+        this.isShiny = true;
     }
 
     /**********************************************************
