@@ -17,7 +17,10 @@ public class EntityTest {
 
     // EQUIPMENT
     private static Armor armor_A;
-
+    private static Equipment armor_B;
+    private static Weapon weapon_A;
+    private static Weapon weapon_B;
+    private static Purse purse_A;
 
 
     @BeforeEach
@@ -26,6 +29,10 @@ public class EntityTest {
         // This initializes 5 anchorpoints as well and sets the hitpoints to closest prime number
 
         armor_A = new Armor(30, 80, ArmorType.BRONZE);
+        armor_B = new Armor(30, 30, ArmorType.BRONZE);
+        weapon_A = new Weapon(30, 30, 35);
+        weapon_B = new Weapon(30, 30, 35);
+        purse_A = new Purse(30, 30);
 
     }
 
@@ -146,6 +153,24 @@ public class EntityTest {
         // 1. Index out of bounds
         assertThrows(IndexOutOfBoundsException.class, () -> hero_A.getAnchorPointAt(0));
         assertThrows(IndexOutOfBoundsException.class, () -> hero_A.getAnchorPointAt(10));
+    }
+
+        @Test
+    void testHasFreeAnchorPoint_FreeAnchorPoint_ShouldReturnTrue() {
+        // 1. No items added
+        assertTrue(hero_A.hasFreeAnchorPoint());
+    }
+
+    @Test
+    void testHasFreeAnchorPoint_NoFreeAnchorPoint_ShouldReturnFalse() {
+        // 1. Add item to every anchorpoint
+        armor_A.setOwner(hero_A);
+        armor_B.setOwner(hero_A);
+        weapon_A.setOwner(hero_A);
+        weapon_B.setOwner(hero_A);
+        purse_A.setOwner(hero_A);
+
+        assertFalse(hero_A.hasFreeAnchorPoint());
     }
 
 }
