@@ -310,14 +310,42 @@ public abstract class Equipment {
     }
 
     /**
-     * Sets the owner of this piece of equipment.
+     * Set the owner to which this item belongs.
+     * This setter maintains the bidirectional relationship in both directions
+     * and ensures that invariants on both ends are satisfied.
      *
      * @param   owner
-     *          The entity that will own this equipment, or null if the item doesn't have an owner.
+     *          The new owner to which this item belongs.
+     *
+     * @post    The owner of this item is set to the given
+     *          owner.
+     *          | new.getOwner() == owner
+     *
+     * @effect	If the given owner is different from the current owner, this item is
+     *          removed from the current owner.
+     * 			| if (getOwner() != owner)
+     * 			| then getOwner().removeAsItem(this)
+     *
+     * @effect	If the given owner is effective and not yet registered as
+     * 			the current owner of this item, this item is added to the owner.
+     * 			| if (owner != null && getOwner() != owner)
+     * 			| then owner.addAsItem(this)
+     *
+     * @throws  IllegalArgumentException
+     *          The owner is effective, but cannot own this item.
+     *          | (owner != null) && !owner.canHaveAsItem(this)
+     *
+     * @note	The setter is only responsible to satisfy the invariants w.r.t. the bidirectional relationship.
+     * 			It ensures both the consistency of the relationship and
+     * 			the restrictions on the actual referenced parent.
+     *
+     * @note	The exception clauses that come in through the effects are all
+     * 			cancelled out by the throws clauses here.
      */
-    
     @Raw @Basic
     public void setOwner(Entity owner) {
+        if (owner != null && !owner.canHaveAsItem(this))
+            throw new IllegalArgumentException("This item can not belong to the given owner.");
         // Remember the previous owner
         Entity previousOwner = getOwner();
 
