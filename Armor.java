@@ -44,6 +44,9 @@ public class Armor extends Equipment {
      *
      * @effect  The new piece of armor is initialized with the maximal protection as current protection.
      *          | setCurrentProtection(maximalProtection)
+     *
+     * @post    The shininess is set to true.
+     *          | new.isShiny() = true
      */
     public Armor(int weight, int baseValue, ArmorType type) {
         super(weight, baseValue);
@@ -51,6 +54,7 @@ public class Armor extends Equipment {
         this.type = type;
         this.maximalProtection = type.getMaxProtection();
         setCurrentProtection(maximalProtection);
+        this.isShiny = true;
     }
 
     /**********************************************************
@@ -229,7 +233,7 @@ public class Armor extends Equipment {
      **********************************************************/
 
     /**
-     * Returns the maximum value of a piece of equipment.
+     * Returns the maximum value of a piece of armor.
      */
     @Basic
     public int getMaximumValue() {

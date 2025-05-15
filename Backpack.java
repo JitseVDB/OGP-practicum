@@ -75,7 +75,7 @@ public class Backpack extends StorageItem {
      * @invar   Each item in the map references an item that references
      *          back to this backpack.
      *          | for each item in contents:
-     *          |   item.getBackpack() == this // VERDER UITWERKEN LATER
+     *          |   item.getBackpack() == this
      *
      * @note The backpack class is the sole controller of the backpack–equipment relationship.
      *       Items can only be added or removed via the backpack’s own interface.
