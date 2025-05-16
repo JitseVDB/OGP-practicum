@@ -281,7 +281,9 @@ public abstract class Entity {
      * @return true if the number is prime; false otherwise.
      */
     public boolean isPrime(int number) {
-        if (number < 2) return false;
+        if (number == 0) return true;
+
+        if (number < 2 ) return false;
         for (int i = 2; i <= Math.sqrt(number); i++) {
             if (number % i == 0) return false;
         }
