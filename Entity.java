@@ -685,6 +685,26 @@ public abstract class Entity {
         return null;
     }
 
+    /**
+     * returns the achorpoint to which the item is attached.
+     *
+     * @param item
+     *        item to return the anchorpoint of.
+     * @return if item is attached to anchorpoint in this entity return the anchorpoint,
+     *         return null otherwise.
+     *          |  if (for some I in 1..getNbAnchorPoints()):
+     *          |       getAnchorPointAt(i).getItem() == item
+     *          |       return anchorpoint
+     */
+    public AnchorPoint getAnchorPointOfItem(Equipment item) {
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            AnchorPoint anchorpoint = getAnchorPointAt(i);
+            if ((anchorpoint.getItem() == item) && item != null) {
+                return anchorpoint;
+            }
+        }
+        return null;
+    }
 
 
 }
