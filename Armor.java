@@ -198,7 +198,7 @@ public class Armor extends Equipment {
     }
 
     /**
-     * Set the current protection of this piece of armor to the given damage.
+     * Set the current protection of this piece of armor to the given protection.
      *
      * @param   currentProtection
      *          The new current protection for this piece of armor.
@@ -249,7 +249,7 @@ public class Armor extends Equipment {
      * Calculate the current value of this piece of armor.
      *
      * @return  The calculated current value, guaranteed to be greater or equal to zero and at most 100.
-     *          | result == damage * currentProtection/maximalProtection
+     *          | result == baseValue * currentProtection/maximalProtection
      */
     protected int calculateCurrentValue() {
         return baseValue * currentProtection/maximalProtection;

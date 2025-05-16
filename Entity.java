@@ -7,14 +7,17 @@ import java.util.List;
  *
  * A class representing the entities (monsters and heroes) in the game.
  *
- * @invar  The name of the entity must be valid.
- *       | canHaveAsName(getName())
- * @invar  The amount of hitpoints must be valid.
- *       | isValidHitPoints(getHitPoints())
- * @invar  Each entity must have a valid protection factor.
- *       | isValidProtection(getProtection())
- * @invar  The maximum amount of hitpoints of an entity must be valid
- *       | isValidMaxHitPoints(getMaxHitPoints())
+ * @invar   The name of the entity must be valid.
+ *          | canHaveAsName(getName())
+ *
+ * @invar   The amount of hitpoints must be valid.
+ *          | isValidHitPoints(getHitPoints())
+ *
+ * @invar   Each entity must have a valid protection factor.
+ *          | isValidProtection(getProtection())
+ *
+ * @invar   The maximum amount of hitpoints of an entity must be valid
+ *          | isValidMaxHitPoints(getMaxHitPoints())
  *
  * @author Ernest De Gres
  * @author Jitse Vandenberghe
@@ -32,22 +35,27 @@ public abstract class Entity {
     /**
      * Initialize a new entity with the given name, hitpoints, max hitpoints and protection factor.
      *
-     * @param name
-     *        The name of the new entity.
-     * @param maxHitPoints
-     *        The maximum number of hitpoints.
+     * @param   name
+     *          The name of the new entity.
      *
-     * @pre The maximum amount of hitpoints must be positive
-     *       | maxHitPoints >= 0
+     * @param   maxHitPoints
+     *          The maximum number of hitpoints.
      *
-     * @post The name of the entity is set to the given name.
-     *       | new.getName() == name
-     * @post The maximum and current hitpoints are set to the given value.
-     *       | new.getMaxHitPoints() == maxHitPoints
-     *       | new.getHitPoints() == maxHitPoints
-     * @post The protection factor is set to the 10.
-     *       | new.getProtection() == 10
-     * @post The new entity is not fighting. | !new.isFighting()
+     * @pre     The maximum amount of hitpoints must be positive
+     *          | maxHitPoints >= 0
+     *
+     * @post    The name of the entity is set to the given name.
+     *          | new.getName() == name
+     *
+     * @post    The maximum and current hitpoints are set to the given value.
+     *          | new.getMaxHitPoints() == maxHitPoints
+     *          | new.getHitPoints() == maxHitPoints
+     *
+     * @post    The new entity is not fighting.
+     *          | !new.isFighting()
+     *
+     * @effect  The anchor points are initialized.
+     *          | initializeAnchorPoints()
      *
      * @throws IllegalArgumentException
      *         If the given name is invalid
@@ -62,7 +70,6 @@ public abstract class Entity {
         this.name = name;
         this.maxHitPoints = maxHitPoints;
         this.hitPoints = maxHitPoints;
-        this.protection = 10;
         this.anchorPoints = new ArrayList<>();
         this.isFighting = false;
 
@@ -727,9 +734,3 @@ public abstract class Entity {
 
 
 }
-
-
-
-
-
-

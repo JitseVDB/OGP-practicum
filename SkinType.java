@@ -4,9 +4,9 @@ import be.kuleuven.cs.som.annotate.Raw;
 import be.kuleuven.cs.som.annotate.Value;
 
 /**
- * An enumeration of armor types.
+ * An enumeration of skin types.
  * In its current definition, the class only distinguishes between
- * tin and bronze pieces of armor. With each armor type, a maximal protection is associated.
+ * though, thick and scaly skin. With each skin type, a maximal protection is associated.
  *
  * @invar      Each type must have a valid maximal protection.
  *             | isValidMaximalProtection(getMaxProtection())
@@ -15,24 +15,24 @@ import be.kuleuven.cs.som.annotate.Value;
  * @version    1.1
  */
 @Value
-public enum ArmorType {
-    TIN(70), BRONZE(90);
+public enum SkinType {
+    TOUGH(10), THICK(20), SCALY(30);
 
     /**
-     * Initialize a new type of armor with given maximal protection.
+     * Initialize a new type of skin with given maximal protection.
      *
      * @param   maxProtection
-     *          The maximal protection of the new type of armor.
+     *          The maximal protection of the new type of skin.
      *
-     * @post    The given maximal protection is registered as the maximal protection of this armor type.
-     *          | new.getMaximalProtection() == maxProtection
+     * @post    The given maximal protection is registered as the maximal protection of this skin type.
+     *          | new.getWeight() == weight
      *
      * @throws  IllegalArgumentException
      *          If the given maximal protection is invalid.
      *          |!isValidMaxProtection(maxProtection)
      */
     @Raw
-    ArmorType(int maxProtection) {
+    SkinType(int maxProtection) {
         if (!isValidMaxProtection(maxProtection))
             throw new IllegalArgumentException("The maximal protection must be between 0 and 100");
 
@@ -40,7 +40,7 @@ public enum ArmorType {
     }
 
     /**
-     * Return the maximal protection of this armor type.
+     * Return the maximal protection of this skin type.
      */
     @Raw @Basic @Immutable
     public int getMaxProtection() {
@@ -48,7 +48,7 @@ public enum ArmorType {
     }
 
     /**
-     * Check whether the given maximal protection is a valid maximal protection for this armor type.
+     * Check whether the given maximal protection is a valid maximal protection for this skin type.
      *
      * @param   maximalProtection
      *          The maximal protection to check.
@@ -61,7 +61,7 @@ public enum ArmorType {
     }
 
     /**
-     * Variable registering the maximal protection of this type of armor.
+     * Variable registering the maximal protection of this type of skin.
      */
     private final int maxProtection;
 }
