@@ -163,14 +163,14 @@ public class Monster extends Entity {
      */
     @Override
     public boolean canHaveAsItem(Equipment item) {
-
-        if (getTotalWeight() + item.getWeight()) <= getCapacity()) {
+        if (getTotalWeight() + item.getWeight() <= getCapacity()) {
             for (AnchorPoint ap : anchorPoints) {
                 if (ap.isEmpty())
                     return true;
             }
             return false;
         }
+        return false;
     }
 
     /**********************************************************
