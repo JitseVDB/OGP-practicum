@@ -1,3 +1,4 @@
+
 import be.kuleuven.cs.som.annotate.Basic;
 
 import java.util.Random;
@@ -68,7 +69,7 @@ public class Hero extends Entity {
      *      |getArmor() == null
      */
     public Hero(String name, int maxHitPoints, double strength) {
-        super(name, maxHitPoints, 10);
+        super(name, maxHitPoints);
         if (strength <= 0)
             throw new IllegalArgumentException("Strength must be positive");// standaard protection=10
         if (maxHitPoints <= 0)
@@ -605,7 +606,7 @@ public class Hero extends Entity {
      * @post The result is equal to getProtection() + armor.getCurrentProtection()
      */
 
-    @Override, @Basic
+    @Override @Basic
     public int getRealProtection() {
         int base = getProtection(); // = standaardbescherming (bv. 10)
         int armorBonus = 0;
@@ -968,5 +969,3 @@ public class Hero extends Entity {
         super.removeHitPoints(actual);
     }
 }
-
-

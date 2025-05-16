@@ -616,8 +616,8 @@ public class HeroesTest {
         Weapon sword = new Weapon(21, 7);
         hero.getAnchorPoint("leftHand").setItem(sword); // correcte manier
 
-        Monster monster = new Monster("Grass", 50, new ArrayList<>());
-        monster.setRealProtection(0); // zodat hit slaagt
+        Monster monster = new Monster("Grass", 50, 49, new ArrayList<Equipment>(), SkinType.SCALY);
+        monster.setCurrentProtection(0); // zodat hit slaagt
 
         hero.hit(monster);
 
@@ -634,8 +634,8 @@ public class HeroesTest {
         hero.equipLeftHand(axe);
 
         List<Equipment> items = new ArrayList<>();
-        Monster monster = new Monster("Examens", 10, items); // Zwakke monster
-        monster.setRealProtection(0);
+        Monster monster = new Monster("Examens", 10, 49, items, SkinType.SCALY); // Zwakke monster
+        monster.setCurrentProtection(0);
 
         int hpBefore = hero.getHitPoints();
         hero.hit(monster);
@@ -647,8 +647,8 @@ public class HeroesTest {
     @Test
     void testHitFailsIfProtectionTooHigh() {
         Hero hero = new Hero("TestHero", 100, 10);
-        Monster monster = new Monster("Broer", 100, new ArrayList<>());
-        monster.setRealProtection(100); // onrealistisch hoog om de hit te laten falen
+        Monster monster = new Monster("Broer", 100, 49, new ArrayList<Equipment>(), SkinType.SCALY);
+        monster.setCurrentProtection(100); // onrealistisch hoog om de hit te laten falen
 
         int initialHP = monster.getHitPoints();
         hero.hit(monster);
@@ -682,8 +682,8 @@ public class HeroesTest {
         hero.getAnchorPoint("leftHand").setItem(sword);
 
         // Monster met weinig HP zodat de hit dodelijk is
-        Monster monster = new Monster("Outside", 10, new ArrayList<>());
-        monster.setRealProtection(0); // gegarandeerde hit
+        Monster monster = new Monster("Outside", 10,  49, new ArrayList<Equipment>(), SkinType.SCALY);
+        monster.setCurrentProtection(0); // gegarandeerde hit
 
         hero.hit(monster);
         assertEquals(0, monster.getHitPoints()); // monster is dood
@@ -729,7 +729,7 @@ public class HeroesTest {
 
         Weapon loot = new Weapon(24, 49);
 
-        Monster monster = new Monster("Goblin", 30, new ArrayList<>());
+        Monster monster = new Monster("Goblin", 30, 49, new ArrayList<Equipment>(), SkinType.SCALY);
 
         // Zorg dat het op een compatibel anchor zit (bv. "leftHand")
         monster.getAnchors().put("leftHand", loot);
@@ -748,7 +748,7 @@ public class HeroesTest {
         Hero hero = new Hero("Tiny", 10, 1.0); // max capacity = 20
 
         Weapon heavyLoot = new Weapon(30, 14); // too heavy
-        Monster monster = new Monster("Ogre", 50, new ArrayList<>());
+        Monster monster = new Monster("Ogre", 50, 49, new ArrayList<Equipment>(), SkinType.SCALY);
 
         for (Map.Entry<String, Equipment> entry : monster.getAnchors().entrySet()) {
             if (entry.getValue() == null) {
@@ -776,7 +776,7 @@ public class HeroesTest {
 
 
         // Monster zonder items
-        Monster monster = new Monster("Gremlin", 30, new ArrayList<>());
+        Monster monster = new Monster("Gremlin", 30, 49, new ArrayList<Equipment>(), SkinType.SCALY);
 
         // Voeg handmatig een loot-item toe aan een monster anchor
         Weapon loot = new Weapon(5, 14);

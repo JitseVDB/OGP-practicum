@@ -1,3 +1,4 @@
+
 import java.util.*;
 
 import be.kuleuven.cs.som.annotate.*;
@@ -43,6 +44,9 @@ public abstract class Equipment {
      *
      * @post    A randomly generated identification number is registered as the identification number.
      *          | new.getIdentification() == generateIdentification();
+     *
+     * @post    The new equipment is in good condition.
+     *          | !new.isDestroyed()
      *
      * @effect  The identification number is added to the map to keep track of all identification numbers
      *          for each equipment type.
@@ -294,7 +298,7 @@ public abstract class Equipment {
     protected abstract int calculateCurrentValue();
 
     /**********************************************************
-     * Owner 
+     * Owner
      **********************************************************/
 
     /**
@@ -302,13 +306,13 @@ public abstract class Equipment {
      *
      * @note 	This class is the controlling class for the bidirectional relationship.
      */
-    private static Entity owner = null;
+    private Entity owner = null;
 
     /**
      * Return the owner of this piece of equipment (if any).
      */
     @Raw @Basic
-    public static Entity getOwner() {
+    public Entity getOwner() {
         return owner;
     }
 
@@ -359,25 +363,28 @@ public abstract class Equipment {
         // Remember the previous owner
         Entity previousOwner = getOwner();
 
+
         // First, set up / break down the relationship from this side:
         this.owner = owner;
 
 
         // Then, break down the old relationship from the other side, if it existed
         // if item in backpack, you do not have to remove item from owner
-        if ((previousOwner != null) && (!hasProperBackpack())){
-            try{
+        if ((previousOwner != null) && (!hasProperBackpack())) {
+            try {
                 previousOwner.removeAsItem(this);
                 // the prime object is now in a raw state!
-            }catch(IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 // Should never occur!
-                throw e;
+                assert false;
             }
         }
 
         // if item in backpack, then remove item from backpack
         if (hasProperBackpack()) {
             setBackpack(null);
+            // Re-set owner
+            this.owner = owner;
         }
 
 
@@ -387,7 +394,7 @@ public abstract class Equipment {
                 owner.addAsItem(this);
             }catch(IllegalArgumentException e) {
                 // Should never occur!
-                throw e;
+                assert false;
             }
         }
     }
@@ -405,20 +412,19 @@ public abstract class Equipment {
     private Backpack backpack = null;
 
     /**
-     * Check whether the bidirectional relationship between this disk item and its parent directory is consistent.
+     * Check whether the bidirectional relationship between this equipment and its backpack is consistent.
      *
-     * @return  True if the backpack has registered this item in its contents,
+     * @return  True if the backpack has registered this item in its contents and is not null,
      *          false otherwise.
-     *          | result == (getParentDirectory().hasAsItem(this))
+     *          | result == (getBackpack() != null && getBackpack().hasAsItem(this))
      *
-     * @note    This checker ensures that the parent directory has this item in its contents, maintaining the consistency
-     *          of the bidirectional relationship between the item and its parent directory.
+     * @note    This checker ensures that the backpack has this item in its contents, maintaining the consistency
+     *          of the bidirectional relationship between the item and its backpack.
      */
     @Raw
     public boolean hasProperBackpack() {
-        return getBackpack() != null && getBackpack().hasAsItem(this);
+        return (getBackpack() != null) && getBackpack().hasAsItem(this);
     }
-
 
     /**
      * Returns the backpack in which this equipment is stored (if any).
@@ -478,29 +484,37 @@ public abstract class Equipment {
         // Remember the old parent directory
         Backpack oldBackpack = getBackpack();
 
-        // First, set up / break down the relationship from this side:
-        this.backpack = backpack;
-        this.owner = Backpack.getOwner();
+        // Only update if the new backpack is different
+        if (oldBackpack != backpack) {
 
-        // Then, break down the old relationship from the other side, if it existed
-        if (oldBackpack != null) {
-            try{
-                oldBackpack.removeItem(this);
-                // the prime object is now in a raw state!
-            }catch(IllegalArgumentException e) {
-                // Should never occur!
-                assert false;
+            // First, set up / break down the relationship from this side:
+            this.backpack = backpack;
+            if (backpack == null) {
+                this.owner = null;
             }
-        }
+            else {
+                this.owner = backpack.getOwner();
+            }
 
-        // Finally, set up the new relationship from the other side, if needed
-        if (backpack != null) {
-            try{
-                backpack.addItem(this);
-                this.owner = Backpack.getOwner();
-            }catch(IllegalArgumentException e) {
-                // Should never occur!
-                assert false;
+            // Then, break down the old relationship from the other side, if it existed
+            if (oldBackpack != null) {
+                try {
+                    oldBackpack.removeItem(this);
+                    // the prime object is now in a raw state!
+                } catch (IllegalArgumentException e) {
+                    // Should never occur!
+                    assert false;
+                }
+            }
+
+            // Finally, set up the new relationship from the other side, if needed
+            if (backpack != null) {
+                try {
+                    backpack.addItem(this);
+                } catch (IllegalArgumentException e) {
+                    // Should never occur!
+                    assert false;
+                }
             }
         }
     }
@@ -510,7 +524,9 @@ public abstract class Equipment {
      **********************************************************/
 
     /**
-     * Indicates whether this equipment is shiny.
+     * Indicates whether the equipment is shiny.
+     *
+     * Default value is false, but subclasses may override this behavior.
      */
     boolean isShiny = false;
 

@@ -1,3 +1,4 @@
+
 import be.kuleuven.cs.som.annotate.*;
 
 import java.util.ArrayList;
@@ -162,7 +163,7 @@ public abstract class Entity {
      */
     @Raw @Basic
     public void setHitPoints(int hitPoints) {
-            this.hitPoints = hitPoints;
+        this.hitPoints = hitPoints;
     }
 
     /**
@@ -295,11 +296,10 @@ public abstract class Entity {
      * @return The closest lower prime number.
      */
     public int getClosestLowerPrime(int start) {
-        if (start <= 0) return 0;
         for (int i = start - 1; i >= 2; i--) {
             if (isPrime(i)) return i;
         }
-        return 2;
+        return 2; // fallback
     }
 
     /**
@@ -338,13 +338,14 @@ public abstract class Entity {
      *         hit points are reduced to the closest lower prime.
      */
     public void removeHitPoints(int amount) {
-        this.hitPoints -= amount;
-        if (this.hitPoints < 0) this.hitPoints = 0;
-
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            if (getHitPoints() > p)
-                this.hitPoints = p; // of gebruik setHitPoints(p);
+        if ((this.hitPoints -= amount) <= 0) {
+            this.hitPoints = 0;
+        }
+        else{
+            if (!isFighting && !isPrime(getHitPoints())) {
+                int p = getClosestLowerPrime(getHitPoints());
+                this.hitPoints = p;
+            }
         }
     }
 
@@ -558,6 +559,27 @@ public abstract class Entity {
     }
 
 
+    /**
+     * Returns a list of all items currently carried by this entity.
+     *
+     * Only non-null items are included in the result. Items are retrieved from each anchor point.
+     *
+     * @return A list containing all non-null items held in the entity's anchor points.
+     */
+    public List<Equipment> getAllItems() {
+        List<Equipment> equipmentList = new ArrayList<>();
+
+        for (int i = 1; i < getNbAnchorPoints(); i++) {
+            Equipment item = getAnchorPointAt(i).getItem();
+            if (item != null) {
+                equipmentList.add(item);
+            }
+        }
+
+        return equipmentList;
+    }
+
+
     public abstract boolean canHaveAsItem(Equipment item);
 
     /**
@@ -693,27 +715,24 @@ public abstract class Entity {
     }
 
     /**
-     * Returns the total weight of all the items which the entity is carrying.
+     * returns the achorpoint to which the item is attached.
      *
-     * If an item is a backpack, its total weight includes the contents of the backpack.
-     * Empty anchor points are ignored.
-     *
-     * @return The sum of the weights of all items in anchor points.
+     * @param item
+     *        item to return the anchorpoint of.
+     * @return if item is attached to anchorpoint in this entity return the anchorpoint,
+     *         return null otherwise.
+     *          |  if (for some I in 1..getNbAnchorPoints()):
+     *          |       getAnchorPointAt(i).getItem() == item
+     *          |       return anchorpoint
      */
-    public int getTotalWeight() {
-        int totalWeight = 0;
-
-        for (int i = 1; i < getNbAnchorPoints(); i++) {
-            Equipment item = getAnchorPointAt(i).getItem();
-            if (item == null) continue;
-
-            if (item instanceof Backpack)
-                totalWeight += ((Backpack) item).getTotalWeight(); // explicit cast
-            else
-                totalWeight += item.getWeight();
+    public AnchorPoint getAnchorPointOfItem(Equipment item) {
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            AnchorPoint anchorpoint = getAnchorPointAt(i);
+            if ((anchorpoint.getItem() == item) && item != null) {
+                return anchorpoint;
+            }
         }
-
-        return totalWeight;
+        return null;
     }
 
     /**
@@ -728,4 +747,6 @@ public abstract class Entity {
         }
         return anchors;
     }
+
+
 }

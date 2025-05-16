@@ -19,10 +19,10 @@ public class BattleTest {
         weakHero = new Hero("WeakHero", 20, 1.0);
 
         // Monster constructor requires name, maxHitPoints, and initialItems
-        strongMonster = new Monster("StrongMonster", 100, new ArrayList<>());
+        strongMonster = new Monster("StrongMonster", 100, 49, new ArrayList<Equipment>(), SkinType.SCALY);
         strongMonster.setDamage(21); // must be a multiple of 7 and <= 100
 
-        weakMonster = new Monster("WeakMonster", 30, new ArrayList<>());
+        weakMonster = new Monster("WeakMonster", 30, 49, new ArrayList<Equipment>(), SkinType.SCALY);
         weakMonster.setDamage(7); // minimum valid damage
     }
 
@@ -65,7 +65,7 @@ public class BattleTest {
     @Test
     void testEdgeCaseBothWeak() {
         Hero lowHpHero = new Hero("Glass", 10, 1.0);
-        Monster lowHpMonster = new Monster("Slime", 10, new ArrayList<>());
+        Monster lowHpMonster = new Monster("Slime", 10, 49, new ArrayList<Equipment>(), SkinType.SCALY);
         lowHpMonster.setDamage(7);
 
         Battle battle = new Battle(lowHpHero, lowHpMonster);
