@@ -25,29 +25,32 @@ public class Weapon extends Equipment {
      *
      * @param   weight
      *          The weight of the weapon.
-     * @param   baseValue
-     *          The base value of the weapon, in dukaten.
+     *
      * @param   damage
      *          The damage this weapon can inflict.
      *
      * @effect  The weapon is initialized as a piece of equipment.
      *          (weight, base value are set and an identification number is generated and assigned)
-     *          | super(weight, baseValue)
+     *          | super(weight, 0)
      *
      * @effect  The new weapon has the given damage.
      *          | setDamage(damage);
+     *
+     * @post    The shininess is set to true.
+     *          | new.isShiny() = true
      *
      * @throws  IllegalArgumentException
      *          If the given damage is invalid.
      *          |!isValidDamge(damage)
      */
-    public Weapon(int weight, int baseValue, int damage) {
-        super(weight, baseValue);
+    public Weapon(int weight, int damage) {
+        super(weight, 0);
 
         if (!isValidDamage(damage))
             throw new IllegalArgumentException("Damage cannot be negative, must be below the maximum damage and must be a multiple of 7.");
 
         setDamage(damage);
+        this.isShiny = true;
     }
 
     /**********************************************************
@@ -63,8 +66,8 @@ public class Weapon extends Equipment {
      * @param   identification
      *          The identification number to check.
      *
-     * @return  True if the identification number is non-negative, divisible by 2, divisible by 3,
-     *          and unique within the given equipment type; false otherwise.
+     * @return  True if the identification number satisfies the superclasses validity conditions and
+     *          is divisible by both 2 and 3, false otherwise.
      *          | result == super.isValidIdentification(equipmentType, identification)
      *          |        && (identification % 2 == 0)
      *          |        && (identification % 3 == 0)
@@ -83,14 +86,14 @@ public class Weapon extends Equipment {
      * @return  A non-negative and unique identification number divisble by 2 and 3 that satisfies the conditions defined by canHaveAsIdentification.
      *          | canHaveAsIdentification(this.getClass(), result)
      *
-     * @post   The returned identification number is guaranteed to be unique among all equipment of the same type.
+     * @post   The returned identification number is guaranteed to satisfy the validity conditions stated in canHaveAsIdentification.
      *         | canHaveAsIdentification(this.getClass(), result)
      *
      * @note   The identification number is not automatically added to the registry; this must be done separately
      *         (via addIdentification()).
      */
     @Override
-    protected long generateIdentification() {
+    public long generateIdentification() {
         Random random = new Random();
         long possibleID = Math.abs(random.nextLong())*6;
 
@@ -109,7 +112,7 @@ public class Weapon extends Equipment {
     /**
      * Variable referencing the damage of this weapon
      */
-    private int damage;
+    private int damage = 0;
 
     /**
      * Variable referencing the maximum amount of damage a weapon can deal.
@@ -130,8 +133,12 @@ public class Weapon extends Equipment {
      * @param   damage
      *          The new damage for this weapon.
      *
+     * @pre     The equipment is not destroyed.
+     *          | !isDestroyed()
+     *
      * @pre     The given damage must be legal.
      *          | isValidDamage(damage)
+     *
      * @post    The given damage is registered as the damage of this weapon.
      *          | new.getDamage() == damage
      */
@@ -166,9 +173,9 @@ public class Weapon extends Equipment {
      **********************************************************/
 
     /**
-     * Returns the maximum value of a piece of equipment.
+     * Returns the maximum value of a weapon.
      */
-    @Basic
+    @Override @Basic
     public int getMaximumValue() {
         return 200;
     }
@@ -193,7 +200,26 @@ public class Weapon extends Equipment {
      *          | result == damage * valuePerDamageUnit
      */
     protected int calculateCurrentValue() {
-        return damage * valuePerDamageUnit;
+        return getDamage() * getValuePerDamageUnit();
+    }
+
+    /**********************************************************
+     * Condition
+     **********************************************************/
+
+    /**
+     * Set this weapon to destroyed and set its damage to zero.
+     *
+     * @effect  The damage of the purse is set to zero.
+     *          | setDamage(0)
+     *
+     * @effect  The condition is set to DESTROYED
+     *          | setCondition(Condition.DESTROYED)
+     */
+    @Override @Model
+    void destroy() {
+        setDamage(0);
+        setCondition(Condition.DESTROYED);
     }
 }
 

@@ -36,11 +36,17 @@ public class Armor extends Equipment {
      *          (weight, base value are set and an identification number is generated and assigned)
      *          | super(weight, baseValue)
      *
+     * @post    The type of armor is set to the given type.
+     *          | new.GetType = type
+     *
      * @post    The maximal protection is set to the given maximal protection.
      *          | new.getMaximalProtection() == maximalProtection
      *
      * @effect  The new piece of armor is initialized with the maximal protection as current protection.
      *          | setCurrentProtection(maximalProtection)
+     *
+     * @post    The shininess is set to true.
+     *          | new.isShiny() = true
      */
     public Armor(int weight, int baseValue, ArmorType type) {
         super(weight, baseValue);
@@ -48,6 +54,7 @@ public class Armor extends Equipment {
         this.type = type;
         this.maximalProtection = type.getMaxProtection();
         setCurrentProtection(maximalProtection);
+        this.isShiny = true;
     }
 
     /**********************************************************
@@ -71,7 +78,7 @@ public class Armor extends Equipment {
     @Override
     public boolean canHaveAsIdentification(Class<?> equipmentType, long identification) {
         return super.canHaveAsIdentification(equipmentType, identification)
-                // The identification number must be divisible by 2 and 3.
+                // The identification number must be a prime number.
                 && isPrime(identification);
     }
 
@@ -82,7 +89,7 @@ public class Armor extends Equipment {
      *
      * @return  True if the number is prime, false otherwise.
      */
-    public static boolean isPrime(long number) {
+    public boolean isPrime(long number) {
         // Numbers less than or equal to 1 are not prime
         if (number <= 1) {
             return false;
@@ -127,7 +134,7 @@ public class Armor extends Equipment {
      *         (via addIdentification()).
      */
     @Override
-    protected long generateIdentification() {
+    public long generateIdentification() {
         Random random = new Random();
         long possibleID = Math.abs(random.nextLong() % 1_000_000);
 
@@ -191,17 +198,23 @@ public class Armor extends Equipment {
     }
 
     /**
-     * Set the current protection of this piece of armor to the given damage.
+     * Set the current protection of this piece of armor to the given protection.
      *
      * @param   currentProtection
      *          The new current protection for this piece of armor.
      *
-     * @pre     The given damage must be legal.
-     *          | isValidDamage(damage)
-     * @post    The given damage is registered as the damage of this piece of armor.
-     *          | new.getDamage() == damage
+     * @pre     The equipment is not destroyed.
+     *          | !isDestroyed()
+     *
+     * @post    The given current protection is registered as the current protection of this piece of armor.
+     *          | new.getCurrentProtection() == currentProtection
+     *
+     * @throws  IllegalArgumentException
+     *          If the given current protection is invalid.
+     *          |!isValidCurrentProtection(currentProtection)
      */
-    public void setCurrentProtection(int currentProtection) {
+    public void setCurrentProtection(int currentProtection)
+            throws IllegalArgumentException {
         if (!isValidCurrentProtection(currentProtection))
             throw new IllegalArgumentException("The current protection must be between 0 and " + maximalProtection);
         this.currentProtection = currentProtection;
@@ -217,7 +230,7 @@ public class Armor extends Equipment {
      *          | result == (value >= 0 && value <= maximalProtection)
      */
     public boolean isValidCurrentProtection(int currentProtection) {
-        return maximalProtection >= 0 && currentProtection <= maximalProtection;
+        return currentProtection >= 0 && currentProtection <= maximalProtection;
     }
 
     /**********************************************************
@@ -225,7 +238,7 @@ public class Armor extends Equipment {
      **********************************************************/
 
     /**
-     * Returns the maximum value of a piece of equipment.
+     * Returns the maximum value of a piece of armor.
      */
     @Basic
     public int getMaximumValue() {
@@ -236,7 +249,7 @@ public class Armor extends Equipment {
      * Calculate the current value of this piece of armor.
      *
      * @return  The calculated current value, guaranteed to be greater or equal to zero and at most 100.
-     *          | result == damage * currentProtection/maximalProtection
+     *          | result == baseValue * currentProtection/maximalProtection
      */
     protected int calculateCurrentValue() {
         return baseValue * currentProtection/maximalProtection;
@@ -256,6 +269,25 @@ public class Armor extends Equipment {
      */
     public ArmorType getType() {
         return type;
+    }
+
+    /**********************************************************
+     * Condition
+     **********************************************************/
+
+    /**
+     * Set this armor to destroyed and set its protection to zero.
+     *
+     * @effect  The protection of the protection is set to zero.
+     *          | setCurrentProtection(0)
+     *
+     * @effect  The condition is set to DESTROYED
+     *          | setCondition(Condition.DESTROYED)
+     */
+    @Override @Model
+    void destroy() {
+        setCurrentProtection(0);
+        setCondition(Condition.DESTROYED);
     }
 
 }

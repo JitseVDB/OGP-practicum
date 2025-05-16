@@ -3,6 +3,7 @@ import be.kuleuven.cs.som.annotate.Model;
 import be.kuleuven.cs.som.annotate.Raw;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,12 +76,12 @@ public class Backpack extends StorageItem {
      * @invar   Each item in the map references an item that references
      *          back to this backpack.
      *          | for each item in contents:
-     *          |   item.getBackpack() == this // VERDER UITWERKEN LATER
+     *          |   item.getBackpack() == this
      *
      * @note The backpack class is the sole controller of the backpack–equipment relationship.
      *       Items can only be added or removed via the backpack’s own interface.
      */
-    private final Map<Long, ArrayList<Equipment>> contents = new HashMap<>();
+    final Map<Long, ArrayList<Equipment>> contents = new HashMap<>();
 
     /**
      * Check whether the given item can be stored inside this backpack.
@@ -88,22 +89,18 @@ public class Backpack extends StorageItem {
      * @param   item
      *          The item to be checked.
      *
-     * @return 	If storing the item results in surpassing the weight capacity of the backpack, then false,
-     *          otherwise true.
-     * 			| result == (getTotalWeight() + item.getWeight() < getCapacity()
-     *
-     * @throws  IllegalArgumentException
-     *          If the item is null.
-     *          | item == null
+     * @return 	If storing the item results in surpassing the weight capacity of the backpack or the item is null,
+     *          then false, otherwise true.
+     * 			| result == ((getTotalWeight() + item.getWeight() < getCapacity()) && (item != null))
      */
     @Raw
-    public boolean canHaveAsItem(@Raw Equipment item) throws IllegalArgumentException {
+    public boolean canHaveAsItem(@Raw Equipment item) {
         // Check if the item is null, which would be an invalid input
         if (item == null) {
-            throw new IllegalArgumentException("Item cannot be null.");
+            return false;
         }
 
-        return getTotalWeight() + item.getWeight() < getCapacity();
+        return getTotalWeight() + item.getWeight() <= getCapacity();
     }
 
     /**
@@ -147,7 +144,7 @@ public class Backpack extends StorageItem {
             throw new IllegalArgumentException("The given item already exists in this backpack.");
         if(!canHaveAsItem(item))
             throw new IllegalArgumentException("The given item is not allowed in this backpack.");
-        if ((item != null) || item.getBackpack() != this)
+        if ((item == null) || item.getBackpack() != this)
             throw new IllegalStateException("The given item does not yet reference this backpack.");
 
         // Get the existing list of items stored in the backpack with the given ID
@@ -350,6 +347,35 @@ public class Backpack extends StorageItem {
             }
         }
         return totalValue;
+    }
+
+    /**********************************************************
+     * Condition
+     **********************************************************/
+
+    /**
+     * Set this backpack to destroyed and empty its contents.
+     *
+     * @effect The condition is set to DESTROYED.
+     *         | setCondition(Condition.DESTROYED)
+     *
+     * @effect All items in the backpack are removed using setBackpack(null).
+     *         | for each item in contents: item.setBackpack(null)
+     */
+    @Override @Model
+    void destroy() {
+        // Create a copy to avoid ConcurrentModificationException
+        List<Equipment> allItems = new ArrayList<>();
+        for (List<Equipment> itemList : contents.values()) {
+            allItems.addAll(itemList);
+        }
+
+        // Remove all items from the backpack
+        for (Equipment item : allItems) {
+            item.setBackpack(null);
+        }
+
+        setCondition(Condition.DESTROYED);
     }
 
 }

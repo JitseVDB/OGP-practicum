@@ -18,12 +18,6 @@ import java.util.HashMap;
  * @author Guillaume Vandemoortele
  * @version 1.9
  *
- * @invar The hero's name must be valid according to the custom-defined format rules.
- *        | canHaveAsName(getName())
- * @invar The hero's hit points are always between 0 and the maximum hit points.
- *        | 0 <= getHitPoints() <= getMaxHitPoints()
- * @invar If the hero is not fighting, their hit points are always a prime number.
- *        | !isFighting() ==> isPrime(getHitPoints())
  * @invar The hero's intrinsic strength is always stored with two decimal places.
  *        | Math.round(intrinsicStrength * 100) / 100.0 == intrinsicStrength
  * @invar The hero's capacity is always between 0 and its maximum capacity.
@@ -83,13 +77,6 @@ public class Hero extends Entity {
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.capacity = 0;
 
-        // Prime-correctie bij start, omdat niet vechtend
-        if (!isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-        // Anchor points initialiseren
-        initializeAnchorPoints();
     }
 
     /**
@@ -225,7 +212,6 @@ public class Hero extends Entity {
 
         return true;
     }
-
 
     /**********************************************************
      *                      Hitpoints
@@ -470,7 +456,7 @@ public class Hero extends Entity {
 
 
     /**********************************************************
-     *                      Amor
+     *                      Armor
      **********************************************************/
 
     /**
@@ -534,8 +520,6 @@ public class Hero extends Entity {
             throw new NullPointerException("Monster target cannot be null.");
         }
 
-        this.setFighting(true);
-
         Random r = new Random();
         int roll = r.nextInt(101); // random getal tussen 0 en 100
 
@@ -550,7 +534,6 @@ public class Hero extends Entity {
             }
         }
 
-        this.setFighting(false);
     }
 
     /**
