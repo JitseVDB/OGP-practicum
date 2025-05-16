@@ -350,50 +350,6 @@ public abstract class Entity {
     }
 
     /**********************************************************
-     * Protection
-     **********************************************************/
-
-    /**
-     * The protection factor of the entity.
-     */
-    private int protection;
-
-    /**
-     * Returns the protection factor of the entity.
-     */
-    @Raw @Basic
-    public int getProtection() {
-        return protection;
-    }
-
-    /**
-     * Sets the raw protection value of this entity.
-     *
-     * @param protection
-     *        The new base protection value.
-     *
-     * @pre isValidProtection()
-     *
-     * @post geProtection() == protection
-     */
-    public void setProtection(int protection) {
-        this.protection = protection;
-    }
-
-    /**
-     * Check whether the given protection factor is valid.
-     *
-     * @param   protection
-     *          The protection factor to check.
-     *
-     * @return  True if and only if the protection factor is strictly positive.
-     *          | result == (protection >= 0)
-     */
-    public static boolean isValidProtection(int protection) {
-        return protection > 0;
-    }
-
-    /**********************************************************
      * Capacity
      **********************************************************/
 

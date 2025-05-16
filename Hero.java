@@ -1,5 +1,6 @@
 
 import be.kuleuven.cs.som.annotate.Basic;
+import be.kuleuven.cs.som.annotate.Raw;
 
 import java.util.Random;
 import java.util.List;
@@ -77,7 +78,7 @@ public class Hero extends Entity {
         this.isFighting = false;
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.capacity = 0;
-
+        this.protection = 10;
     }
 
     /**
@@ -322,6 +323,52 @@ public class Hero extends Entity {
             super.removeHitPoints(getHitPoints() - p);
         }
     }
+
+    /**********************************************************
+     * Protection
+     **********************************************************/
+
+    /**
+     * The protection factor of the entity.
+     */
+    private int protection;
+
+    /**
+     * Returns the protection factor of the entity.
+     */
+    @Raw
+    @Basic
+    public int getProtection() {
+        return protection;
+    }
+
+    /**
+     * Sets the raw protection value of this entity.
+     *
+     * @param protection
+     *        The new base protection value.
+     *
+     * @pre isValidProtection()
+     *
+     * @post geProtection() == protection
+     */
+    public void setProtection(int protection) {
+        this.protection = protection;
+    }
+
+    /**
+     * Check whether the given protection factor is valid.
+     *
+     * @param   protection
+     *          The protection factor to check.
+     *
+     * @return  True if and only if the protection factor is strictly positive.
+     *          | result == (protection >= 0)
+     */
+    public static boolean isValidProtection(int protection) {
+        return protection > 0;
+    }
+
 
     /**********************************************************
      *                      Strenght
@@ -593,9 +640,6 @@ public class Hero extends Entity {
         addHitPoints(healAmount);                           // add healAmount to hitpoints
     }
 
-    /**********************************************************
-     *                      Protection
-     **********************************************************/
 
     /**
      * Calculates the total protection value of this hero during combat.
