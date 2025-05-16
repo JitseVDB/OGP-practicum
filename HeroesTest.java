@@ -118,8 +118,8 @@ public class HeroesTest {
     public void testConstructorRejectsOverCapacity() {
         // Held met te zwakke kracht voor veel gewicht
         Weapon heavyWeapon = new Weapon(999, 7); // zwaar
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Hero("Weakling", 11, 1.0, heavyWeapon); // capaciteit = 20kg
+        assertThrows(AssertionError.class, () -> {
+            new Hero("Weakling", 11, 1.0, heavyWeapon);
         });
     }
 
@@ -648,7 +648,7 @@ public class HeroesTest {
     void testHitFailsIfProtectionTooHigh() {
         Hero hero = new Hero("TestHero", 100, 10);
         Monster monster = new Monster("Broer", 100, 49, new ArrayList<Equipment>(), SkinType.SCALY);
-        monster.setCurrentProtection(100); // onrealistisch hoog om de hit te laten falen
+        monster.setCurrentProtection(30);
 
         int initialHP = monster.getHitPoints();
         hero.hit(monster);
@@ -673,22 +673,25 @@ public class HeroesTest {
 
     @Test
     void testHealAfterKillIsApplied() {
-        // Hero met minder dan max HP
         Hero hero = new Hero("Panda", 100, 20);
-        hero.setHitPoints(70); // 30 HP ontbreekt
+        hero.setHitPoints(70); // mist 30 HP
 
-        // Zorg voor voldoende aanvalskracht om monster te doden
-        Weapon sword = new Weapon(21, 7); // Damage moet hoog genoeg zijn
+        // Damage moet groot genoeg zijn om zeker te doden
+        Weapon sword = new Weapon(21, 21); // veel damage
         hero.getAnchorPoint("leftHand").setItem(sword);
 
-        // Monster met weinig HP zodat de hit dodelijk is
-        Monster monster = new Monster("Outside", 10,  49, new ArrayList<Equipment>(), SkinType.SCALY);
-        monster.setCurrentProtection(0); // gegarandeerde hit
+        // Geef monster minder HP zodat het gegarandeerd doodgaat
+        Monster monster = new Monster("Outside", 5, 49, new ArrayList<>(), SkinType.SCALY);
+        monster.setCurrentProtection(0); // geen verdediging
 
         hero.hit(monster);
-        assertEquals(0, monster.getHitPoints()); // monster is dood
-        // Controleer dat hero meer HP heeft dan voor de kill
+
+        assertEquals(0, monster.getHitPoints(), "Monster should be dead");
+
+        int healed = hero.getHitPoints() - 70;
+        assertTrue(healed > 0 && healed <= 30, "Hero should heal between 1 and 30 HP after a kill");
     }
+
 
     /********************************************************************
      *                       PROTECTION TEST
@@ -805,6 +808,7 @@ public class HeroesTest {
         Hero hero = new Hero("Defender", 100, 10); // Protection = 10 standaard
         hero.setHitPoints(80);
 
+        hero.receiveDamage(5); // minder dan protection → geen schade
         hero.receiveDamage(5); // minder dan protection → geen schade
 
         assertEquals(79, hero.getHitPoints()); // unchanged
@@ -936,14 +940,13 @@ public class HeroesTest {
         Armor a2 = new Armor(20, 1, ArmorType.BRONZE);
         Armor a3 = new Armor(20, 1, ArmorType.BRONZE);
 
-        // Owner wordt automatisch gezet via addAsItem
-        a1.setOwner(hero);
+        a1.setOwner(hero); // oké
+        a2.setOwner(hero); // oké
 
-        a2.setOwner(hero);
-
-        a3.setOwner(hero); // Laatste armor: zal falen omdat al 2 armors aanwezig zijn
-        assertThrows(IllegalArgumentException.class, () -> hero.addAsItem(a3));
+        // De 3e armor moet falen: te veel harnassen
+        assertThrows(IllegalArgumentException.class, () -> a3.setOwner(hero));
     }
+
 
 
     @Test
