@@ -256,18 +256,6 @@ public class Hero extends Entity {
      **********************************************************/
 
     /**
-     * Variable setting the capacity of the hero
-     */
-    private int capacity;
-
-    /**
-     * Return the capacity of this hero
-     */
-    public int getCapacity() {
-        return this.capacity;
-    }
-
-    /**
      * Return the maximum capacity of this hero
      */
     public int getMaxCapacity() {return (int)(20 * intrinsicStrength);}
