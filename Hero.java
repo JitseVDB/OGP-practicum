@@ -68,6 +68,8 @@ public class Hero extends Entity {
      *      | getRightHandWeapon() == null
      * @post The hero is not wearing any armor.
      *      |getArmor() == null
+     * @post protection is set to 10;
+     *      | getProtection() = 10
      */
     public Hero(String name, int maxHitPoints, double strength) {
         super(name, maxHitPoints);
@@ -215,114 +217,6 @@ public class Hero extends Entity {
         return true;
     }
 
-    /**********************************************************
-     *                      Hitpoints
-     **********************************************************/
-
-    /**
-     * Variable that indicates whether the hero is currently fighting. He is initialized as not fighting
-     */
-    private boolean isFighting;
-
-    /**
-     * Updates the fighting status of this hero.
-     *
-     * @param status
-     *        true if the hero enters combat, false if they exit combat.
-     * @post The hero's fighting status is correctly set.
-     *       | isFighting() == status
-     *
-     * @effect If status == false and current hit points are not prime,
-     *         the hit points are reduced to the nearest lower prime.
-     */
-    @Basic
-    public void setFighting(boolean status) {
-        this.isFighting = status;
-        if (!status && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-    }
-
-    /**
-     * Returns true if the hero is fighting
-     */
-    @Basic
-    public boolean isFighting() {
-        return isFighting;
-    }
-    /**
-     * Determines if a given number is a prime number.
-     *
-     * @param number
-     *        The number to check.
-     * @return true if the number is prime; false otherwise.
-     */
-    @Basic
-    public boolean isPrime(int number) {
-        if (number < 2) return false;
-        for (int i = 2; i <= Math.sqrt(number); i++) {
-            if (number % i == 0) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Returns the closest lower prime number less than the given starting value.
-     *
-     * @param start
-     *        The starting value.
-     * @return The closest lower prime number.
-     */
-    @Basic
-    public int getClosestLowerPrime(int start) {
-        if (start <= 0) return 0;
-        for (int i = start - 1; i >= 2; i--) {
-            if (isPrime(i)) return i;
-        }
-        return 2;
-    }
-
-    /**
-     * Increases the hero’s current hit points by the given amount.
-     * If the hero is not fighting, and the result is not a prime number,
-     * the hit points are reduced to the closest lower prime.
-     * @param amount
-     *        The number of hit points to add
-     *
-     * @post HitPoints is increased by amount, but not beyond MaxHitPoints
-     * @effect If not fighting and the result is not prime, hit points are reduced
-     *         to the closest lower prime.
-     */
-    @Override
-    public void addHitPoints(int amount) {
-        super.addHitPoints(amount);
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-    }
-
-    /**
-     * Decreases the hero’s current hit points by the given amount.
-     * If the hero is not fighting, and the result is not a prime number,
-     * the hit points are further reduced to the closest lower prime.
-     *
-     * @param amount
-     *        The number of hit points to remove
-     *
-     * @post HitPoints is decreased by amount, but not below zero.
-     * @effect If not fighting and the result is not prime,
-     *         hit points are reduced to the closest lower prime.
-     */
-    @Override
-    public void removeHitPoints(int amount) {
-        super.removeHitPoints(amount);
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            super.removeHitPoints(getHitPoints() - p);
-        }
-    }
 
     /**********************************************************
      * Protection
@@ -367,6 +261,25 @@ public class Hero extends Entity {
      */
     public static boolean isValidProtection(int protection) {
         return protection > 0;
+    }
+
+    /**
+     * Calculates the total protection value of this hero during combat.
+     * The total protection is the hero’s base protection value + the protection provided by the equipped armor (if armor != null)
+     *
+     * @return The total protection value of this hero.
+     *
+     * @post The result is equal to getProtection() + armor.getCurrentProtection()
+     */
+
+    @Basic
+    public int getRealProtection() {
+        int base = getProtection(); // = standaardbescherming (bv. 10)
+        int armorBonus = 0;
+        if (armor != null) {
+            armorBonus = armor.getCurrentProtection(); // bv. 20
+        }
+        return base + armorBonus;
     }
 
 
@@ -571,7 +484,7 @@ public class Hero extends Entity {
         Random r = new Random();
         int roll = r.nextInt(101); // random getal tussen 0 en 100
 
-        if (roll >= monster.getRealProtection()) {
+        if (roll >= monster.getCurrentProtection()) {
             int damage = calculateDamage();
             int beforeHP = monster.getHitPoints();
 
@@ -640,25 +553,6 @@ public class Hero extends Entity {
         addHitPoints(healAmount);                           // add healAmount to hitpoints
     }
 
-
-    /**
-     * Calculates the total protection value of this hero during combat.
-     * The total protection is the hero’s base protection value + the protection provided by the equipped armor (if armor != null)
-     *
-     * @return The total protection value of this hero.
-     *
-     * @post The result is equal to getProtection() + armor.getCurrentProtection()
-     */
-
-    @Override @Basic
-    public int getRealProtection() {
-        int base = getProtection(); // = standaardbescherming (bv. 10)
-        int armorBonus = 0;
-        if (armor != null) {
-            armorBonus = armor.getCurrentProtection(); // bv. 20
-        }
-        return base + armorBonus;
-    }
 
     /**********************************************************
      *                   Collect Treasures

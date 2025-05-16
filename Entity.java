@@ -121,7 +121,7 @@ public abstract class Entity {
     /**
      * Variable that indicates whether the entity is currently fighting. He is initialized as not fighting
      */
-    private boolean isFighting;
+    public boolean isFighting;
 
     /**
      * The current number of hitpoints of the entity.
@@ -630,21 +630,6 @@ public abstract class Entity {
     /*****************************************************************
      *               Protection + GetAnchorPoints
      *****************************************************************/
-    /**
-     * Variable for the
-     */
-    private int realProtection;
-
-    /**
-     * Returns the raw protection value of this entity.
-     *
-     * @return The entity’s raw protection value.
-     *
-     * @post result == realProtection
-     */
-    @Raw @Basic
-    public int getRealProtection() { return realProtection; }
-
 
     /**
      * Returns the anchor point with the given name, if it exists.

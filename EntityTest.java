@@ -144,9 +144,9 @@ public class EntityTest {
     }
 
     @Test
-    void testGetClosestLowerPrime_StartIsLowerThenTwoAndNotZero_ShouldReturnTwo() {
+    void testGetClosestLowerPrime_StartIsLowerThenTwo_ShouldReturnTwo() {
         assertEquals(2, hero_A.getClosestLowerPrime(1));
-        assertEquals(0, hero_A.getClosestLowerPrime(0));
+        assertEquals(2, hero_A.getClosestLowerPrime(0));
         assertEquals(2, hero_A.getClosestLowerPrime(-1));
     }
 

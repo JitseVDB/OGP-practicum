@@ -410,7 +410,7 @@ public class Monster extends Entity {
         }
 
 
-        if (impact >= opponent.getRealProtection()) {
+        if (impact >= ((Hero)opponent).getRealProtection()) {
             // land a succesful hit
             int damage = getDamage();
             int newHitPoints = opponent.getHitPoints() - damage;
