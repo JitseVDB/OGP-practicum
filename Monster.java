@@ -177,18 +177,6 @@ public class Monster extends Entity {
      * Capacity
      **********************************************************/
 
-    /**
-     * Variable referencing the capacity of this monster.
-     */
-    private int capacity;
-
-    /**
-     * Return the capacity of this monster.
-     */
-    @Raw @Basic
-    public int getCapacity() {
-        return capacity;
-    }
 
     /**
      * Checks whether a given capacity is a valid capacity.

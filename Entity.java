@@ -356,6 +356,47 @@ public abstract class Entity {
     }
 
     /**********************************************************
+     * Capacity
+     **********************************************************/
+
+    /**
+     * Variable referencing the capacity of this monster.
+     */
+    public int capacity;
+
+    /**
+     * Return the capacity of this monster.
+     */
+    @Raw @Basic
+    public int getCapacity() {
+        return capacity;
+    }
+
+    /**
+     * Returns the total weight of all the items which the entity is carrying.
+     *
+     * If an item is a backpack, its total weight includes the contents of the backpack.
+     * Empty anchor points are ignored.
+     *
+     * @return The sum of the weights of all items in anchor points.
+     */
+    public int getTotalWeight() {
+        int totalWeight = 0;
+
+        for (int i = 1; i < getNbAnchorPoints(); i++) {
+            Equipment item = getAnchorPointAt(i).getItem();
+            if (item == null) continue;
+
+            if (item instanceof Backpack)
+                totalWeight += ((Backpack) item).getTotalWeight(); // explicit cast
+            else
+                totalWeight += item.getWeight();
+        }
+
+        return totalWeight;
+    }
+
+    /**********************************************************
      * Anchors
      **********************************************************/
 
@@ -476,29 +517,6 @@ public abstract class Entity {
         }
     }
 
-    /**
-     * Returns the total weight of all the items which the entity is carrying.
-     *
-     * If an item is a backpack, its total weight includes the contents of the backpack.
-     * Empty anchor points are ignored.
-     *
-     * @return The sum of the weights of all items in anchor points.
-     */
-    public int getTotalWeight() {
-        int totalWeight = 0;
-
-        for (int i = 1; i < getNbAnchorPoints(); i++) {
-            Equipment item = getAnchorPointAt(i).getItem();
-            if (item == null) continue;
-
-            if (item instanceof Backpack)
-                totalWeight += ((Backpack) item).getTotalWeight(); // explicit cast
-            else
-                totalWeight += item.getWeight();
-        }
-
-        return totalWeight;
-    }
 
 
     public abstract boolean canHaveAsItem(Equipment item);
