@@ -16,7 +16,7 @@ public class EquipmentTest {
     private static Hero hero_A, hero_B;
 
     // WEAPONS
-    private static Weapon weapon_A, weapon_B, weapon_C;
+    private static Weapon weapon_A, weapon_B, weapon_C, weapon_destroyed;
 
     // ARMOR
     private static Armor armor_A;
@@ -30,18 +30,45 @@ public class EquipmentTest {
     // TESTING EQUIPMENT
     private Equipment equipment;
 
+    // AXULIARY METHOD
+    public int getOldSizeA() {
+        int oldSizeA;
+        if (backpack_A.contents.get(weapon_A.getIdentification()) != null) {
+            oldSizeA = backpack_A.contents.get(weapon_A.getIdentification()).size();
+        } else {
+            oldSizeA = 0;
+        }
+
+        return oldSizeA;
+    }
+
+    // AXULIARY METHOD
+    public int getOldSizeB() {
+        int oldSizeA;
+        if (backpack_B.contents.get(weapon_A.getIdentification()) != null) {
+            oldSizeA = backpack_B.contents.get(weapon_A.getIdentification()).size();
+        } else {
+            oldSizeA = 0;
+        }
+
+        return oldSizeA;
+    }
+
     @BeforeEach
     public void setUpEquipment() {
         hero_A = new Hero("HeroA", 10, 10);
         hero_B = new Hero("HeroB", 10, 10);
         weapon_A = new Weapon(10, 70);
         weapon_B = new Weapon(20, 63);
-        weapon_C = new Weapon(10, 63);
+        weapon_C = new Weapon(300, 63);
+        weapon_destroyed = new Weapon(10, 70);
+        weapon_destroyed.destroy();
         armor_A = new Armor(75, 100, ArmorType.BRONZE);
         purse_A = new Purse(50, 100);
         backpack_A = new Backpack(10, 50, 150);
         backpack_B = new Backpack(15, 45, 175);
         backpack_A.setOwner(hero_A);
+        backpack_B.setOwner(hero_B);
     }
 
     @AfterEach
@@ -108,11 +135,11 @@ public class EquipmentTest {
      */
 
     @Test
-    public void testIsValidWeight_allCases() {
-        assertTrue(Equipment.isValidWeight(100));
-        assertTrue(Equipment.isValidWeight(0));
-        assertFalse(Equipment.isValidWeight(-100));
-        assertTrue(Equipment.isValidWeight(Integer.MAX_VALUE));
+    public void testcanHaveAsWeight_allCases() {
+        assertTrue(Equipment.canHaveAsWeight(100));
+        assertTrue(Equipment.canHaveAsWeight(0));
+        assertFalse(Equipment.canHaveAsWeight(-100));
+        assertTrue(Equipment.canHaveAsWeight(Integer.MAX_VALUE));
 
     }
 
@@ -186,13 +213,13 @@ public class EquipmentTest {
         // 1. postcondition on owner
         assertEquals(hero_A, weapon_A.getOwner());
 
-        // 2. effect on old owner when setting different owner
+        // 2. effect of removeAsItem on old owner
         // not applicable
 
-        // 3. effect on old backpack when setting different owner
+        // 3. effect of setBackpack(null)
         // not applicable
 
-        // 4. effect on new owner when setting different owner
+        // 4. effect of addAsItem on new owner
         // 4.1 effect of addToAnchorPoint
         assertTrue(hero_A.hasAsItem(weapon_A));
     }
@@ -206,14 +233,14 @@ public class EquipmentTest {
         // 1. postcondition on owner
         assertEquals(hero_B, weapon_A.getOwner());
 
-        // 2. effect on old owner when setting different owner
+        // 2. effect of removeAsItem on old owner
         // 2.1 effect of anchorpoint.setItem
         assertFalse(hero_A.hasAsItem(weapon_A));
 
-        // 3. effect on old backpack when setting different owner
+        // 3. effect of setBackpack(null)
         // not applicable
 
-        // 4. effect on new owner when setting different owner
+        // 4. effect of addAsItem on new owner
         // 4.1 effect of addToAnchorPoint
         assertTrue(hero_B.hasAsItem(weapon_A));
     }
@@ -226,13 +253,14 @@ public class EquipmentTest {
         // 1. postcondition on owner
         assertEquals(hero_A, weapon_A.getOwner());
 
-        // 2. effect on old owner when setting different owner
+        // 2. effect of removeAsItem on old owner
         // not applicable, this effect is undone by effect (4)
 
-        // 3. effect on old backpack when setting different owner
+        // 3. effect of setBackpack(null)
         // not applicable
 
-        // 4. effect on new owner when setting different owner
+        // 4. effect of addAsItem on new owner
+        // 4.1 effect of addToAnchorPoint
         assertTrue(hero_A.hasAsItem(weapon_A));
     }
 
@@ -244,19 +272,19 @@ public class EquipmentTest {
         // 1. postcondition on owner
         assertEquals(hero_B, weapon_A.getOwner());
 
-        // 2. effect on old owner when setting different owner
+        // 2. effect of removeAsItem on old owner
         // not applicable
 
-        // 3. effect on backpack
-        // 3.1 effect on setBackpack
-        // 3.1.1 postcondition on backpack
+        // 3. effect of setBackpack(null)
+        // 3.1 postcondition on backpack
         assertNull(weapon_A.getBackpack());
-        // 3.1.2 postcondition on owner
+        // 3.1 postcondition on owner
         // not applicable, this effect is undone by later
-        // 3.1.3 effect on old backpack
+        // 3.1 effect on old backpack
         assertFalse(backpack_A.hasAsItem(weapon_A));
 
-        // 4. effect on new owner when setting different owner
+        // 4. effect of addAsItem on new owner
+        // 4.1 effect of addToAnchorPoint
         assertTrue(hero_B.hasAsItem(weapon_A));
     }
 
@@ -268,20 +296,92 @@ public class EquipmentTest {
         // 1. postcondition on owner
         assertEquals(hero_A, weapon_A.getOwner());
 
-        // 2. effect on old owner when setting different owner
+        // 2. effect of removeAsItem on old owner
         // not applicable
 
-        // 3. effect on backpack
-        // 3.1 effect on setBackpack
-        // 3.1.1 postcondition on backpack
+        // 3. effect of setBackpack(null)
+        // 3.1 postcondition on backpack
         assertNull(weapon_A.getBackpack());
-        // 3.1.2 postcondition on owner
+        // 3.1 postcondition on owner
         // not applicable, this effect is undone by later
-        // 3.1.3 effect on old backpack
+        // 3.1 effect on old backpack
         assertFalse(backpack_A.hasAsItem(weapon_A));
 
-        // 4. effect on new owner when setting different owner
+        // 4. effect of addAsItem on new owner
+        // 4.1 effect of addToAnchorPoint
         assertTrue(hero_A.hasAsItem(weapon_A));
+    }
+
+    @Test
+    public void testSetOwner_nullNoPreviousOwner() {
+        weapon_A.setOwner(null);
+
+        // 1. postcondition on owner
+        assertNull(weapon_A.getOwner());
+
+        // 2. effect of removeAsItem on old owner
+        // not applicable
+
+        // 3. effect of setBackpack(null)
+        // not applicable
+
+        // 4. effect of addAsItem on new owner
+        // 4.1 effect of addToAnchorPoint
+        // not applicable
+    }
+
+    @Test
+    public void testSetOwner_nullPreviousOwner() {
+        weapon_A.setOwner(hero_A);
+        weapon_A.setOwner(null);
+
+        // 1. postcondition on owner
+        assertNull(weapon_A.getOwner());
+
+        // 2. effect of removeAsItem on old owner
+        assertFalse(hero_A.hasAsItem(weapon_A));
+
+        // 3. effect of setBackpack(null)
+        // not applicable
+
+        // 4. effect of addAsItem on new owner
+        // 4.1 effect of addToAnchorPoint
+        // not applicable
+    }
+
+    @Test
+    public void testSetOwner_nullPreviousBackpack() {
+        weapon_A.setBackpack(backpack_A);
+        weapon_A.setOwner(null);
+
+        // 1. postcondition on owner
+        assertNull(weapon_A.getOwner());
+
+        // 2. effect of removeAsItem on old owner
+        // not applicable
+
+        // 3. effect of setBackpack(null)
+        // 3.1 postcondition on backpack
+        assertNull(weapon_A.getBackpack());
+        // 3.1 postcondition on owner
+        // not applicable, this effect is undone by later
+        // 3.1 effect on old backpack
+        assertFalse(backpack_A.hasAsItem(weapon_A));
+
+        // 4. effect of addAsItem on new owner
+        // 4.1 effect of addToAnchorPoint
+        // not applicable
+    }
+
+    @Test
+    void testSetOwner_InvalidOwner_ShouldThrowException() {
+        weapon_A.setOwner(hero_A);
+        weapon_B.setOwner(hero_A);
+        armor_A.setOwner(hero_A);
+        purse_A.setOwner(hero_A);
+        // Backpack_A already belongs to hero_A
+        // 1. No empty anchor points.
+        assertThrows(IllegalArgumentException.class, () -> weapon_C.setOwner(hero_A));
     }
 
     /**
@@ -289,25 +389,12 @@ public class EquipmentTest {
      */
 
     @Test
-    public void testHasProperBackpack_allCases() {
-        // Ensure backpack_A is properly initialized
-        assertNotNull(backpack_A);
-        assertNotNull(weapon_A);
-
-        weapon_A.setBackpack(backpack_A);
-
-        // 1. postc
-        assertTrue(weapon_A.hasProperBackpack());
-        assertTrue(backpack_A.hasAsItem(weapon_A));
-
-        // 2.There is no way of constructing items with an invalid backpack.
-    }
-
-    @Test
     public void testSetBackpack_noOwnerToBackpack() {
-        // Ensure backpack_A is properly initialized
+        // Ensure everything is properly initialized
         assertNotNull(backpack_A);
         assertNotNull(weapon_A);
+
+        int oldSizeA = getOldSizeA();
 
         weapon_A.setBackpack(backpack_A);
 
@@ -317,21 +404,130 @@ public class EquipmentTest {
         // 2. postcondition on owner
         assertEquals(hero_A, weapon_A.getOwner());
 
-        // 3. effect on old backpack when setting a different backpack
+        // 3. effect removeItem on old backpack
         // not applicable
 
-        // 4. effect on new backpack when setting a backpack different from the old backpack
+        // 4. effect addItem on new backpack
         assertTrue(backpack_A.hasAsItem(weapon_A));
+        // 4.1 postcondition on map regarding identification as a key
+        assertTrue(backpack_A.contents.containsKey(weapon_A.getIdentification()));
+        // 4.2 postcondition on map regarding item as value linked to key
+        assertTrue(backpack_A.contents.get(weapon_A.getIdentification()).contains(weapon_A));
+        // 4.3 postcondition regarding size of list within map
+        assertEquals(oldSizeA+1, backpack_A.contents.get(weapon_A.getIdentification()).size());
+    }
 
+    @Test
+    public void testSetBackpack_SetToAnotherBackpack() {
+        // Ensure everything is properly initialized
+        assertNotNull(backpack_A);
+        assertNotNull(weapon_A);
+
+        weapon_A.setBackpack(backpack_A);
+        int oldSizeA = getOldSizeA();
+        int oldSizeB = getOldSizeB();
+        weapon_A.setBackpack(backpack_B);
+
+        // 1. postcondition on backpack
+        assertEquals(backpack_B, weapon_A.getBackpack());
+
+        // 2. postcondition on owner
+        assertEquals(hero_B, weapon_A.getOwner());
+
+        // 3. effect removeItem on old backpack
+        // 3.1 postcondition on contents of list
+        assertFalse(backpack_A.hasAsItem(weapon_A));
+        // 3.2 postcondition on size of list
+        assertEquals(oldSizeA-1, backpack_A.contents.get(weapon_A.getIdentification()).size());
+
+        // 4. effect addItem on new backpack
+        assertTrue(backpack_B.hasAsItem(weapon_A));
+        // 4.1 postcondition on map regarding identification as a key
+        assertTrue(backpack_B.contents.containsKey(weapon_A.getIdentification()));
+        // 4.2 postcondition on map regarding item as value linked to key
+        assertTrue(backpack_B.contents.get(weapon_A.getIdentification()).contains(weapon_A));
+        // 4.3 postcondition regarding size of list within map
+        assertEquals(oldSizeB+1, backpack_B.contents.get(weapon_A.getIdentification()).size());
+    }
+
+    @Test
+    public void testSetBackpack_SetToSameBackpack() {
+        // Ensure everything is properly initialized
+        assertNotNull(backpack_A);
+        assertNotNull(weapon_A);
+
+        weapon_A.setBackpack(backpack_A);
+        int oldSizeA = getOldSizeA();
+        weapon_A.setBackpack(backpack_A);
+
+        // 1. postcondition on backpack
+        assertEquals(backpack_A, weapon_A.getBackpack());
+
+        // 2. postcondition on owner
+        assertEquals(hero_A, weapon_A.getOwner());
+
+        // 3. effect removeItem on old backpack
+        // not applicable
+
+        // 4. effect addItem on new backpack
+        assertTrue(backpack_A.hasAsItem(weapon_A));
+        // 4.1 postcondition on map regarding identification as a key
+        assertTrue(backpack_A.contents.containsKey(weapon_A.getIdentification()));
+        // 4.2 postcondition on map regarding item as value linked to key
+        assertTrue(backpack_A.contents.get(weapon_A.getIdentification()).contains(weapon_A));
+        // 4.3 postcondition regarding size of list within map
+        // effect is undone
+    }
+
+    @Test
+    public void testSetBackpack_NullNoPreviousBackpack() {
+        weapon_A.setBackpack(null);
+
+        // 1. postcondition on backpack
+        assertNull(weapon_A.getBackpack());
+
+        // 2. postcondition on owner
+        assertNull(weapon_A.getOwner());
+
+        // 3. effect removeItem on old backpack
+        // not applicable
+
+        // 4. effect addItem on new backpack
+        // not applicable
+    }
+
+    @Test
+    public void testSetBackpack_NullPreviousBackpack() {
+        weapon_A.setBackpack(backpack_A);
+
+        int oldSizeA = getOldSizeA();
+
+        weapon_A.setBackpack(null);
+
+        // 1. postcondition on backpack
+        assertNull(weapon_A.getBackpack());
+
+        // 2. postcondition on owner
+        assertNull(weapon_A.getOwner());
+
+        // 3. effect removeItem on old backpack
+        // 3.1 postcondition on contents of list
+        assertFalse(backpack_A.hasAsItem(weapon_A));
+        // 3.2 postcondition on size of list
+        assertEquals(oldSizeA-1, backpack_A.contents.get(weapon_A.getIdentification()).size());
+
+        // 4. effect addItem on new backpack
+        // not applicable
     }
 
     @Test
     public void testSetBackpack_anchorToBackpackWithinSameOwner() {
+        // Ensure everything is properly initialized
         assertNotNull(backpack_A);
         assertNotNull(weapon_A);
 
         weapon_A.setOwner(hero_A);
-
+        int oldSizeA = getOldSizeA();
         weapon_A.setBackpack(backpack_A);
 
         // 1. postcondition on backpack
@@ -340,16 +536,92 @@ public class EquipmentTest {
         // 2. postcondition on owner
         assertEquals(hero_A, weapon_A.getOwner());
 
-        // 3. effect on old backpack when setting a different backpack
+        // 3. effect removeItem on old backpack
         // not applicable
 
-        // 4. effect on new backpack when setting a different backpack
-        assertTrue(backpack_A.hasProperBackpack());
+        // 4. effect addItem on new backpack
+        assertTrue(backpack_A.hasAsItem(weapon_A));
+        // 4.1 postcondition on map regarding identification as a key
+        assertTrue(backpack_A.contents.containsKey(weapon_A.getIdentification()));
+        // 4.2 postcondition on map regarding item as value linked to key
+        assertTrue(backpack_A.contents.get(weapon_A.getIdentification()).contains(weapon_A));
+        // 4.3 postcondition regarding size of list within map
+        assertEquals(oldSizeA+1, backpack_A.contents.get(weapon_A.getIdentification()).size());
+    }
+
+    @Test
+    public void testSetBackpack_anchorToBackpackWithinDifferentOwner() {
+        // Ensure everything is properly initialized
+        assertNotNull(backpack_A);
+        assertNotNull(weapon_A);
+
+        weapon_B.setOwner(hero_A);
+        int oldSizeA = getOldSizeA();
+        weapon_A.setBackpack(backpack_A);
+
+        // 1. postcondition on backpack
+        assertEquals(backpack_A, weapon_A.getBackpack());
+
+        // 2. postcondition on owner
+        assertEquals(hero_A, weapon_A.getOwner());
+
+        // 3. effect removeItem on old backpack
+        // not applicable
+
+        // 4. effect addItem on new backpack
+        assertTrue(backpack_A.hasAsItem(weapon_A));
+        // 4.1 postcondition on map regarding identification as a key
+        assertTrue(backpack_A.contents.containsKey(weapon_A.getIdentification()));
+        // 4.2 postcondition on map regarding item as value linked to key
+        assertTrue(backpack_A.contents.get(weapon_A.getIdentification()).contains(weapon_A));
+        // 4.3 postcondition regarding size of list within map
+        assertEquals(oldSizeA+1, backpack_A.contents.get(weapon_A.getIdentification()).size());
     }
 
     @Test
     void testSetBackpack_InvalidBackpack_ShouldThrowException() {
         // 1. Adding item exceeding capacity
-        assertThrows(IllegalArgumentException.class, () -> weapon_B.setBackpack(backpack_A));
+        assertThrows(IllegalArgumentException.class, () -> weapon_C.setBackpack(backpack_A));
     }
+
+    /**
+     * SHININESS
+     */
+
+    @Test
+    void testSetShiny_allCases() {
+        // 1. shiny to not shiny
+        weapon_A.setShiny(false);
+        assertFalse(weapon_A.isShiny());
+        // 2. not shiny to shiny
+        backpack_A.setShiny(true);
+        assertTrue(backpack_A.isShiny());
+        // 3. shiny to shiny
+        weapon_A.setShiny(true);
+        assertTrue(weapon_A.isShiny());
+        // 4. not shiny to not shiny
+        backpack_A.setShiny(false);
+        assertFalse(backpack_A.isShiny());
+    }
+
+    /**
+     * CONDITION
+     */
+
+    @Test
+    void testSetCondition_allCases() {
+        // 1. good to destroyed
+        weapon_A.setCondition(Condition.DESTROYED);
+        assertTrue(weapon_A.isDestroyed());
+        // 2. destroyed to good
+        weapon_destroyed.setCondition(Condition.GOOD);
+        assertTrue(weapon_destroyed.isDestroyed());
+        // 3. good to good
+        weapon_B.setCondition(Condition.GOOD);
+        assertFalse(weapon_B.isDestroyed());
+        // 4. destroyed to destroyed
+        weapon_destroyed.setCondition(Condition.DESTROYED);
+        assertTrue(weapon_destroyed.isDestroyed());
+    }
+
 }

@@ -80,7 +80,7 @@ public class Backpack extends StorageItem {
      * @note The backpack class is the sole controller of the backpack–equipment relationship.
      *       Items can only be added or removed via the backpack’s own interface.
      */
-    private final Map<Long, ArrayList<Equipment>> contents = new HashMap<>();
+    final Map<Long, ArrayList<Equipment>> contents = new HashMap<>();
 
     /**
      * Check whether the given item can be stored inside this backpack.
