@@ -9,14 +9,17 @@ import java.util.Map;
  *
  * A class representing the entities (monsters and heroes) in the game.
  *
- * @invar  The name of the entity must be valid.
- *       | canHaveAsName(getName())
- * @invar  The amount of hitpoints must be valid.
- *       | isValidHitPoints(getHitPoints())
- * @invar  Each entity must have a valid protection factor.
- *       | isValidProtection(getProtection())
- * @invar  The maximum amount of hitpoints of an entity must be valid
- *       | isValidMaxHitPoints(getMaxHitPoints())
+ * @invar   The name of the entity must be valid.
+ *          | canHaveAsName(getName())
+ *
+ * @invar   The amount of hitpoints must be valid.
+ *          | isValidHitPoints(getHitPoints())
+ *
+ * @invar   Each entity must have a valid protection factor.
+ *          | isValidProtection(getProtection())
+ *
+ * @invar   The maximum amount of hitpoints of an entity must be valid
+ *          | isValidMaxHitPoints(getMaxHitPoints())
  *
  * @author Ernest De Gres
  * @author Jitse Vandenberghe
@@ -34,44 +37,41 @@ public abstract class Entity {
     /**
      * Initialize a new entity with the given name, hitpoints, max hitpoints and protection factor.
      *
-     * @param name
-     *        The name of the new entity.
-     * @param maxHitPoints
-     *        The maximum number of hitpoints.
-     * @param protection
-     *        The protection factor of the entity.
+     * @param   name
+     *          The name of the new entity.
      *
-     * @pre The maximum amount of hitpoints must be positive
-     *       | maxHitPoints >= 0
+     * @param   maxHitPoints
+     *          The maximum number of hitpoints.
      *
-     * @post The name of the entity is set to the given name.
-     *       | new.getName() == name
-     * @post The maximum and current hitpoints are set to the given value.
-     *       | new.getMaxHitPoints() == maxHitPoints
-     *       | new.getHitPoints() == maxHitPoints
-     * @post The protection factor is set to the given value.
-     *       | new.getProtection() == protection
-     * @post The new entity is not fighting. | !new.isFighting()
+     * @pre     The maximum amount of hitpoints must be positive
+     *          | maxHitPoints >= 0
+     *
+     * @post    The name of the entity is set to the given name.
+     *          | new.getName() == name
+     *
+     * @post    The maximum and current hitpoints are set to the given value.
+     *          | new.getMaxHitPoints() == maxHitPoints
+     *          | new.getHitPoints() == maxHitPoints
+     *
+     * @post    The new entity is not fighting.
+     *          | !new.isFighting()
+     *
+     * @effect  The anchor points are initialized.
+     *          | initializeAnchorPoints()
      *
      * @throws IllegalArgumentException
      *         If the given name is invalid
      *         | !canHaveAsName(name)
      *
-     *         If the given protection factor is invalid
-     *         | !isValidProtection(protection)
-     *
      */
-    public Entity(String name, int maxHitPoints, int protection)
+    public Entity(String name, int maxHitPoints)
             throws IllegalArgumentException {
         if (!canHaveAsName(name))
             throw new IllegalArgumentException("Invalid name for the entity.");
-        if (!isValidProtection(protection))
-            throw new IllegalArgumentException("Protection must be strictly positive.");
 
         this.name = name;
         this.maxHitPoints = maxHitPoints;
         this.hitPoints = maxHitPoints;
-        this.protection = protection;
         this.anchorPoints = new ArrayList<>();
         this.isFighting = false;
 
@@ -149,18 +149,20 @@ public abstract class Entity {
     }
 
     /**
-     * Sets the hitpoints of entity.
+     * Sets the hitpoints of entity if valid amount.
      *
      * @param   hitPoints
-     *          The entity that will own this equipment, or null if the item doesn't have an owner.
+     *          The amount of hitpoints to set.
      *
-     * @pre hitPoints >= 0 and hitPoints <= maxHitPoints
+     * @pre isValidHitPoints()
      *
      * @post hitpoints is set to the given amount
+     *      |   getHitPoints() = hitpoints
+     *
      */
     @Raw @Basic
     public void setHitPoints(int hitPoints) {
-        this.hitPoints = hitPoints;
+            this.hitPoints = hitPoints;
     }
 
     /**
@@ -202,7 +204,11 @@ public abstract class Entity {
      *          | result == (hitPoints >= 0 &&  hitpoints <= maxHitPoints)
      */
     public boolean isValidHitPoints(int hitPoints) {
-        if ((hitPoints >= 0) && (hitPoints <= maxHitPoints)){
+        if (hitPoints == 0) {
+            return true;
+        }
+
+        if ((hitPoints > 0) && (hitPoints <= maxHitPoints)){
             if (!isFighting && isPrime(getHitPoints())){
                 return true;
             }
@@ -254,8 +260,16 @@ public abstract class Entity {
         this.isFighting = status;
         if (!status && !isPrime(getHitPoints())) {
             int p = getClosestLowerPrime(getHitPoints());
-            removeHitPoints(getHitPoints() - p);
+            this.hitPoints = p;
         }
+    }
+
+    /**
+     * Returns true if the entity is fighting
+     */
+    @Basic
+    public boolean isFighting() {
+        return isFighting;
     }
 
     /**
@@ -300,10 +314,14 @@ public abstract class Entity {
      *         to the closest lower prime.
      */
     public void addHitPoints(int amount) {
-        this.hitPoints += amount;
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            removeHitPoints(getHitPoints() - p);
+        if ((this.hitPoints += amount) > maxHitPoints) {
+            this.hitPoints = maxHitPoints;
+        }
+        else {
+            if (!isFighting && !isPrime(this.hitPoints)) {
+                int p = getClosestLowerPrime(this.hitPoints);
+                this.hitPoints = p;
+            }
         }
     }
 
@@ -337,7 +355,7 @@ public abstract class Entity {
     /**
      * The protection factor of the entity.
      */
-    private final int protection;
+    private int protection;
 
     /**
      * Returns the protection factor of the entity.
@@ -345,6 +363,20 @@ public abstract class Entity {
     @Raw @Basic
     public int getProtection() {
         return protection;
+    }
+
+    /**
+     * Sets the raw protection value of this entity.
+     *
+     * @param protection
+     *        The new base protection value.
+     *
+     * @pre isValidProtection()
+     *
+     * @post geProtection() == protection
+     */
+    public void setProtection(int protection) {
+        this.protection = protection;
     }
 
     /**
@@ -358,6 +390,50 @@ public abstract class Entity {
      */
     public static boolean isValidProtection(int protection) {
         return protection > 0;
+    }
+
+    /**********************************************************
+     * Capacity
+     **********************************************************/
+
+    /**
+     * Variable referencing the capacity of this monster.
+     */
+    public int capacity;
+
+    /**
+     * Return the capacity of this monster.
+     */
+    @Raw @Basic
+    public int getCapacity() {
+        return capacity;
+    }
+
+    /**
+     * Returns the total weight of all the items which the entity is carrying.
+     *
+     * If an item is a backpack, its total weight includes the contents of the backpack.
+     * Empty anchor points are ignored.
+     *
+     * @return The sum of the weights of all items in anchor points.
+     */
+    public int getTotalWeight() {
+        int totalWeight = 0;
+
+        for (int i = 1; i < getNbAnchorPoints(); i++) {
+            Equipment item = getAnchorPointAt(i).getItem();
+            if (item == null) continue;
+
+            if (item instanceof Backpack)
+                totalWeight += ((Backpack) item).getTotalWeight(); // explicit cast
+
+            if (item instanceof Purse)
+                totalWeight += ((Purse) item).getTotalWeight();
+
+            else totalWeight += item.getWeight();
+        }
+
+        return totalWeight;
     }
 
     /**********************************************************
@@ -589,18 +665,6 @@ public abstract class Entity {
     @Raw @Basic
     public int getRealProtection() { return realProtection; }
 
-    /**
-     * Sets the raw protection value of this entity.
-     *
-     * @param protection
-     *        The new base protection value.
-     *
-     * @post getRealProtection() == protection
-     */
-    public void setRealProtection(int protection) {
-        this.realProtection = protection;
-    }
-
 
     /**
      * Returns the anchor point with the given name, if it exists.
@@ -664,12 +728,4 @@ public abstract class Entity {
         }
         return anchors;
     }
-
-
-
 }
-
-
-
-
-

@@ -6,13 +6,16 @@ import be.kuleuven.cs.som.annotate.*;
  * A class representing pieces of equipment.
  *
  * @invar   Each piece of equipment must have a valid weight.
- *          | isValidWeight(getWeight())
+ *          | canHaveAsWeight(getWeight())
  *
  * @invar   Each piece of equipment must have a valid identification number.
  *          | canHaveAsIdentification(getClass(), getIdentification())
  *
  * @invar   Each piece of equipment must have a valid base value.
  *          | canHaveAsValue(getCurrentValue())
+ *
+ * @invar   isDestroyed() implies that the item is unusable()
+ *          | isDestroyed(getCondition)
  *
  * @author Jitse Vandenberghe
  * @version 1.0
@@ -47,7 +50,7 @@ public abstract class Equipment {
      *
      * @throws  IllegalArgumentException
      *          If the given weight is invalid.
-     *          |!isValidWeight(weight)
+     *          |!canHaveAsWeight(weight)
      *
      * @throws  IllegalArgumentException
      *          If the given base Value is invalid.
@@ -56,7 +59,7 @@ public abstract class Equipment {
     public Equipment(int weight, int baseValue)
             throws IllegalArgumentException {
 
-        if (!isValidWeight(weight))
+        if (!canHaveAsWeight(weight))
             throw new IllegalArgumentException("Weight cannot be negative.");
         if (!canHaveAsValue(baseValue))
             throw new IllegalArgumentException("Base value must be between 1 and the maximum value.");
@@ -95,7 +98,7 @@ public abstract class Equipment {
      * @return  True if and only if the given weight is positive.
      *          | result == (weight >= 0)
      */
-    public static boolean isValidWeight(int weight) {
+    public static boolean canHaveAsWeight(int weight) {
         return (weight >= 0);
     }
 
@@ -311,39 +314,42 @@ public abstract class Equipment {
 
     /**
      * Set the owner to which this item belongs.
+     *
      * This setter maintains the bidirectional relationship in both directions
      * and ensures that invariants on both ends are satisfied.
      *
      * @param   owner
-     *          The new owner to which this item belongs.
+     *          The new owner to which this item will belong.
+     *
+     * @pre     The equipment is not destroyed.
+     *          | !isDestroyed()
      *
      * @post    The owner of this item is set to the given owner.
      *          | new.getOwner() == owner
      *
-     * @effect	If the given owner is different from the current owner and the item is not
-     *          stored in a backpack, this item is removed from the current owner.
-     * 			| if (getOwner() != owner && !hasProperBackpack())
-     * 			| then getOwner().removeAsItem(this)
+     * @effect  If the current owner is different from the given owner and the item is not stored in a backpack,
+     *          it is removed from the current owner.
+     *          | if (getOwner() != owner && !hasProperBackpack())
+     *          | then getOwner().removeAsItem(this)
      *
-     * @effect  If the item is stored in a backpack, the item is removed from
-     *          the backpack.
-     *          | if hasProperBackpack() then setBackpack(null)
+     * @effect  If the item is currently stored in a backpack, it is removed from that backpack.
+     *          | if hasProperBackpack()
+     *          | then setBackpack(null)
      *
-     * @effect	If the given owner is effective and not yet registered as
-     * 			the current owner of this item, this item is added to the owner.
-     * 			| if (owner != null && getOwner() != owner)
-     * 			| then owner.addAsItem(this)
+     * @effect  If the given owner is effective (non-null) and different from the current owner,
+     *          the item is added to the new owner.
+     *          | if (owner != null && getOwner() != owner)
+     *          | then owner.addAsItem(this)
      *
      * @throws  IllegalArgumentException
-     *          The owner is effective, but cannot own this item.
-     *          | (owner != null) && !owner.canHaveAsItem(this)
+     *          The given owner is non-null but cannot have this item.
+     *          | owner != null && !owner.canHaveAsItem(this)
      *
-     * @note	The setter is only responsible to satisfy the invariants w.r.t. the bidirectional relationship.
-     * 			It ensures both the consistency of the relationship and
-     * 			the restrictions on the actual referenced parent.
+     * @note    This setter ensures the consistency of the bidirectional relationship between the item and its owner.
+     *          It also enforces the restrictions imposed by the referenced parent (owner).
      *
-     * @note	The exception clauses that come in through the effects are all
-     * 			cancelled out by the throws clauses here.
+     * @note    Any exceptions potentially thrown by intermediate operations are suppressed here
+     *          because they are covered by the explicit throws clause.
      */
     @Raw @Basic
     public void setOwner(Entity owner) {
@@ -423,39 +429,45 @@ public abstract class Equipment {
     }
 
     /**
-     * Set the backpack in which this item is stored to the given backpack.
-     * This setter maintains the bidirectional relationship in both directions
-     * and ensures that invariants on both ends are satisfied.
+     * Sets the backpack in which this item is stored.
+     *
+     * Maintains the bidirectional relationship between this item and its backpack,
+     * and ensures that all relevant invariants are satisfied.
      *
      * @param   backpack
-     *          The new backpack in which this item is stored.
+     *          The new backpack in which this item should be stored.
+     *
+     * @pre     The equipment is not destroyed.
+     *          | !isDestroyed()
      *
      * @post    The backpack of this item is set to the given backpack.
-     *          | new.getBackpack() == backpack
+     *          | getBackpack() == backpack
      *
-     * @post    The owner of this item is set to the owner of the backpack.
-     *          | new.getOwner() == backpack.getOwner()
+     * @post    The owner of this item is updated to match the owner of the given backpack,
+     *          or set to null if the backpack is null.
+     *          | if backpack == null then new.getOwner() = null
+     *          | else new.getOwner() = backpack.getOwner()
      *
-     * @effect	If the given backpack is different from the current backpack, this item is
-     *          removed from the current backpack.
-     * 			| if (getBackpack() != backpack)
-     * 			| then getBackpack().removeItem(this)
+     * @effect  If the new backpack is different from the current one, this item is
+     *          removed from its current backpack.
+     *          | if (old.getBackpack() != backpack)
+     *          |     then old.getBackpack().removeItem(this)
      *
-     * @effect	If the given backpack is effective and not yet registered as
-     * 			the current backpack of this item, this item is added to the backpack.
-     * 			| if (backpack != null && getBackpack() != backpack)
-     * 			| then backpack.addItem(this)
+     * @effect  If the given backpack is non-null and not already the current backpack,
+     *          this item is added to it.
+     *          | if (backpack != null && old.getBackpack() != backpack)
+     *          |     then backpack.addItem(this)
      *
      * @throws  IllegalArgumentException
-     *          The backpack is effective, but cannot have this item in its contents.
-     *          | (backpack != null) && !backpack.canHaveAsItem(this)
+     *          If the given backpack is non-null and cannot contain this item.
+     *          | backpack != null && !backpack.canHaveAsItem(this)
      *
-     * @note	The setter is only responsible to satisfy the invariants w.r.t. the bidirectional relationship.
-     * 			It ensures both the consistency of the relationship and
-     * 			the restrictions on the actual referenced parent.
+     * @note    This setter is solely responsible for maintaining the bidirectional link
+     *          between this item and its backpack. It ensures both the consistency of
+     *          the relationship and the ownership invariants.
      *
-     * @note	The exception clauses that come in through the effects are all
-     * 			cancelled out by the throws clauses here.
+     * @note    Any exceptions that may be thrown internally by {@code addItem} or {@code removeItem}
+     *          are caught and assumed not to occur under correct usage.
      */
     @Raw @Model
     public void setBackpack(Backpack backpack)
@@ -505,8 +517,8 @@ public abstract class Equipment {
     /**
      * Return whether this equipment is shiny.
      *
-     * @return True if the equipment is shiny, false otherwise.
-     *         | result == isShiny
+     * @return  True if the equipment is shiny, false otherwise.
+     *          | result == isShiny
      */
     @Basic
     public boolean isShiny() {
@@ -542,14 +554,24 @@ public abstract class Equipment {
     }
 
     /**
-     * Set the condition of this equipment.
+     * Set the condition of this equipment to the given value,
+     * but only if the current condition is GOOD.
      *
      * @param   condition
      *          The new condition to set.
+     *
+     * @post    If the current condition is GOOD, it will be changed to the given condition.
+     *          Otherwise, the condition remains unchanged.
+     *          | if (old(getCondition()) == Condition.GOOD)
+     *          |     then getCondition() == condition
+     *          | else
+     *          |     getCondition() == old(getCondition())
      */
     @Model
     void setCondition(Condition condition) {
-        this.condition = condition;
+        if (getCondition() == Condition.GOOD) {
+            this.condition = condition;
+        }
     }
 
     /**

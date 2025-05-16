@@ -52,6 +52,8 @@ public class WeaponTest {
         assertEquals(Equipment.equipmentByType.get(Weapon.class).size(), oldSizeIdentificationOfWeaponB4B + 1);
         // 2. effect of setDamage()
         assertEquals(91, weapon_A.getDamage());
+        // 3. postcondition on shininess
+        assertTrue(weapon_A.isShiny());
     }
 
     @Test
@@ -109,6 +111,7 @@ public class WeaponTest {
     @Test
     public void testsetDamage_allCases() {
         weapon_A.setDamage(7);
+        // 1. postcondition on damage
         assertEquals(7, weapon_A.getDamage());
     }
 
@@ -131,7 +134,7 @@ public class WeaponTest {
     }
 
     /**
-     * DAMAGE
+     * VALUE
      */
 
     @Test

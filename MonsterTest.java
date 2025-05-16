@@ -52,57 +52,81 @@ public class MonsterTest {
         items.add(backpack_A);
         items.add(purse_A);
 
-        monster_A = new Monster("Tom", 70, 49, items);
+        monster_A = new Monster("Tom", 70, 49, items, SkinType.SCALY);
         // 1. Adds two anchorpoints because we have to have 2 free anchorpoints for the tests
         monster_A.addAnchorPoint(new AnchorPoint(null));
         monster_A.addAnchorPoint(new AnchorPoint(null));
     }
 
-    // CONSTRUCTORS
+    /**
+     * CONSTRUCTORS
+     */
 
     @Test
     void testConstructor_ValidArguments_ShouldInitializeFields() {
-        // 1. effect of initializing name
+        // 1. effect of super(name, maxHitPoints)
+        // 1.1 postcondition on name
         assertEquals("Tom", monster_A.getName());
-
-        // 2. effect of initializing hitpoints
-        assertEquals(67, monster_A.getHitPoints()); // closest lower prime number
-
-        // 3. effect of initializing maxHitPoints
+        // 1.2 postcondition on hitpoints
         assertEquals(70, monster_A.getMaxHitPoints());
+        assertEquals(67, monster_A.getHitPoints());
+        // 1.3 postcondition on fighting status
+        assertFalse(monster_A.isFighting());
+        // 1.4 effect of initializeAnchorPoint
+        assertTrue(monster_A.getNbAnchorPoints() >= 0 && monster_A.getNbAnchorPoints() <= 100);
 
-        // 4. effect of initializing protection
-        assertEquals(10, monster_A.getProtection());
+        // 2. postcondition on skin type
+        assertEquals(SkinType.SCALY, monster_A.getType());
+
+        // 3. postcondition on maximal protection
+        assertEquals(SkinType.SCALY.getMaxProtection(), monster_A.getMaximalProtection());
+
+        // 4. postcondition on current protection
+        assertEquals(SkinType.SCALY.getMaxProtection(), monster_A.getMaximalProtection());
+
+        // 5. postcondition on damage
+        assertEquals(49, monster_A.getDamage());
+
+        // 7. effect of distributeInitial
+        // 7.1 postcondition on items and anchorpoints
+        assertEquals(weapon_A, monster_A.getAnchorPointAt(1).getItem());
+        assertEquals(armor_A, monster_A.getAnchorPointAt(2).getItem());
+        assertEquals(backpack_A, monster_A.getAnchorPointAt(3).getItem());
+        assertEquals(purse_A, monster_A.getAnchorPointAt(4).getItem());
+
+        // 8. postcondition on capacity
+        assertTrue(monster_A.getCapacity() >= monster_A.getTotalWeight());
     }
 
     @Test
     void testConstructor_InvalidDamage_ShouldThrowException() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new Monster("InvalidDamage", 70, -1 , items);
+            new Monster("InvalidDamage", 70, -1 , items, SkinType.SCALY);
         });
     }
 
-
-
-    // NAME
+    /**
+     * NAME
+     */
 
     @Test
     void testCanHaveAsName_allCases() {
         // 1. Valid cases
         assertTrue(monster_A.canHaveAsName("Tom"));
         assertTrue(monster_A.canHaveAsName("O'Tom"));
-
         // 2. Invalid cases
         assertFalse(monster_A.canHaveAsName(null));
         assertFalse(monster_A.canHaveAsName("tom"));
         assertFalse(monster_A.canHaveAsName("tom123"));
     }
 
-    // ANCHORS
+    /**
+     * ANCHORS
+     */
 
     @Test
     void testInitializeAnchorPoints_ShouldCreateAnchorPoints() {
-        assertTrue(monster_A.getNbAnchorPoints() >= 0);
+        assertTrue(monster_A.getNbAnchorPoints() >= 0 && monster_A.getNbAnchorPoints() <= 100);
     }
 
     @Test
@@ -110,6 +134,8 @@ public class MonsterTest {
         // 2. Items distributed in initialization
         assertEquals(weapon_A, monster_A.getAnchorPointAt(1).getItem());
         assertEquals(armor_A, monster_A.getAnchorPointAt(2).getItem());
+        assertEquals(backpack_A, monster_A.getAnchorPointAt(3).getItem());
+        assertEquals(purse_A, monster_A.getAnchorPointAt(4).getItem());
     }
 
     @Test
@@ -117,12 +143,21 @@ public class MonsterTest {
         // fills all anchorpoints
         while (monster_A.hasFreeAnchorPoint()) {
             Weapon newWeapon = new Weapon(40, 49);
+            assertTrue(monster_A.canHaveAsItem(newWeapon));
             newWeapon.setOwner(monster_A);
         }
         assertFalse(monster_A.canHaveAsItem(weapon_B));
     }
 
-    // Capacity
+    @Test
+    void testCanHaveAsItem_ExceedingCapacity_ShouldReturnFalse() {
+        Weapon weapon_C = new Weapon(monster_A.getCapacity(), 49);
+        assertFalse(monster_A.canHaveAsItem(weapon_C));
+    }
+
+    /**
+     * CAPACITY
+     */
 
     @Test
     void testIsValidCapacity_AllCases() {
@@ -137,6 +172,13 @@ public class MonsterTest {
     // DAMAGE
 
     @Test
+    public void testsetDamage_allCases() {
+        monster_A.setDamage(7);
+        // 1. postcondition on damage
+        assertEquals(7, monster_A.getDamage());
+    }
+
+    @Test
     void testGetMaximumDamage_ShouldReturnConstant() {
         assertEquals(100, Monster.getMaximumDamage());
     }
@@ -148,15 +190,20 @@ public class MonsterTest {
     }
 
     @Test
-    void testIsValidDamage_allCases() {
-        // 1. Valid case
-        assertTrue(monster_A.isValidDamage(7));
+    public void testIsValidDamage_allCases() {
 
-        // 2. Invalid cases
-        assertFalse(monster_A.isValidDamage(-1));
+        // 1. positive
+        assertTrue(monster_A.isValidDamage(7));
         assertFalse(monster_A.isValidDamage(0));
-        assertFalse(monster_A.isValidDamage(101));
-        assertFalse(monster_A.isValidDamage(10)); // can´t divide by 7
+        assertFalse(monster_A.isValidDamage(-7));
+
+        // 2. less than or equal maximum damage
+        int invalidDamage = Weapon.getMaximumDamage() + (7 - Weapon.getMaximumDamage() % 7);
+        assertFalse(monster_A.isValidDamage(invalidDamage));
+
+        // 3. Divisible by 7
+        assertTrue(monster_A.isValidDamage(49));
+        assertFalse(monster_A.isValidDamage(50));
     }
 
     @Test
@@ -173,12 +220,58 @@ public class MonsterTest {
         assertEquals(current, monster_A.getHitPoints());
     }
 
-    // HIT
+    /**
+     * PROTECTION
+     */
+
+    @Test
+    public void testIsValidMaximalProtection_allCases() {
+        assertTrue(monster_A.isValidMaximalProtection(SkinType.TOUGH.getMaxProtection()));
+        assertTrue(monster_A.isValidMaximalProtection(SkinType.THICK.getMaxProtection()));
+        assertTrue(monster_A.isValidMaximalProtection(SkinType.SCALY.getMaxProtection()));
+        assertFalse(monster_A.isValidMaximalProtection(-1));
+        assertFalse(monster_A.isValidMaximalProtection(0));
+        assertTrue(monster_A.isValidMaximalProtection(100));
+        assertFalse(monster_A.isValidMaximalProtection(101));
+    }
+
+    @Test
+    public void testSetCurrentProtection_shouldSetField() {
+        monster_A.setCurrentProtection(monster_A.getMaximalProtection());
+        assertEquals(monster_A.getMaximalProtection(), monster_A.getCurrentProtection());
+        monster_A.setCurrentProtection(0);
+        assertEquals(0, monster_A.getCurrentProtection());
+    }
+
+    @Test
+    public void testSetCurrentProtection_AboveMaximum_ShouldThrowException() {
+        assertThrows(IllegalArgumentException.class, () -> monster_A.setCurrentProtection(monster_A.getMaximalProtection()+1));
+    }
+
+    @Test
+    public void testSetCurrentProtection_BelowMinimum_ShouldThrowException() {
+        assertThrows(IllegalArgumentException.class, () -> monster_A.setCurrentProtection(-(monster_A.getMaximalProtection())));
+    }
+
+    @Test
+    public void testisValidCurrentProtection_allCases() {
+        assertTrue(monster_A.isValidCurrentProtection(SkinType.TOUGH.getMaxProtection()));
+        assertTrue(monster_A.isValidCurrentProtection(SkinType.THICK.getMaxProtection()));
+        assertTrue(monster_A.isValidCurrentProtection(SkinType.SCALY.getMaxProtection()));
+        assertFalse(monster_A.isValidCurrentProtection(-1));
+        assertTrue(monster_A.isValidCurrentProtection(0));
+        assertTrue(monster_A.isValidCurrentProtection(30));
+        assertFalse(monster_A.isValidCurrentProtection(ArmorType.BRONZE.getMaxProtection()+1));
+    }
+
+    /**
+     * HIT
+     */
 
     @Test
     void testHit_FatalBlow_ShouldHaveZeroHitPoints() {
         // 1. fatal hit
-        hero_A.setRealProtection(0); // decrease protection so hit is succesfull
+        hero_A.setProtection(0); // decrease protection so hit is succesfull
         monster_A.setDamage(10000); // fatal
         monster_A.hit(hero_A);
 
@@ -188,21 +281,21 @@ public class MonsterTest {
 
     @Test
     void testHit_MissHit_ShouldNotChangeHitPoints() {
-        hero_A.setHitPoints(80);
-        monster_A.setDamage(20);
+        hero_A.setHitPoints(79);
+        monster_A.setDamage(14);
 
         // increase protection so hit fails
-        hero_A.setRealProtection(999);
+        hero_A.setProtection(999);
         monster_A.hit(hero_A);
 
-        assertEquals(80, hero_A.getHitPoints());
+        assertEquals(79, hero_A.getHitPoints());
     }
 
     @Test
     void testHit_NonFatal_ShouldReduceHitPoints() {
         hero_A.setHitPoints(80);
         monster_A.setDamage(10);
-        hero_A.setRealProtection(0);
+        hero_A.setProtection(0);
 
         monster_A.hit(hero_A);
         assertTrue(hero_A.getHitPoints() < 80);

@@ -17,7 +17,6 @@ import be.kuleuven.cs.som.annotate.*;
  *          | isValidCapacity(getCapacity());
  *
  * @author  Jitse Vandenberghe
- * @author  Guillaume Vandemoortele
  *
  * @version 1.1
  */
@@ -28,25 +27,38 @@ public class Monster extends Entity {
      **********************************************************/
 
     /**
-     * Initialize a new monster with the given name, maximum hitpoints, strength, and initial items.
+     * Initialize a new monster with the given name, damage, maximum hitpoints, type and initial items.
      *
      * @param   name
      *          The name of the monster.
+     *
      * @param   initialItems
      *          A list of equipment items to randomly distribute over anchor points.
+     *
      * @param   maxHitPoints
      *          The base value of the monster.
      *
+     * @param   damage
+     *          Damage the monster deals.
+     *
+     * @param   initialItems
+     *          A list of equipment items to randomly distribute over anchor points.
+     *
+     * @param   type
+     *          The type of this mosnter (tough / thick / scaly).
+     *
      * @effect  The monster is initialized as an entity with the given
-     *          name, max hitpoints and protection.
-     *          | super(name, maxHitPoints, 10)
+     *          name and max hitpoints.
+     *          | super(name, maxHitPoints)
      *
-     * @effect  The anchor points are initialized.
-     *          | initializeAnchorPoints()
+     * @post    The type of armor is set to the given type.
+     *          | new.GetType = type
      *
-     * @effect  The given items are randomly distributed over the anchor points,
-     *          and the capacity is set accordingly.
-     *          | distributeInitialItems(initialItems)
+     * @post    The maximal protection is set to the given maximal protection.
+     *          | new.getMaximalProtection() == maximalProtection
+     *
+     * @effect  The new piece of armor is initialized with the maximal protection as current protection.
+     *          | setCurrentProtection(maximalProtection)
      *
      * @effect  The new monster has the given damage.
      *          | setDamage(damage)
@@ -54,17 +66,33 @@ public class Monster extends Entity {
      * @post    The new capacity is set to the given capacity.
      *          | new.getCapacity() = capacity
      *
+     * @effect  The given items are randomly distributed over the anchor points,
+     *          and the capacity is set accordingly.
+     *          | distributeInitialItems(initialItems)
+     *
+     * @post    The new capacity is set to a number larger than the total weight of the initial items.
+     *          | new.getCapacity() = rand.nextInt(Integer.MAX_VALUE) + getTotalWeight()
+     *
      * @throws  IllegalArgumentException
      *          If the given damage is invalid.
      *          |!isValidDamage(damage)
      */
-    public Monster(String name, int maxHitPoints, List<Equipment> initialItems) {
-        super(name, maxHitPoints, 10);
-        if (!isValidCapacity(capacity))
-            throw new IllegalArgumentException("Capacity cannot be negative.");
+    public Monster(String name, int maxHitPoints, int damage, List<Equipment> initialItems, SkinType type) {
+        super(name, maxHitPoints);
+
+        if (!isValidDamage(damage))
+            throw new IllegalArgumentException("Damage cannot be negative, must be below the maximum damage and must be a multiple of 7.");
+
+        this.type = type;
+        this.maximalProtection = type.getMaxProtection();
+        setCurrentProtection(maximalProtection);
+
+        setDamage(damage);
 
         distributeInitialItems(initialItems);
-        this.capacity = getTotalWeight();
+
+        Random rand = new Random();
+        this.capacity = rand.nextInt(Integer.MAX_VALUE) + getTotalWeight();
     }
 
     /**********************************************************
@@ -206,12 +234,12 @@ public class Monster extends Entity {
      **********************************************************/
 
     /**
-     * Variable referencing the maximum amount of damage a weapon can deal.
+     * Variable referencing the maximum amount of damage a monster can deal.
      */
     private static final int maximumDamage = 100;
 
     /**
-     * Return the maximum damage a weapon can deal.
+     * Return the maximum damage a monster can deal.
      */
     @Basic @Immutable
     public static int getMaximumDamage() {
@@ -264,23 +292,110 @@ public class Monster extends Entity {
      * Applies damage to this monster.
      * The effective damage is reduced by the monster's protection factor.
      *
-     * @param damage
-     *        The raw damage value to apply (must be non-negative).
+     * @param   damage
+     *          The raw damage value to apply (must be non-negative).
      */
     @Override
     public void receiveDamage(int damage) {
         if (damage < 0) return;
 
         int effectiveDamage = Math.max(0, damage - getProtection());
-        int newHitPoints = getHitPoints() - effectiveDamage;
-
-        if (newHitPoints < 0) {
-            newHitPoints = 0;
-        }
+        int newHitPoints = Math.max(0, getHitPoints() - effectiveDamage);
 
         this.removeHitPoints(getHitPoints() - newHitPoints);
     }
 
+    /**********************************************************
+     * Protection
+     **********************************************************/
+
+    /**
+     * Variable referencing the maximum protection this monster has as natural protection.
+     */
+    private final int maximalProtection;
+
+    /**
+     * Variable referencing the current protection this monster has as natural protection.
+     */
+    private int currentProtection;
+
+    /**
+     * Return the maximum protection this monster has as natural protection.
+     */
+    @Basic @Immutable
+    public int getMaximalProtection() {
+        return maximalProtection;
+    }
+
+    /**
+     * Check whether the given maximal protection is a valid maximal protection for this monster.
+     *
+     * @param   maximalProtection
+     *          The maximal protection to check.
+     *
+     * @return  True if and only if the given maximal protection is positive and does not exceed 100.
+     *          | result == (value > 0 && value <= 100)
+     */
+    public boolean isValidMaximalProtection(int maximalProtection) {
+        return maximalProtection > 0 && maximalProtection <= 100;
+    }
+
+    /**
+     * Return the current protection this monster can provide
+     */
+    @Basic
+    public int getCurrentProtection() {
+        return currentProtection;
+    }
+
+    /**
+     * Set the current protection of this monster to the given protection.
+     *
+     * @param   currentProtection
+     *          The new current protection for this monster.
+     *
+     * @post    The given current protection is registered as the current protection of this piece of armor.
+     *          | new.getCurrentProtection() == currentProtection
+     *
+     * @throws  IllegalArgumentException
+     *          If the given current protection is invalid.
+     *          |!isValidCurrentProtection(currentProtection)
+     */
+    public void setCurrentProtection(int currentProtection)
+            throws IllegalArgumentException {
+        if (!isValidCurrentProtection(currentProtection))
+            throw new IllegalArgumentException("The current protection must be between 0 and " + maximalProtection);
+        this.currentProtection = currentProtection;
+    }
+
+    /**
+     * Check whether the given maximal protection is a valid maximal protection for this monster.
+     *
+     * @param   currentProtection
+     *          The current protection to check.
+     *
+     * @return  True if and only if the given current protection is greater or equal to zero and does not exceed the maximal protection.
+     *          | result == (value >= 0 && value <= maximalProtection)
+     */
+    public boolean isValidCurrentProtection(int currentProtection) {
+        return currentProtection >= 0 && currentProtection <= maximalProtection;
+    }
+
+    /**********************************************************
+     * Armor Type
+     **********************************************************/
+
+    /**
+     * Variable referencing the type of skin (Tin/Bronze)
+     */
+    private final SkinType type;
+
+    /**
+     * Return the type of skin of this monster.
+     */
+    public SkinType getType() {
+        return type;
+    }
 
 
     /**********************************************************
@@ -317,6 +432,10 @@ public class Monster extends Entity {
 
         if (impact >= opponent.getHitPoints())
 
+        if (impact >= opponent.getRealProtection()) {
+            // land a succesful hit
+            int damage = getDamage();
+            int newHitPoints = opponent.getHitPoints() - damage;
 
             if (impact >= opponent.getProtection()) {
                 // land a succesful hit

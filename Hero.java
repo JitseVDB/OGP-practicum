@@ -1,6 +1,11 @@
+import be.kuleuven.cs.som.annotate.Basic;
+
 import java.util.Random;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+
 
 
 /**
@@ -42,15 +47,33 @@ public class Hero extends Entity {
      * @param strength
      *        the hero's intrinsic strength (stored rounded to two decimal places)
      *
-     * @pre strength > 0
+     * @throws IllegalArgumentException
+     *         If the name is invalid, or if maxHitPoints < 0, or if strength ≤ 0.
      *
-     * @post getIntrinsicStrength() == Math.round(strength * 100) / 100.0
-     * @post getLeftHandWeapon() == null
-     * @post getRightHandWeapon() == null
-     * @post getArmor() == null
+     * @post The hero's name is equal to the provided name.
+     *      |getName().equals(name)
+     * @post The hero's maximum hit points are set correctly.
+     *      | getMaxHitPoints() == maxHitPoints
+     * @post The hero's current hit points equal the maximum hit points.
+     *      |getHitPoints() == maxHitPoints
+     * @post The hero's intrinsic strength is rounded correctly.
+     *      |getIntrinsicStrength() == Math.round(strength * 100) / 100.0
+     * @post The hero is not in a fighting state.
+     *      |!isFighting()
+     * @post The hero is not holding a weapon in the left hand.
+     *      |getLeftHandWeapon() == null
+     * @post The hero is not holding a weapon in the right hand
+     *      | getRightHandWeapon() == null
+     * @post The hero is not wearing any armor.
+     *      |getArmor() == null
      */
     public Hero(String name, int maxHitPoints, double strength) {
         super(name, maxHitPoints, 10);
+        if (strength <= 0)
+            throw new IllegalArgumentException("Strength must be positive");// standaard protection=10
+        if (maxHitPoints <= 0)
+            throw new IllegalArgumentException("Maximum hitpoints must be positive");
+        this.isFighting = false;
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.capacity = 0;
 
@@ -72,17 +95,43 @@ public class Hero extends Entity {
      * @throws IllegalArgumentException
      *         If any argument is invalid, or if items cannot be assigned due to weight or anchor conflicts
      *
-     * @pre initialEquipment != null
-     * @pre strength > 0
-     *
-     * @post getIntrinsicStrength() == Math.round(strength * 100) / 100.0
-     * @post All equipment is validly assigned to appropriate anchors
+     * @post The hero's name is equal to the provided name.
+     *       | getName().equals(name)
+     * @post The hero's maximum hit points are set correctly.
+     *       | getMaxHitPoints() == maxHitPoints
+     * @post The hero's current hit points equal the maximum hit points.
+     *       | getHitPoints() == maxHitPoints
+     * @post The hero's intrinsic strength is correctly rounded.
+     *       | getIntrinsicStrength() == Math.round(strength * 100) / 100.0
+     * @post The hero is not in a fighting state.
+     *       | !isFighting()
+     * @post All equipment is validly assigned to appropriate anchors.
      */
+
     public Hero(String name, int maxHitPoints, double strength, Equipment... startItems) {
         this(name, maxHitPoints, strength); // Roep de eenvoudige constructor aan
 
         for (Equipment item : startItems) {
-            item.setOwner(this);
+            if (item == null) continue;
+
+            // Voeg het item toe als het mag
+            for (AnchorPoint ap : anchorPoints) {
+                if (ap.isEmpty() && canHaveAsItemAt(item, ap)) {
+                    if (item.getOwner() != this) {
+                        item.setOwner(this);
+                    }
+
+                    ap.setItem(item);
+                    // Zorg voor bidirectionele relatie
+                    this.capacity += item.getWeight();
+
+                    if (ap.getName().equals("body") && item instanceof Armor) {
+                        this.armor = (Armor) item;
+                    }
+
+                    break; // ga naar volgend item
+                }
+            }
         }
     }
 
@@ -165,6 +214,115 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
+     *                      Hitpoints
+     **********************************************************/
+
+    /**
+     * Variable that indicates whether the hero is currently fighting. He is initialized as not fighting
+     */
+    private boolean isFighting;
+
+    /**
+     * Updates the fighting status of this hero.
+     *
+     * @param status
+     *        true if the hero enters combat, false if they exit combat.
+     * @post The hero's fighting status is correctly set.
+     *       | isFighting() == status
+     *
+     * @effect If status == false and current hit points are not prime,
+     *         the hit points are reduced to the nearest lower prime.
+     */
+    @Basic
+    public void setFighting(boolean status) {
+        this.isFighting = status;
+        if (!status && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            super.removeHitPoints(getHitPoints() - p);
+        }
+    }
+
+    /**
+     * Returns true if the hero is fighting
+     */
+    @Basic
+    public boolean isFighting() {
+        return isFighting;
+    }
+    /**
+     * Determines if a given number is a prime number.
+     *
+     * @param number
+     *        The number to check.
+     * @return true if the number is prime; false otherwise.
+     */
+    @Basic
+    public boolean isPrime(int number) {
+        if (number < 2) return false;
+        for (int i = 2; i <= Math.sqrt(number); i++) {
+            if (number % i == 0) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns the closest lower prime number less than the given starting value.
+     *
+     * @param start
+     *        The starting value.
+     * @return The closest lower prime number.
+     */
+    @Basic
+    public int getClosestLowerPrime(int start) {
+        if (start <= 0) return 0;
+        for (int i = start - 1; i >= 2; i--) {
+            if (isPrime(i)) return i;
+        }
+        return 2;
+    }
+
+    /**
+     * Increases the hero’s current hit points by the given amount.
+     * If the hero is not fighting, and the result is not a prime number,
+     * the hit points are reduced to the closest lower prime.
+     * @param amount
+     *        The number of hit points to add
+     *
+     * @post HitPoints is increased by amount, but not beyond MaxHitPoints
+     * @effect If not fighting and the result is not prime, hit points are reduced
+     *         to the closest lower prime.
+     */
+    @Override
+    public void addHitPoints(int amount) {
+        super.addHitPoints(amount);
+        if (!isFighting && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            super.removeHitPoints(getHitPoints() - p);
+        }
+    }
+
+    /**
+     * Decreases the hero’s current hit points by the given amount.
+     * If the hero is not fighting, and the result is not a prime number,
+     * the hit points are further reduced to the closest lower prime.
+     *
+     * @param amount
+     *        The number of hit points to remove
+     *
+     * @post HitPoints is decreased by amount, but not below zero.
+     * @effect If not fighting and the result is not prime,
+     *         hit points are reduced to the closest lower prime.
+     */
+    @Override
+    public void removeHitPoints(int amount) {
+        super.removeHitPoints(amount);
+        if (!isFighting && !isPrime(getHitPoints())) {
+            int p = getClosestLowerPrime(getHitPoints());
+            super.removeHitPoints(getHitPoints() - p);
+        }
+    }
+
+    /**********************************************************
      *                      Strenght
      **********************************************************/
 
@@ -180,8 +338,6 @@ public class Hero extends Entity {
      *
      * @param factor
      *        A non-zero integer.
-     *
-     * @pre factor != 0
      *
      * @post The intrinsic strength is updated to its previous value multiplied by the factor,
      *       rounded to two decimal places.
@@ -203,8 +359,6 @@ public class Hero extends Entity {
      *
      * @param divisor
      *        A non-zero integer.
-     *
-     * @pre divisor != 0
      *
      * @post The intrinsic strength is updated to its previous value divided by the divisor,
      *       rounded to two decimal places.
@@ -234,6 +388,7 @@ public class Hero extends Entity {
      *     |          + (leftHandWeapon.getDamage())
      *     |          + (rightHandWeapon.getDamage())
      */
+    @Basic
     public double getAttackPower() {
         int weaponDamage = 0;
 
@@ -246,6 +401,7 @@ public class Hero extends Entity {
     /**
      * Return the intrinsic strength of this hero
      */
+    @Basic
     protected double getIntrinsicStrength() {
         return this.intrinsicStrength;
     }
@@ -256,8 +412,22 @@ public class Hero extends Entity {
      **********************************************************/
 
     /**
+     * Variable setting the capacity of the hero
+     */
+    private int capacity;
+
+    /**
+     * Return the capacity of this hero
+     */
+    @Basic
+    public int getCapacity() {
+        return this.capacity;
+    }
+
+    /**
      * Return the maximum capacity of this hero
      */
+    @Basic
     public int getMaxCapacity() {return (int)(20 * intrinsicStrength);}
 
 
@@ -297,9 +467,30 @@ public class Hero extends Entity {
     /**
      * Returns the armor currently equipped by this hero.
      */
+    @Basic
     public Armor getArmor() {
         return armor;
     }
+
+    /**
+     * Returns how many Armor items this hero is currently carrying.
+     */
+    @Basic
+    public int getNbArmorsCarried() {
+        int count = 0;
+        for (AnchorPoint ap : anchorPoints) {
+            Equipment item = ap.getItem();
+            if (item instanceof Armor) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public void equipArmor(Armor armor) {
+        this.armor = armor;
+    }
+
 
     /**********************************************************
      *                      Hit
@@ -318,8 +509,6 @@ public class Hero extends Entity {
      * @throws NullPointerException
      *         if monster is null
      *
-     * @pre monster != null
-     *
      * @effect If the hit is successful and fatal, the hero heals.
      *         | healAfterKill()
      * @effect The monster's hit points are reduced.
@@ -330,8 +519,6 @@ public class Hero extends Entity {
         if (monster == null) {
             throw new NullPointerException("Monster target cannot be null.");
         }
-
-        this.setFighting(true);
 
         Random r = new Random();
         int roll = r.nextInt(101); // random getal tussen 0 en 100
@@ -347,7 +534,6 @@ public class Hero extends Entity {
             }
         }
 
-        this.setFighting(false);
     }
 
     /**
@@ -418,7 +604,8 @@ public class Hero extends Entity {
      *
      * @post The result is equal to getProtection() + armor.getCurrentProtection()
      */
-    @Override
+
+    @Override, @Basic
     public int getRealProtection() {
         int base = getProtection(); // = standaardbescherming (bv. 10)
         int armorBonus = 0;
@@ -433,36 +620,40 @@ public class Hero extends Entity {
      **********************************************************/
 
     /**
-     * Attempts to collect equipment items from the given monster after it has been defeated
+     * Attempts to collect equipment items from the given monster after it has been defeated.
      *
      * @param monster
      *        The monster whose belongings should be collected
      *
      * @post If monster == null, nothing happens.
-     * @post For each eligible item in monster.getAllItems():
+     * @post For each eligible item in monster.getAnchors():
      *       if there is enough capacity and a valid empty anchor point,
      *       the item is transferred and linked to this hero.
      */
     public void collectTreasureFrom(Monster monster) {
         if (monster == null) return;
 
-        List<Equipment> loot = monster.getAllItems();
+        Map<String, Equipment> loot = monster.getAnchors();
 
-        for (Equipment item : loot) {
-            // Als we het item niet kunnen dragen, slaan we het over
+        for (Equipment item : loot.values()) {
+            if (item == null) continue;
             if (!canCarry(item)) continue;
 
-            // Probeer item toe te voegen aan een geldige ankerpunt
+            // Zoek een geldig en leeg anchorpoint voor het item
             for (AnchorPoint ap : anchorPoints) {
                 if (ap.isEmpty() && canHaveAsItemAt(item, ap)) {
                     ap.setItem(item);
-                    item.setOwner(this);        // Bidirectionele link
+                    if (item.getOwner() == null) {
+                        item.setOwner(this);
+                    }
+                    // bidirectionele link
                     this.capacity += item.getWeight();
-                    break; // naar volgend item
+                    break; // item werd geplaatst, ga naar het volgende item
                 }
             }
         }
     }
+
 
     /**********************************************************
      *                   Weapon Equipment
@@ -528,6 +719,20 @@ public class Hero extends Entity {
         addCapacity(this.rightHandWeapon.getWeight());
     }
 
+    /**
+     * Returns the weapon currently equipped in the hero's left hand.
+     */
+    public Weapon getLeftHandWeapon() {
+        return this.leftHandWeapon;
+    }
+
+    /**
+     * Returns the weapon currently equipped in the hero's right hand.
+     */
+    public Weapon getRightHandWeapon() {
+        return this.rightHandWeapon;
+    }
+
     /**********************************************************
      *                      AnchorPoints
      **********************************************************/
@@ -554,8 +759,6 @@ public class Hero extends Entity {
      *        The item to add.
      *
      * @throws IllegalArgumentException If no valid anchor point is available for the item
-     *
-     * @pre item != null
      *
      * @post If the method completes, the item is placed at a valid anchor point and
      *       its owner remains the same.
@@ -589,8 +792,6 @@ public class Hero extends Entity {
      *
      * @param item
      *        The item to check
-     *
-     * @pre item != null
      *
      * @post The result is true if there exists at least one anchor point such that:
      *       the anchor is empty and canHaveAsItemAt(item, anchor) returns true
@@ -660,8 +861,6 @@ public class Hero extends Entity {
      * @param item
      *        The equipment item to check
      *
-     * @pre item != null
-     *
      * @post The result is true if the current capacity plus the item’s weight
      *       does not exceed the hero’s maximum capacity.
      *     | result == (getCapacity() + item.getWeight()) <= getMaxCapacity()
@@ -681,12 +880,6 @@ public class Hero extends Entity {
      * @throws IllegalStateException
      *         If the item is not owned by this hero.
      *
-     * @pre item != null
-     * @pre !hasAsItem(item)
-     * @pre canHaveAsItem(item)
-     * @pre item.getOwner() == this
-     * @pre canCarry(item)
-     *
      * @post The item is placed at a valid anchor point and capacity is increased by its weight.
      *     | hasAsItem(item)
      *     | and exists ap in anchorPoints such that ap.getItem() == item
@@ -702,6 +895,8 @@ public class Hero extends Entity {
             throw new IllegalArgumentException("Item not allowed.");
         if (item != null && item.getOwner() != this)
             throw new IllegalStateException("Item does not belong to this Hero.");
+        if (item instanceof Armor && getNbArmorsCarried() >= 2)
+            throw new IllegalArgumentException("Hero can carry at most 2 armors.");
 
         // Gewicht controleren vóór toevoegen
         if (!canCarry(item))
@@ -723,9 +918,6 @@ public class Hero extends Entity {
      *        The item to remove.
      * @throws IllegalArgumentException
      *         If the item is not linked to this hero.
-     *
-     * @pre item != null
-     * @pre hasAsItem(item)
      *
      * @post The item is no longer attached to any anchor point.
      *       The hero’s capacity is decreased by the item’s weight.

@@ -198,15 +198,20 @@ public class Armor extends Equipment {
     }
 
     /**
-     * Set the current protection of this piece of armor to the given damage.
+     * Set the current protection of this piece of armor to the given protection.
      *
      * @param   currentProtection
      *          The new current protection for this piece of armor.
      *
-     * @pre     The given damage must be legal.
-     *          | isValidDamage(damage)
-     * @post    The given damage is registered as the damage of this piece of armor.
-     *          | new.getDamage() == damage
+     * @pre     The equipment is not destroyed.
+     *          | !isDestroyed()
+     *
+     * @post    The given current protection is registered as the current protection of this piece of armor.
+     *          | new.getCurrentProtection() == currentProtection
+     *
+     * @throws  IllegalArgumentException
+     *          If the given current protection is invalid.
+     *          |!isValidCurrentProtection(currentProtection)
      */
     public void setCurrentProtection(int currentProtection)
             throws IllegalArgumentException {
@@ -244,7 +249,7 @@ public class Armor extends Equipment {
      * Calculate the current value of this piece of armor.
      *
      * @return  The calculated current value, guaranteed to be greater or equal to zero and at most 100.
-     *          | result == damage * currentProtection/maximalProtection
+     *          | result == baseValue * currentProtection/maximalProtection
      */
     protected int calculateCurrentValue() {
         return baseValue * currentProtection/maximalProtection;
@@ -264,6 +269,25 @@ public class Armor extends Equipment {
      */
     public ArmorType getType() {
         return type;
+    }
+
+    /**********************************************************
+     * Condition
+     **********************************************************/
+
+    /**
+     * Set this armor to destroyed and set its protection to zero.
+     *
+     * @effect  The protection of the protection is set to zero.
+     *          | setCurrentProtection(0)
+     *
+     * @effect  The condition is set to DESTROYED
+     *          | setCondition(Condition.DESTROYED)
+     */
+    @Override @Model
+    void destroy() {
+        setCurrentProtection(0);
+        setCondition(Condition.DESTROYED);
     }
 
 }

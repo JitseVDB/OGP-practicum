@@ -204,7 +204,6 @@ public class Purse extends StorageItem {
             if (other.getContents() <= this.getFreeSpace()) {
                 this.addToContents(other.getContents());
                 other.empty();
-                // VERDER UITWERKEN LATER : "Lege geldbeurs moet op de grond gegooid worden."
             } else {
                 other.removeFromContents(this.getFreeSpace());
                 this.destroy();
