@@ -32,6 +32,9 @@ public class Monster extends Entity {
      * @param   name
      *          The name of the monster.
      *
+     * @param   initialItems
+     *          A list of equipment items to randomly distribute over anchor points.
+     *
      * @param   maxHitPoints
      *          The base value of the monster.
      *
@@ -58,7 +61,10 @@ public class Monster extends Entity {
      *          | setCurrentProtection(maximalProtection)
      *
      * @effect  The new monster has the given damage.
-     *          | setDamage(damage);
+     *          | setDamage(damage)
+     *
+     * @post    The new capacity is set to the given capacity.
+     *          | new.getCapacity() = capacity
      *
      * @effect  The given items are randomly distributed over the anchor points,
      *          and the capacity is set accordingly.
@@ -111,6 +117,7 @@ public class Monster extends Entity {
         return (name != null && name.matches("[A-Za-z '’]+") && Character.isUpperCase(name.charAt(0)));
     }
 
+
     /**********************************************************
      * Anchors
      **********************************************************/
@@ -118,7 +125,7 @@ public class Monster extends Entity {
     /**
      * Initializes a random number of anchor points for this monster.
      *
-     * This method generates a random number between 0 (inclusive) and 100,
+     * This method generates a random number between 0 (inclusive) and Integer.MAX_VALUE (exclusive),
      * and adds that many anchor points to this monster. Each anchor point is initialized with null
      * as its name.
      *
@@ -128,13 +135,11 @@ public class Monster extends Entity {
      *
      * @post    The total number of anchor points for this monster will increase by the generated amount.
      *          | getNbAnchorPoints() == amount
-     *
-     * @note    We chose limit 100, because of performance issues otherwise.
      */
     @Override
     public void initializeAnchorPoints() {
         Random random = new Random();
-        int amount = random.nextInt(101);
+        int amount = random.nextInt(6); // 0 t.e.m. 5 anchor points
 
         for (int i = 1; i <= amount; i++) {
             addAnchorPoint(new AnchorPoint(null));
@@ -159,8 +164,8 @@ public class Monster extends Entity {
     public void distributeInitialItems(List<Equipment> items) {
         int maxItems = Math.min(items.size(), getNbAnchorPoints());
 
-        for (int i = 1; i <= maxItems; i++) {
-            Equipment item = items.get(i-1);
+        for (int i = 0; i < maxItems; i++) {
+            Equipment item = items.get(i);
             AnchorPoint anchorPoint = getAnchorPointAt(i);
             anchorPoint.setItem(item);
         }
@@ -183,6 +188,7 @@ public class Monster extends Entity {
      */
     @Override
     public boolean canHaveAsItem(Equipment item) {
+
         if (getTotalWeight() + item.getWeight() <= getCapacity()) {
             for (AnchorPoint ap : anchorPoints) {
                 if (ap.isEmpty())
@@ -197,6 +203,18 @@ public class Monster extends Entity {
      * Capacity
      **********************************************************/
 
+    /**
+     * Variable referencing the capacity of this monster.
+     */
+    private int capacity;
+
+    /**
+     * Return the capacity of this monster.
+     */
+    @Raw @Basic
+    public int getCapacity() {
+        return capacity;
+    }
 
     /**
      * Checks whether a given capacity is a valid capacity.
@@ -253,7 +271,9 @@ public class Monster extends Entity {
      *          | new.getDamage() == damage
      */
     @Raw
-    public void setDamage(int damage) {this.damage = damage;}
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
 
     /**
      * Check whether the given damage is valid for this monster.
@@ -282,7 +302,7 @@ public class Monster extends Entity {
         int effectiveDamage = Math.max(0, damage - getProtection());
         int newHitPoints = Math.max(0, getHitPoints() - effectiveDamage);
 
-        removeHitPoints(getHitPoints() - newHitPoints);
+        this.removeHitPoints(getHitPoints() - newHitPoints);
     }
 
     /**********************************************************
@@ -377,6 +397,7 @@ public class Monster extends Entity {
         return type;
     }
 
+
     /**********************************************************
      * Hit
      **********************************************************/
@@ -409,25 +430,31 @@ public class Monster extends Entity {
             impact = getHitPoints();
         }
 
+        if (impact >= opponent.getHitPoints())
 
         if (impact >= opponent.getRealProtection()) {
             // land a succesful hit
             int damage = getDamage();
             int newHitPoints = opponent.getHitPoints() - damage;
 
-            if (newHitPoints <= 0) {
-                // Final blow: opponent defeated
-                opponent.setHitPoints(0);
+            if (impact >= opponent.getProtection()) {
+                // land a succesful hit
+                int damage = getDamage();
+                int newHitPoints = opponent.getHitPoints() - damage;
 
-                // Let monster take any possessions and destroy any weapons/armor left behind
-                loot(opponent);
+                if (newHitPoints <= 0) {
+                    // Final blow: opponent defeated
+                    opponent.setHitPoints(0);
 
+                    // Let monster take any possessions and destroy any weapons/armor left behind
+                    loot(opponent);
+
+                } else {
+                    // Regular hit, adjust life points
+                    opponent.setHitPoints(newHitPoints);
+                }
             } else {
-                // Regular hit, adjust life points
-                opponent.setHitPoints(newHitPoints);
-            }
-        } else {
-            // Miss the target: no effect
+                // Miss the target: no effect
             }
     }
 
@@ -486,6 +513,9 @@ public class Monster extends Entity {
             AnchorPoint ap = opponent.getAnchorPointAt(i);
             Equipment item = ap.getItem();
             if (item != null) {
+                ap.setItem(null);
+                item.setOwner(null);
+
                 if (item.isShiny()) {
                     shinyLoot.add(item);
                 } else {
@@ -498,6 +528,7 @@ public class Monster extends Entity {
         // Step 2: Try to loot shiny weapons/armors
         for (Equipment item : shinyLoot) {
             if (hasFreeAnchorPoint()) {
+                addToAnchorPoint(item);
                 item.setOwner(this);
             } else if ((item instanceof Weapon || item instanceof Armor)){
                 // Destroy non-looted weapons and armors only
@@ -506,9 +537,10 @@ public class Monster extends Entity {
             // Backpacks and purses not looted remain on the ground, do nothing
         }
 
-        // Step 3: Try to loot non-shiny weapons/armors or backpacks and purses
+        // Step 3: Try to loot non-shiny weapons/armors
         for (Equipment item : nonShinyLoot) {
             if (hasFreeAnchorPoint()) {
+                addToAnchorPoint(item);
                 item.setOwner(this);
             } else if ((item instanceof Weapon || item instanceof Armor)){
                 // Destroy non-looted weapons and armors only
