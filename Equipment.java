@@ -302,13 +302,13 @@ public abstract class Equipment {
      *
      * @note 	This class is the controlling class for the bidirectional relationship.
      */
-    private static Entity owner = null;
+    private Entity owner = null;
 
     /**
      * Return the owner of this piece of equipment (if any).
      */
     @Raw @Basic
-    public static Entity getOwner() {
+    public Entity getOwner() {
         return owner;
     }
 
@@ -469,7 +469,7 @@ public abstract class Equipment {
 
             // First, set up / break down the relationship from this side:
             this.backpack = backpack;
-            this.owner = Backpack.getOwner();
+            this.owner = backpack.getOwner();
 
             // Then, break down the old relationship from the other side, if it existed
             if (oldBackpack != null) {

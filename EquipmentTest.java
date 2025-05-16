@@ -180,10 +180,10 @@ public class EquipmentTest {
 
     @Test
     public void testSetOwner_noPreviousOwner() {
-        weapon_B.setOwner(hero_A);
+        weapon_A.setOwner(hero_A);
 
         // 1. postcondition on owner
-        assertEquals(hero_A, weapon_B.getOwner());
+        assertEquals(hero_A, weapon_A.getOwner());
 
         // 2. effect on old owner when setting different owner
         // not applicable
@@ -192,7 +192,7 @@ public class EquipmentTest {
         // not applicable
 
         // 4. effect on new owner when setting different owner
-        assertTrue(hero_A.hasAsItem(weapon_B));
+        assertTrue(hero_A.hasAsItem(weapon_A));
     }
 
     /**
@@ -240,6 +240,7 @@ public class EquipmentTest {
     public void testSetBackpack_anchorToBackpackWithinSameOwner() {
         assertNotNull(backpack_A);
         assertNotNull(weapon_A);
+
         weapon_A.setOwner(hero_A);
 
         weapon_A.setBackpack(backpack_A);
