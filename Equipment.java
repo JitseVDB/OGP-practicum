@@ -41,6 +41,9 @@ public abstract class Equipment {
      * @post    A randomly generated identification number is registered as the identification number.
      *          | new.getIdentification() == generateIdentification();
      *
+     * @post    The new equipment is in good condition.
+     *          | !new.isDestroyed()
+     *
      * @effect  The identification number is added to the map to keep track of all identification numbers
      *          for each equipment type.
      *          | addIdentification(this.getClass(), identification)
@@ -353,17 +356,18 @@ public abstract class Equipment {
         // Remember the previous owner
         Entity previousOwner = getOwner();
 
+
         // First, set up / break down the relationship from this side:
         this.owner = owner;
 
 
         // Then, break down the old relationship from the other side, if it existed
         // if item in backpack, you do not have to remove item from owner
-        if ((previousOwner != null) && (!hasProperBackpack())){
-            try{
+        if ((previousOwner != null) && (!hasProperBackpack())) {
+            try {
                 previousOwner.removeAsItem(this);
                 // the prime object is now in a raw state!
-            }catch(IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 // Should never occur!
                 assert false;
             }
@@ -377,12 +381,7 @@ public abstract class Equipment {
 
         // Finally, set up the new relationship from the other side, if needed
         if (owner != null) {
-            try{
-                owner.addAsItem(this);
-            }catch(IllegalArgumentException e) {
-                // Should never occur!
-                assert false;
-            }
+            owner.addAsItem(this);
         }
     }
 
@@ -399,18 +398,18 @@ public abstract class Equipment {
     private Backpack backpack = null;
 
     /**
-     * Check whether the bidirectional relationship between this disk item and its parent directory is consistent.
+     * Check whether the bidirectional relationship between this equipment and its backpack is consistent.
      *
-     * @return  True if the backpack has registered this item in its contents,
+     * @return  True if the backpack has registered this item in its contents and is not null,
      *          false otherwise.
-     *          | result == (getParentDirectory().hasAsItem(this))
+     *          | result == (getBackpack() != null && getBackpack().hasAsItem(this))
      *
-     * @note    This checker ensures that the parent directory has this item in its contents, maintaining the consistency
-     *          of the bidirectional relationship between the item and its parent directory.
+     * @note    This checker ensures that the backpack has this item in its contents, maintaining the consistency
+     *          of the bidirectional relationship between the item and its backpack.
      */
     @Raw
     public boolean hasProperBackpack() {
-        return getBackpack().hasAsItem(this);
+        return (getBackpack() != null) && getBackpack().hasAsItem(this);
     }
 
     /**
@@ -465,29 +464,32 @@ public abstract class Equipment {
         // Remember the old parent directory
         Backpack oldBackpack = getBackpack();
 
-        // First, set up / break down the relationship from this side:
-        this.backpack = backpack;
-        this.owner = Backpack.getOwner();
+        // Only update if the new backpack is different
+        if (oldBackpack != backpack) {
 
-        // Then, break down the old relationship from the other side, if it existed
-        if (oldBackpack != null) {
-            try{
-                oldBackpack.removeItem(this);
-                // the prime object is now in a raw state!
-            }catch(IllegalArgumentException e) {
-                // Should never occur!
-                assert false;
+            // First, set up / break down the relationship from this side:
+            this.backpack = backpack;
+            this.owner = Backpack.getOwner();
+
+            // Then, break down the old relationship from the other side, if it existed
+            if (oldBackpack != null) {
+                try {
+                    oldBackpack.removeItem(this);
+                    // the prime object is now in a raw state!
+                } catch (IllegalArgumentException e) {
+                    // Should never occur!
+                    assert false;
+                }
             }
-        }
 
-        // Finally, set up the new relationship from the other side, if needed
-        if (backpack != null) {
-            try{
-                backpack.addItem(this);
-                this.owner = Backpack.getOwner();
-            }catch(IllegalArgumentException e) {
-                // Should never occur!
-                assert false;
+            // Finally, set up the new relationship from the other side, if needed
+            if (backpack != null) {
+                try {
+                    backpack.addItem(this);
+                } catch (IllegalArgumentException e) {
+                    // Should never occur!
+                    assert false;
+                }
             }
         }
     }
@@ -497,7 +499,9 @@ public abstract class Equipment {
      **********************************************************/
 
     /**
-     * Indicates whether this equipment is shiny.
+     * Indicates whether the equipment is shiny.
+     *
+     * Default value is false, but subclasses may override this behavior.
      */
     boolean isShiny = false;
 

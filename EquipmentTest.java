@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
  * @version 1.0
  */
 public class EquipmentTest {
+    // HERO
+    private static Hero hero_A;
 
     // WEAPONS
     private static Weapon weapon_A, weapon_B, weapon_C;
@@ -30,6 +32,7 @@ public class EquipmentTest {
 
     @BeforeEach
     public void setUpEquipment() {
+        hero_A = new Hero("Hero", 10, 10);
         weapon_A = new Weapon(50, 70);
         weapon_B = new Weapon(150, 63);
         weapon_C = new Weapon(140, 63);
@@ -37,6 +40,7 @@ public class EquipmentTest {
         purse_A = new Purse(50, 100);
         backpack_A = new Backpack(10, 50, 150);
         backpack_B = new Backpack(15, 45, 175);
+        backpack_A.setOwner(hero_A);
     }
 
     @AfterEach
@@ -71,14 +75,17 @@ public class EquipmentTest {
         //     but because it is no longer unique. This confirms the method correctly enforces uniqueness.
         assertFalse(weapon_A.canHaveAsIdentification(Weapon.class, weapon_A.getIdentification()));
 
-        // 4. effect of addIdentification()
-        // 4.1 postcondition on the keys of equipmentByType map
+        // 4. postcondition on condition
+        assertFalse(weapon_A.isDestroyed());
+
+        // 5. effect of addIdentification()
+        // 5.1 postcondition on the keys of equipmentByType map
         assertTrue(Equipment.equipmentByType.containsKey(Weapon.class));
 
-        // 4.2 postcondition on the contents of the set containing the IDs associated with an equipment type
+        // 5.2 postcondition on the contents of the set containing the IDs associated with an equipment type
         assertTrue(Equipment.equipmentByType.get(Weapon.class).contains(weapon_A.getIdentification()));
 
-        // 4.3 postcondition on the size of the set containing the IDs for the specified equipment type
+        // 5.3 postcondition on the size of the set containing the IDs for the specified equipment type
         assertEquals(Equipment.equipmentByType.get(Weapon.class).size(), oldSizeEquipmentByType + 1);
     }
 
@@ -131,6 +138,7 @@ public class EquipmentTest {
 
         // 1. No existing identification numbers within equipment type
         assertTrue(Equipment.isUniqueForType(Armor.class, identification_A));
+        assertTrue(Equipment.isUniqueForType(Purse.class, weapon_A.generateIdentification()));
 
         // 2. Existing identification numbers within equipment type
         assertFalse(Equipment.isUniqueForType(Weapon.class, identification_A));
@@ -167,6 +175,27 @@ public class EquipmentTest {
     }
 
     /**
+     * OWNER
+     */
+
+    @Test
+    public void testSetOwner_noPreviousOwner() {
+        weapon_B.setOwner(hero_A);
+
+        // 1. postcondition on owner
+        assertEquals(hero_A, weapon_B.getOwner());
+
+        // 2. effect on old owner when setting different owner
+        // not applicable
+
+        // 3. effect on old backpack when setting different owner
+        // not applicable
+
+        // 4. effect on new owner when setting different owner
+        assertTrue(hero_A.hasAsItem(weapon_B));
+    }
+
+    /**
      * BACKPACK
      */
 
@@ -186,7 +215,7 @@ public class EquipmentTest {
     }
 
     @Test
-    public void testSetBackpack_allCases() {
+    public void testSetBackpack_noOwnerToBackpack() {
         // Ensure backpack_A is properly initialized
         assertNotNull(backpack_A);
         assertNotNull(weapon_A);
@@ -196,13 +225,36 @@ public class EquipmentTest {
         // 1. postcondition on backpack
         assertEquals(backpack_A, weapon_A.getBackpack());
 
-        weapon_A.setBackpack(backpack_B);
+        // 2. postcondition on owner
+        assertEquals(hero_A, weapon_A.getOwner());
 
-        // 2. effect on old backpack when setting a different backpack
-        assertFalse(backpack_A.hasAsItem(weapon_A));
+        // 3. effect on old backpack when setting a different backpack
+        // not applicable
 
-        // 3. effect on new backpack when setting a different backpack
-        assertTrue(backpack_B.hasAsItem(weapon_A));
+        // 4. effect on new backpack when setting a backpack different from the old backpack
+        assertTrue(backpack_A.hasAsItem(weapon_A));
+
+    }
+
+    @Test
+    public void testSetBackpack_anchorToBackpackWithinSameOwner() {
+        assertNotNull(backpack_A);
+        assertNotNull(weapon_A);
+        weapon_A.setOwner(hero_A);
+
+        weapon_A.setBackpack(backpack_A);
+
+        // 1. postcondition on backpack
+        assertEquals(backpack_A, weapon_A.getBackpack());
+
+        // 2. postcondition on owner
+        assertEquals(hero_A, weapon_A.getOwner());
+
+        // 3. effect on old backpack when setting a different backpack
+        // not applicable
+
+        // 4. effect on new backpack when setting a different backpack
+        assertTrue(backpack_A.hasProperBackpack());
     }
 
     @Test
