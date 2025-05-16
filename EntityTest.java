@@ -30,8 +30,8 @@ public class EntityTest {
 
         armor_A = new Armor(30, 80, ArmorType.BRONZE);
         armor_B = new Armor(30, 30, ArmorType.BRONZE);
-        weapon_A = new Weapon(30, 30, 35);
-        weapon_B = new Weapon(30, 30, 35);
+        weapon_A = new Weapon(30, 35);
+        weapon_B = new Weapon(30, 35);
         purse_A = new Purse(30, 30);
 
     }
