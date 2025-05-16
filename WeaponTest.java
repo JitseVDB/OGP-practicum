@@ -134,7 +134,7 @@ public class WeaponTest {
     }
 
     /**
-     * DAMAGE
+     * VALUE
      */
 
     @Test

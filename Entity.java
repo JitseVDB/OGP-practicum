@@ -51,11 +51,11 @@ public abstract class Entity {
      *          | new.getMaxHitPoints() == maxHitPoints
      *          | new.getHitPoints() == maxHitPoints
      *
-     * @post    The protection factor is set to the 10.
-     *          | new.getProtection() == 10
-     *
      * @post    The new entity is not fighting.
      *          | !new.isFighting()
+     *
+     * @effect  The anchor points are initialized.
+     *          | initializeAnchorPoints()
      *
      * @throws IllegalArgumentException
      *         If the given name is invalid
@@ -70,7 +70,6 @@ public abstract class Entity {
         this.name = name;
         this.maxHitPoints = maxHitPoints;
         this.hitPoints = maxHitPoints;
-        this.protection = 10;
         this.anchorPoints = new ArrayList<>();
         this.isFighting = false;
 

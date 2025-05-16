@@ -60,9 +60,6 @@ public class Monster extends Entity {
      * @effect  The new monster has the given damage.
      *          | setDamage(damage);
      *
-     * @effect  The anchor points are initialized.
-     *          | initializeAnchorPoints()
-     *
      * @effect  The given items are randomly distributed over the anchor points,
      *          and the capacity is set accordingly.
      *          | distributeInitialItems(initialItems)
@@ -283,11 +280,7 @@ public class Monster extends Entity {
         if (damage < 0) return;
 
         int effectiveDamage = Math.max(0, damage - getProtection());
-        int newHitPoints = getHitPoints() - effectiveDamage;
-
-        if (newHitPoints < 0) {
-            newHitPoints = 0;
-        }
+        int newHitPoints = Math.max(0, getHitPoints() - effectiveDamage);
 
         removeHitPoints(getHitPoints() - newHitPoints);
     }
