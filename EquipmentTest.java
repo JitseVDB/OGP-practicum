@@ -60,7 +60,7 @@ public class EquipmentTest {
         Equipment equipment_B = new Weapon(50, 70);
 
         // 1. postcondition on weight
-        assertEquals(50, weapon_A.getWeight());
+        assertEquals(10, weapon_A.getWeight());
 
         // 2. postcondition on base value
         assertEquals(0, weapon_A.getBaseValue());
@@ -247,12 +247,37 @@ public class EquipmentTest {
         // 2. effect on old owner when setting different owner
         // not applicable
 
-        // 3. effect of setBackpack(null)
-        // 3.1 postcondition on backpack
+        // 3. effect on backpack
+        // 3.1 effect on setBackpack
+        // 3.1.1 postcondition on backpack
         assertNull(weapon_A.getBackpack());
-        // 3.2 postcondition on owner
-        assertNull(weapon_A.getOwner());
-        // 3.3 effect on old backpack
+        // 3.1.2 postcondition on owner
+        // not applicable, this effect is undone by later
+        // 3.1.3 effect on old backpack
+        assertFalse(backpack_A.hasAsItem(weapon_A));
+
+        // 4. effect on new owner when setting different owner
+        assertTrue(hero_B.hasAsItem(weapon_A));
+    }
+
+    @Test
+    public void testSetOwner_PreviousSameOwnerInBackpack() {
+        weapon_A.setBackpack(backpack_A);
+        weapon_A.setOwner(hero_A);
+
+        // 1. postcondition on owner
+        assertEquals(hero_A, weapon_A.getOwner());
+
+        // 2. effect on old owner when setting different owner
+        // not applicable
+
+        // 3. effect on backpack
+        // 3.1 effect on setBackpack
+        // 3.1.1 postcondition on backpack
+        assertNull(weapon_A.getBackpack());
+        // 3.1.2 postcondition on owner
+        // not applicable, this effect is undone by later
+        // 3.1.3 effect on old backpack
         assertFalse(backpack_A.hasAsItem(weapon_A));
 
         // 4. effect on new owner when setting different owner

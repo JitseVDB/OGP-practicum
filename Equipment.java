@@ -376,6 +376,8 @@ public abstract class Equipment {
         // if item in backpack, then remove item from backpack
         if (hasProperBackpack()) {
             setBackpack(null);
+            // Re-set owner
+            this.owner = owner;
         }
 
 
