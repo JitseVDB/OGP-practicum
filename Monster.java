@@ -341,21 +341,26 @@ public class Monster extends Entity {
      * @param   opponent
      *          The defeated opponent from which to loot.
      *
-     * @effect  The items carried by the opponent are collected and removed from the opponent.
-     *          | for each item in opponent.getAnchorPointAt(i).getItem():
-     *          |     item.setOwner(null)
-     *          |     opponent.getAnchorPointAt(i).setItem(null)
+     * @effect  All items are removed from the opponent and collected for consideration.
+     *          | for each anchor point i:
+     *          |     item = opponent.getAnchorPointAt(i).getItem()
+     *          |     if item != null:
+     *          |         item.setOwner(null)
+     *          |         opponent.getAnchorPointAt(i).setItem(null)
      *
-     * @effect  Attempts to add each item to the monster's inventory if there is a free anchor point.
-     *          | if hasFreeAnchorPoint() then addToAnchorPoint(item) and item.setOwner(this)
+     * @effect  Loots shiny weapons and armors first if there are available anchor points.
+     *          | if item.isShiny() && (item instanceof Weapon || item instanceof Armor)
+     *          |     and hasFreeAnchorPoint():
+     *          |     addToAnchorPoint(item) and item.setOwner(this)
      *
-     * @effect  All non-looted weapons and armors are destroyed.
-     *          | if item instanceof Weapon or Armor and not looted then item.destroy()
+     * @effect  After all shiny items are looted, loots non-shiny weapons and armors if there is space.
+     *          | if !item.isShiny() && (item instanceof Weapon || item instanceof Armor)
+     *          |     and hasFreeAnchorPoint():
+     *          |     addToAnchorPoint(item) and item.setOwner(this)
      *
-     * @post    All looted items are removed from the opponent.
-     *          | for each item looted:
-     *          |     item.getOwner() == this
-     *          |     opponent does not have the item anymore in any anchor point
+     * @effect  All weapons and armors not looted are destroyed.
+     *          | if item instanceof Weapon or Armor and not looted:
+     *          |     item.destroy()
      *
      * @post    All looted items are removed from the opponent.
      *          | for each item looted:
@@ -370,25 +375,44 @@ public class Monster extends Entity {
      *          | getNbItemsCarried() <= getNbAnchorPoints()
      */
     public void loot(Entity opponent) {
-        List<Equipment> potentialLoot = new ArrayList<>();
+        List<Equipment> shinyLoot = new ArrayList<>();
+        List<Equipment> nonShinyLoot = new ArrayList<>();
 
-        // Step 1: Collect all items from opponent's anchor points
+        // Step 1: Collect all items and remove them from opponent
         for (int i = 1; i < opponent.getNbAnchorPoints(); i++) {
             AnchorPoint ap = opponent.getAnchorPointAt(i);
             Equipment item = ap.getItem();
             if (item != null) {
-                potentialLoot.add(item); // Add item to list containing potential loot
-                ap.setItem(null);        // Remove item from opponent
-                item.setOwner(null);     // Remove ownership from opponent
+                ap.setItem(null);
+                item.setOwner(null);
+
+                if (item.isShiny()) {
+                    shinyLoot.add(item);
+                } else {
+                    nonShinyLoot.add(item);
+                }
             }
         }
 
-        // Step 2: Loot equipment if there is space
-        for (Equipment item : potentialLoot) {
+
+        // Step 2: Try to loot shiny weapons/armors
+        for (Equipment item : shinyLoot) {
             if (hasFreeAnchorPoint()) {
                 addToAnchorPoint(item);
                 item.setOwner(this);
-            } else if ((item instanceof Weapon || item instanceof Armor)) {
+            } else if ((item instanceof Weapon || item instanceof Armor)){
+                // Destroy non-looted weapons and armors only
+                item.destroy();
+            }
+            // Backpacks and purses not looted remain on the ground, do nothing
+        }
+
+        // Step 3: Try to loot non-shiny weapons/armors
+        for (Equipment item : nonShinyLoot) {
+            if (hasFreeAnchorPoint()) {
+                addToAnchorPoint(item);
+                item.setOwner(this);
+            } else if ((item instanceof Weapon || item instanceof Armor)){
                 // Destroy non-looted weapons and armors only
                 item.destroy();
             }

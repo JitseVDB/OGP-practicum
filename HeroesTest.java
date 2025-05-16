@@ -17,7 +17,7 @@ public class HeroesTest {
     @Test
     void constructor_ValidName_ShouldCreateHero() {
         assertEquals("Arthur", testhero.getName());
-        assertEquals(50, testhero.getHitpoints());
+        assertEquals(50, testhero.getHitPoints());
     }
 
     @Test
@@ -61,22 +61,22 @@ public class HeroesTest {
         // Using reflection to simulate damage (removeHitPoints is private)
         setPrivateField(h, "hitpoints", 44);
         h.setFighting(false); // Should reduce to 43
-        assertEquals(43, h.getHitpoints());
+        assertEquals(43, h.getHitPoints());
     }
 
     @Test
     void setFighting_ToTrue_ShouldNotAdjustHitpoints() {
         setPrivateField(testhero, "hitpoints", 44);
         testhero.setFighting(true);
-        assertEquals(44, testhero.getHitpoints());
+        assertEquals(44, testhero.getHitPoints());
     }
 
     // --- Weapon Tests ---
 
     @Test
     void equipLeftAndRightWeapon_ShouldAffectAttackPower() {
-        Weapon sword = new Weapon("Sword", 10);
-        Weapon dagger = new Weapon("Dagger", 5);
+        Weapon sword = new Weapon(10, 14);
+        Weapon dagger = new Weapon(10, 7);
         testhero.equipLeftHand(sword);
         testhero.equipRightHand(dagger);
         assertEquals(25.0, testhero.getAttackPower());

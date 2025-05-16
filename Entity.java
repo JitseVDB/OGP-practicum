@@ -518,6 +518,26 @@ public abstract class Entity {
     }
 
 
+    /**
+     * Returns a list of all items currently carried by this entity.
+     *
+     * Only non-null items are included in the result. Items are retrieved from each anchor point.
+     *
+     * @return A list containing all non-null items held in the entity's anchor points.
+     */
+    public List<Equipment> getAllItems() {
+        List<Equipment> equipmentList = new ArrayList<>();
+
+        for (int i = 1; i < getNbAnchorPoints(); i++) {
+            Equipment item = getAnchorPointAt(i).getItem();
+            if (item != null) {
+                equipmentList.add(item);
+            }
+        }
+
+        return equipmentList;
+    }
+
 
     public abstract boolean canHaveAsItem(Equipment item);
 
