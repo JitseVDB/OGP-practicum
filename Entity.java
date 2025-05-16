@@ -36,8 +36,6 @@ public abstract class Entity {
      *        The name of the new entity.
      * @param maxHitPoints
      *        The maximum number of hitpoints.
-     * @param protection
-     *        The protection factor of the entity.
      *
      * @pre The maximum amount of hitpoints must be positive
      *       | maxHitPoints >= 0
@@ -47,29 +45,24 @@ public abstract class Entity {
      * @post The maximum and current hitpoints are set to the given value.
      *       | new.getMaxHitPoints() == maxHitPoints
      *       | new.getHitPoints() == maxHitPoints
-     * @post The protection factor is set to the given value.
-     *       | new.getProtection() == protection
+     * @post The protection factor is set to the 10.
+     *       | new.getProtection() == 10
      * @post The new entity is not fighting. | !new.isFighting()
      *
      * @throws IllegalArgumentException
      *         If the given name is invalid
      *         | !canHaveAsName(name)
      *
-     *         If the given protection factor is invalid
-     *         | !isValidProtection(protection)
-     *
      */
-    public Entity(String name, int maxHitPoints, int protection)
+    public Entity(String name, int maxHitPoints)
             throws IllegalArgumentException {
         if (!canHaveAsName(name))
             throw new IllegalArgumentException("Invalid name for the entity.");
-        if (!isValidProtection(protection))
-            throw new IllegalArgumentException("Protection must be strictly positive.");
 
         this.name = name;
         this.maxHitPoints = maxHitPoints;
         this.hitPoints = maxHitPoints;
-        this.protection = protection;
+        this.protection = 10;
         this.anchorPoints = new ArrayList<>();
         this.isFighting = false;
 
@@ -146,19 +139,21 @@ public abstract class Entity {
         return maxHitPoints;
     }
 
-        /**
-     * Sets the hitpoints of entity.
+    /**
+     * Sets the hitpoints of entity if valid amount.
      *
      * @param   hitPoints
-     *          The entity that will own this equipment, or null if the item doesn't have an owner.
+     *          The amount of hitpoints to set.
      *
-     * @pre hitPoints >= 0 and hitPoints <= maxHitPoints
+     * @pre isValidHitPoints()
      *
      * @post hitpoints is set to the given amount
+     *      |   getHitPoints() = hitpoints
+     *
      */
     @Raw @Basic
     public void setHitPoints(int hitPoints) {
-        this.hitPoints = hitPoints;
+            this.hitPoints = hitPoints;
     }
 
     /**
@@ -200,7 +195,11 @@ public abstract class Entity {
      *          | result == (hitPoints >= 0 &&  hitpoints <= maxHitPoints)
      */
     public boolean isValidHitPoints(int hitPoints) {
-        if ((hitPoints >= 0) && (hitPoints <= maxHitPoints)){
+        if (hitPoints == 0) {
+            return true;
+        }
+
+        if ((hitPoints > 0) && (hitPoints <= maxHitPoints)){
             if (!isFighting && isPrime(getHitPoints())){
                 return true;
             }
@@ -252,8 +251,16 @@ public abstract class Entity {
         this.isFighting = status;
         if (!status && !isPrime(getHitPoints())) {
             int p = getClosestLowerPrime(getHitPoints());
-            removeHitPoints(getHitPoints() - p);
+            this.hitPoints = p;
         }
+    }
+
+    /**
+     * Returns true if the entity is fighting
+     */
+    @Basic
+    public boolean isFighting() {
+        return isFighting;
     }
 
     /**
@@ -297,10 +304,14 @@ public abstract class Entity {
      *         to the closest lower prime.
      */
     public void addHitPoints(int amount) {
-        this.hitPoints += amount;
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            removeHitPoints(getHitPoints() - p);
+        if ((this.hitPoints += amount) > maxHitPoints) {
+            this.hitPoints = maxHitPoints;
+        }
+        else {
+            if (!isFighting && !isPrime(this.hitPoints)) {
+                int p = getClosestLowerPrime(this.hitPoints);
+                this.hitPoints = p;
+            }
         }
     }
 
@@ -317,12 +328,15 @@ public abstract class Entity {
      *         hit points are reduced to the closest lower prime.
      */
     public void removeHitPoints(int amount) {
-        this.hitPoints -= amount;
-        if (!isFighting && !isPrime(getHitPoints())) {
-            int p = getClosestLowerPrime(getHitPoints());
-            removeHitPoints(getHitPoints() - p);
+        if ((this.hitPoints -= amount) <= 0) {
+            this.hitPoints = 0;
         }
-
+        else{
+            if (!isFighting && !isPrime(getHitPoints())) {
+                int p = getClosestLowerPrime(getHitPoints());
+                this.hitPoints = p;
+            }
+        }
     }
 
     /**********************************************************
@@ -332,7 +346,7 @@ public abstract class Entity {
     /**
      * The protection factor of the entity.
      */
-    private final int protection;
+    private int protection;
 
     /**
      * Returns the protection factor of the entity.
@@ -340,6 +354,20 @@ public abstract class Entity {
     @Raw @Basic
     public int getProtection() {
         return protection;
+    }
+
+    /**
+     * Sets the raw protection value of this entity.
+     *
+     * @param protection
+     *        The new base protection value.
+     *
+     * @pre isValidProtection()
+     *
+     * @post geProtection() == protection
+     */
+    public void setProtection(int protection) {
+        this.protection = protection;
     }
 
     /**
@@ -389,8 +417,11 @@ public abstract class Entity {
 
             if (item instanceof Backpack)
                 totalWeight += ((Backpack) item).getTotalWeight(); // explicit cast
-            else
-                totalWeight += item.getWeight();
+
+            if (item instanceof Purse)
+                totalWeight += ((Purse) item).getTotalWeight();
+
+            else totalWeight += item.getWeight();
         }
 
         return totalWeight;
@@ -645,18 +676,6 @@ public abstract class Entity {
      */
     @Raw @Basic
     public int getRealProtection() { return realProtection; }
-
-    /**
-     * Sets the raw protection value of this entity.
-     *
-     * @param protection
-     *        The new base protection value.
-     *
-     * @post getRealProtection() == protection
-     */
-    public void setRealProtection(int protection) {
-        this.realProtection = protection;
-    }
 
 
     /**

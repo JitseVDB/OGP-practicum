@@ -50,7 +50,7 @@ public class Hero extends Entity {
      * @post getArmor() == null
      */
     public Hero(String name, int maxHitPoints, double strength) {
-        super(name, maxHitPoints, 10);
+        super(name, maxHitPoints);
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.capacity = 0;
 
@@ -331,8 +331,6 @@ public class Hero extends Entity {
             throw new NullPointerException("Monster target cannot be null.");
         }
 
-        this.setFighting(true);
-
         Random r = new Random();
         int roll = r.nextInt(101); // random getal tussen 0 en 100
 
@@ -347,7 +345,6 @@ public class Hero extends Entity {
             }
         }
 
-        this.setFighting(false);
     }
 
     /**
