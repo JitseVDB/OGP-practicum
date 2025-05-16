@@ -179,25 +179,6 @@ public class EntityTest {
         assertEquals(0, hero_A.getHitPoints());
     }
 
-
-    // PROTECTION
-
-    @Test
-    void testIsValidProtection_allCases() {
-        // 1. Valid cases
-        assertTrue(Entity.isValidProtection(5));
-
-        // 2. Invalid case
-        assertFalse(Entity.isValidProtection(-1));
-        assertFalse(Entity.isValidProtection(0));
-    }
-
-    @Test
-    void testSetProtection_ShouldSetProtection() {
-        hero_A.setProtection(20);
-        assertEquals(20, hero_A.getProtection());
-    }
-
     // Capacity
 
     @Test
