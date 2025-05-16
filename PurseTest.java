@@ -22,7 +22,7 @@ public class PurseTest {
         purse_A = new Purse(10, 50);
         fullPurse500 = new Purse(10,500);
         fullPurse500.addToContents(500);
-        fullPurse1000 = new Purse(10, 500);
+        fullPurse1000 = new Purse(10, 1000);
         fullPurse1000.addToContents(1000);
         emptyPurse500 = new Purse(10, 500);
         emptyPurse300 = new Purse(10, 300);
@@ -258,6 +258,7 @@ public class PurseTest {
 
     @Test
     public void testTransferFrom_LegalCaseEmptyPurse() {
+        assertEquals(1000, fullPurse1000.getContents());
         emptyPurse500.transferFrom(emptyPurse300);
         assertEquals(0, emptyPurse500.getContents());
         assertEquals(0, emptyPurse300.getContents());
@@ -271,7 +272,7 @@ public class PurseTest {
     }
 
     @Test
-    public void testTransferFrom_LegalCaseHalfFullTank() {
+    public void testTransferFrom_LegalCaseHalfFullPurse() {
         purseWithCap500AndContents250.transferFrom(emptyPurse300);
         assertEquals(250, purseWithCap500AndContents250.getContents());
         assertEquals(0, emptyPurse300.getContents());
@@ -279,26 +280,24 @@ public class PurseTest {
         assertEquals(300, purseWithCap500AndContents250.getContents());
         assertEquals(0, purseWithCap1000AndContents50.getContents());
         purseWithCap500AndContents250.transferFrom(fullPurse1000);
-        assertEquals(700, fullPurse1000.getContents());
+        assertEquals(800, fullPurse1000.getContents());
         assertEquals(0, purseWithCap500AndContents250.getContents());
         assertEquals(Condition.DESTROYED, purseWithCap500AndContents250.getCondition());
     }
 
     @Test
-    public void testTransferFrom_LegalCaseFullTank() {
+    public void testTransferFrom_LegalCaseFullPurse() {
         fullPurse500.transferFrom(emptyPurse300);
         assertEquals(500, fullPurse500.getContents());
         assertEquals(0, emptyPurse300.getContents());
         fullPurse500.transferFrom(purseWithCap1000AndContents50);
-        assertEquals(500, fullPurse1000.getContents());
+        assertEquals(0, fullPurse500.getContents());
+        assertEquals(Condition.DESTROYED, fullPurse500.getCondition());
         assertEquals(50, purseWithCap1000AndContents50.getContents());
-        fullPurse500.transferFrom(fullPurse1000);
-        assertEquals(500, fullPurse500.getContents());
-        assertEquals(1000, fullPurse1000.getContents());
     }
 
     @Test
-    public void testTransferFrom_SameTank() {
+    public void testTransferFrom_SamePurse() {
         emptyPurse500.transferFrom(emptyPurse500);
         assertEquals(0, emptyPurse500.getContents());
         purseWithCap500AndContents250.transferFrom(purseWithCap500AndContents250);
@@ -308,7 +307,7 @@ public class PurseTest {
     }
 
     @Test
-    public void testTransferFrom_NullTank() {
+    public void testTransferFrom_NullPurse() {
         emptyPurse500.transferFrom(null);
         assertEquals(0, emptyPurse500.getContents());
         purseWithCap500AndContents250.transferFrom(null);

@@ -222,4 +222,56 @@ public class BackpackTest {
         // 3. Purse with multiple items
         assertEquals(530, backpack2Items.getCurrentValue());
     }
+
+    /**
+     * CONDITION
+     */
+
+    @Test
+    public void testDestroy_GoodConditionWithContent() {
+        backpack2Items.destroy();
+        // 1. effect of setCondition
+        assertEquals(Condition.DESTROYED, backpack2Items.getCondition());
+        // 2. effect of items.setBackpack(null)
+        // 2.1 postcondition on backpack
+        assertNull(weapon10A.getBackpack());
+        assertNull(weapon10B.getBackpack());
+        // 2.2 postcondition on owner
+        assertNull(weapon10A.getOwner());
+        assertNull(weapon10B.getOwner());
+        // 3.1 effect on old backpack
+        assertFalse(backpack2Items.hasAsItem(weapon10A));
+        assertFalse(backpack2Items.hasAsItem(weapon10B));
+    }
+
+    @Test
+    public void testDestroy_GoodConditionWithoutContent() {
+        emptyBackpack300.destroy();
+        // 1. effect of setCondition
+        assertEquals(Condition.DESTROYED, emptyBackpack300.getCondition());
+        // 2. effect of items.setBackpack(null)
+        // 2.1 postcondition on backpack
+        // not applicable
+        // 2.2 postcondition on owner
+        // not applicable
+        // 3.1 effect on old backpack
+        // not applicable
+    }
+
+    @Test
+    public void testDestroy_DestroyedCondition() {
+        fullBackpack1000.destroy();
+        fullBackpack1000.destroy();
+        // 1. effect of setCondition
+        assertEquals(Condition.DESTROYED, fullBackpack1000.getCondition());
+        // 2. effect of items.setBackpack(null)
+        // 2.1 postcondition on backpack
+        assertNull(weapon990.getBackpack());
+        // 2.2 postcondition on owner
+        assertNull(weapon990.getOwner());
+        // 3.1 effect on old backpack
+        assertFalse(fullBackpack1000.hasAsItem(weapon990));
+    }
+
+
 }

@@ -62,6 +62,8 @@ public class ArmorTest {
         assertEquals(ArmorType.BRONZE.getMaxProtection(), armor_A.getMaximalProtection());
         // 4. effect of setCurrentProtection()
         assertEquals(ArmorType.BRONZE.getMaxProtection(), armor_A.getCurrentProtection());
+        // 5. postcondition on shininess
+        assertTrue(armor_A.isShiny());
     }
 
     @Test

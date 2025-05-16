@@ -133,6 +133,9 @@ public class Weapon extends Equipment {
      * @param   damage
      *          The new damage for this weapon.
      *
+     * @pre     The equipment is not destroyed.
+     *          | !isDestroyed()
+     *
      * @pre     The given damage must be legal.
      *          | isValidDamage(damage)
      *
@@ -198,6 +201,25 @@ public class Weapon extends Equipment {
      */
     protected int calculateCurrentValue() {
         return getDamage() * getValuePerDamageUnit();
+    }
+
+    /**********************************************************
+     * Condition
+     **********************************************************/
+
+    /**
+     * Set this weapon to destroyed and set its damage to zero.
+     *
+     * @effect  The damage of the purse is set to zero.
+     *          | setDamage(0)
+     *
+     * @effect  The condition is set to DESTROYED
+     *          | setCondition(Condition.DESTROYED)
+     */
+    @Override @Model
+    void destroy() {
+        setDamage(0);
+        setCondition(Condition.DESTROYED);
     }
 }
 
