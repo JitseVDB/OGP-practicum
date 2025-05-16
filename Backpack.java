@@ -3,6 +3,7 @@ import be.kuleuven.cs.som.annotate.Model;
 import be.kuleuven.cs.som.annotate.Raw;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -346,6 +347,35 @@ public class Backpack extends StorageItem {
             }
         }
         return totalValue;
+    }
+
+    /**********************************************************
+     * Condition
+     **********************************************************/
+
+    /**
+     * Set this backpack to destroyed and empty its contents.
+     *
+     * @effect The condition is set to DESTROYED.
+     *         | setCondition(Condition.DESTROYED)
+     *
+     * @effect All items in the backpack are removed using setBackpack(null).
+     *         | for each item in contents: item.setBackpack(null)
+     */
+    @Override @Model
+    void destroy() {
+        // Create a copy to avoid ConcurrentModificationException
+        List<Equipment> allItems = new ArrayList<>();
+        for (List<Equipment> itemList : contents.values()) {
+            allItems.addAll(itemList);
+        }
+
+        // Remove all items from the backpack
+        for (Equipment item : allItems) {
+            item.setBackpack(null);
+        }
+
+        setCondition(Condition.DESTROYED);
     }
 
 }

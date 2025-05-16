@@ -14,6 +14,9 @@ import be.kuleuven.cs.som.annotate.*;
  * @invar   Each piece of equipment must have a valid base value.
  *          | canHaveAsValue(getCurrentValue())
  *
+ * @invar   isDestroyed() implies that the item is unusable()
+ *          | isDestroyed(getCondition)
+ *
  * @author Jitse Vandenberghe
  * @version 1.0
  */
@@ -321,6 +324,9 @@ public abstract class Equipment {
      * @param   owner
      *          The new owner to which this item will belong.
      *
+     * @pre     The equipment is not destroyed.
+     *          | !isDestroyed()
+     *
      * @post    The owner of this item is set to the given owner.
      *          | new.getOwner() == owner
      *
@@ -435,6 +441,9 @@ public abstract class Equipment {
      *
      * @param   backpack
      *          The new backpack in which this item should be stored.
+     *
+     * @pre     The equipment is not destroyed.
+     *          | !isDestroyed()
      *
      * @post    The backpack of this item is set to the given backpack.
      *          | getBackpack() == backpack
