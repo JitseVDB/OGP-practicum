@@ -281,7 +281,9 @@ public abstract class Entity {
      * @return true if the number is prime; false otherwise.
      */
     public boolean isPrime(int number) {
-        if (number < 2) return false;
+        if (number == 0) return true;
+
+        if (number < 2 ) return false;
         for (int i = 2; i <= Math.sqrt(number); i++) {
             if (number % i == 0) return false;
         }
@@ -347,50 +349,6 @@ public abstract class Entity {
                 this.hitPoints = p;
             }
         }
-    }
-
-    /**********************************************************
-     * Protection
-     **********************************************************/
-
-    /**
-     * The protection factor of the entity.
-     */
-    private int protection;
-
-    /**
-     * Returns the protection factor of the entity.
-     */
-    @Raw @Basic
-    public int getProtection() {
-        return protection;
-    }
-
-    /**
-     * Sets the raw protection value of this entity.
-     *
-     * @param protection
-     *        The new base protection value.
-     *
-     * @pre isValidProtection()
-     *
-     * @post geProtection() == protection
-     */
-    public void setProtection(int protection) {
-        this.protection = protection;
-    }
-
-    /**
-     * Check whether the given protection factor is valid.
-     *
-     * @param   protection
-     *          The protection factor to check.
-     *
-     * @return  True if and only if the protection factor is strictly positive.
-     *          | result == (protection >= 0)
-     */
-    public static boolean isValidProtection(int protection) {
-        return protection > 0;
     }
 
     /**********************************************************

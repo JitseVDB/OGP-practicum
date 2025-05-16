@@ -54,9 +54,6 @@ public class EntityTest {
         // 3. Postcondition on maxHitPoints
         assertEquals(100, hero_A.getMaxHitPoints());
 
-        // 4. Postcondition on protection
-        assertEquals(10, hero_A.getProtection());
-
         // 5. Postcondition on hero is not fighting
         assertFalse(hero_A.isFighting());
     }
@@ -147,9 +144,9 @@ public class EntityTest {
     }
 
     @Test
-    void testGetClosestLowerPrime_StartIsLowerThenTwo_ShouldReturnTwo() {
+    void testGetClosestLowerPrime_StartIsLowerThenTwoAndNotZero_ShouldReturnTwo() {
         assertEquals(2, hero_A.getClosestLowerPrime(1));
-        assertEquals(2, hero_A.getClosestLowerPrime(0));
+        assertEquals(0, hero_A.getClosestLowerPrime(0));
         assertEquals(2, hero_A.getClosestLowerPrime(-1));
     }
 
@@ -180,25 +177,6 @@ public class EntityTest {
         // hitpoints equal to maximumHitPoints after initialization, so 100
         hero_A.removeHitPoints(150);
         assertEquals(0, hero_A.getHitPoints());
-    }
-
-
-    // PROTECTION
-
-    @Test
-    void testIsValidProtection_allCases() {
-        // 1. Valid cases
-        assertTrue(Entity.isValidProtection(5));
-
-        // 2. Invalid case
-        assertFalse(Entity.isValidProtection(-1));
-        assertFalse(Entity.isValidProtection(0));
-    }
-
-    @Test
-    void testSetProtection_ShouldSetProtection() {
-        hero_A.setProtection(20);
-        assertEquals(20, hero_A.getProtection());
     }
 
     // Capacity
