@@ -279,7 +279,7 @@ public class Monster extends Entity {
     public void receiveDamage(int damage) {
         if (damage < 0) return;
 
-        int effectiveDamage = Math.max(0, damage - getProtection());
+        int effectiveDamage = Math.max(0, damage - getCurrentProtection());
         int newHitPoints = Math.max(0, getHitPoints() - effectiveDamage);
 
         removeHitPoints(getHitPoints() - newHitPoints);
