@@ -381,7 +381,12 @@ public abstract class Equipment {
 
         // Finally, set up the new relationship from the other side, if needed
         if (owner != null) {
-            owner.addAsItem(this);
+            try{
+                owner.addAsItem(this);
+            }catch(IllegalArgumentException e) {
+                // Should never occur!
+                assert false;
+            }
         }
     }
 
@@ -431,7 +436,7 @@ public abstract class Equipment {
      * @post    The backpack of this item is set to the given backpack.
      *          | new.getBackpack() == backpack
      *
-     * @post    The owner of this item is set to the owner of the backpack.
+     * @post    The owner of this item is set to the owner of the backpack or null if the backpack is null.
      *          | new.getOwner() == backpack.getOwner()
      *
      * @effect	If the given backpack is different from the current backpack, this item is
@@ -469,7 +474,12 @@ public abstract class Equipment {
 
             // First, set up / break down the relationship from this side:
             this.backpack = backpack;
-            this.owner = backpack.getOwner();
+            if (backpack == null) {
+                this.owner = null;
+            }
+            else {
+                this.owner = backpack.getOwner();
+            }
 
             // Then, break down the old relationship from the other side, if it existed
             if (oldBackpack != null) {

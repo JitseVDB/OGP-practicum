@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  */
 public class EquipmentTest {
     // HERO
-    private static Hero hero_A;
+    private static Hero hero_A, hero_B;
 
     // WEAPONS
     private static Weapon weapon_A, weapon_B, weapon_C;
@@ -32,10 +32,11 @@ public class EquipmentTest {
 
     @BeforeEach
     public void setUpEquipment() {
-        hero_A = new Hero("Hero", 10, 10);
-        weapon_A = new Weapon(50, 70);
-        weapon_B = new Weapon(150, 63);
-        weapon_C = new Weapon(140, 63);
+        hero_A = new Hero("HeroA", 10, 10);
+        hero_B = new Hero("HeroB", 10, 10);
+        weapon_A = new Weapon(10, 70);
+        weapon_B = new Weapon(20, 63);
+        weapon_C = new Weapon(10, 63);
         armor_A = new Armor(75, 100, ArmorType.BRONZE);
         purse_A = new Purse(50, 100);
         backpack_A = new Backpack(10, 50, 150);
@@ -192,6 +193,69 @@ public class EquipmentTest {
         // not applicable
 
         // 4. effect on new owner when setting different owner
+        // 4.1 effect of addToAnchorPoint
+        assertTrue(hero_A.hasAsItem(weapon_A));
+    }
+
+    @Test
+    public void testSetOwner_PreviousDifferentOwner() {
+        weapon_A.setOwner(hero_A);
+        weapon_A.setOwner(hero_B);
+
+
+        // 1. postcondition on owner
+        assertEquals(hero_B, weapon_A.getOwner());
+
+        // 2. effect on old owner when setting different owner
+        // 2.1 effect of anchorpoint.setItem
+        assertFalse(hero_A.hasAsItem(weapon_A));
+
+        // 3. effect on old backpack when setting different owner
+        // not applicable
+
+        // 4. effect on new owner when setting different owner
+        // 4.1 effect of addToAnchorPoint
+        assertTrue(hero_B.hasAsItem(weapon_A));
+    }
+
+    @Test
+    public void testSetOwner_PreviousSameOwner() {
+        weapon_A.setOwner(hero_A);
+        weapon_A.setOwner(hero_A);
+
+        // 1. postcondition on owner
+        assertEquals(hero_A, weapon_A.getOwner());
+
+        // 2. effect on old owner when setting different owner
+        // not applicable, this effect is undone by effect (4)
+
+        // 3. effect on old backpack when setting different owner
+        // not applicable
+
+        // 4. effect on new owner when setting different owner
+        assertTrue(hero_A.hasAsItem(weapon_A));
+    }
+
+    @Test
+    public void testSetOwner_PreviousDifferentOwnerInBackpack() {
+        weapon_A.setBackpack(backpack_A);
+        weapon_A.setOwner(hero_B);
+
+        // 1. postcondition on owner
+        assertEquals(hero_B, weapon_A.getOwner());
+
+        // 2. effect on old owner when setting different owner
+        // not applicable
+
+        // 3. effect of setBackpack(null)
+        // 3.1 postcondition on backpack
+        assertNull(weapon_A.getBackpack());
+        // 3.2 postcondition on owner
+        assertNull(weapon_A.getOwner());
+        // 3.3 effect on old backpack
+        assertFalse(backpack_A.hasAsItem(weapon_A));
+
+        // 4. effect on new owner when setting different owner
         assertTrue(hero_A.hasAsItem(weapon_A));
     }
 
@@ -207,7 +271,7 @@ public class EquipmentTest {
 
         weapon_A.setBackpack(backpack_A);
 
-        // 1. We can check proper backpacks.
+        // 1. postc
         assertTrue(weapon_A.hasProperBackpack());
         assertTrue(backpack_A.hasAsItem(weapon_A));
 
