@@ -178,7 +178,7 @@ public class MonsterTest {
     @Test
     void testHit_FatalBlow_ShouldHaveZeroHitPoints() {
         // 1. fatal hit
-        hero_A.setRealProtection(0); // decrease protection so hit is succesfull
+        hero_A.setProtection(0); // decrease protection so hit is succesfull
         monster_A.setDamage(10000); // fatal
         monster_A.hit(hero_A);
 
@@ -188,21 +188,21 @@ public class MonsterTest {
 
     @Test
     void testHit_MissHit_ShouldNotChangeHitPoints() {
-        hero_A.setHitPoints(80);
-        monster_A.setDamage(20);
+        hero_A.setHitPoints(79);
+        monster_A.setDamage(14);
 
         // increase protection so hit fails
-        hero_A.setRealProtection(999);
+        hero_A.setProtection(999);
         monster_A.hit(hero_A);
 
-        assertEquals(80, hero_A.getHitPoints());
+        assertEquals(79, hero_A.getHitPoints());
     }
 
     @Test
     void testHit_NonFatal_ShouldReduceHitPoints() {
         hero_A.setHitPoints(80);
         monster_A.setDamage(10);
-        hero_A.setRealProtection(0);
+        hero_A.setProtection(0);
 
         monster_A.hit(hero_A);
         assertTrue(hero_A.getHitPoints() < 80);

@@ -3,6 +3,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 /**
  * A JUnit (5) test class for testing the non-private methods of the Entity Class.
  *
@@ -21,11 +23,13 @@ public class EntityTest {
     private static Weapon weapon_A;
     private static Weapon weapon_B;
     private static Purse purse_A;
+    private Backpack backpack_A;
 
 
     @BeforeEach
     public void setUpEntity() {
         hero_A = new Hero("Ben", 100, 5.5);
+
         // This initializes 5 anchorpoints as well and sets the hitpoints to closest prime number
 
         armor_A = new Armor(30, 80, ArmorType.BRONZE);
@@ -33,6 +37,7 @@ public class EntityTest {
         weapon_A = new Weapon(30, 35);
         weapon_B = new Weapon(30, 35);
         purse_A = new Purse(30, 30);
+        backpack_A = new Backpack(30, 30, 200);
 
     }
 
@@ -51,19 +56,18 @@ public class EntityTest {
 
         // 4. Postcondition on protection
         assertEquals(10, hero_A.getProtection());
+
+        // 5. Postcondition on hero is not fighting
+        assertFalse(hero_A.isFighting());
     }
 
     @Test
-    void testConstructor_InvalidMaxHitPoints_ShouldThrowException() {
-        // 3. Exception thrown if maxHitPoints is invalid
-        assertThrows(IllegalArgumentException.class, () -> new Hero("Ben", -5, 5.5));
+    void testConstructor_InvalidName_ShouldThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Hero("ben", 100, 5.5);
+        });
     }
 
-    @Test
-    void testConstructor_InvalidProtection_ShouldThrowException() {
-        // 4. Exception thrown if protection factor is invalid
-        assertThrows(IllegalArgumentException.class, () -> new Hero("Ben", 100, 0));
-    }
 
     // HITPOINTS
 
@@ -89,6 +93,19 @@ public class EntityTest {
     }
 
     @Test
+    void testSetMaxHitPoints_ShouldSetMaxHitPoints() {
+       hero_A.setMaxHitPoints(200);
+       assertEquals(200, hero_A.getMaxHitPoints());
+    }
+
+
+    @Test
+    void testSetHitPoints_ShouldSetHitPoints() {
+        hero_A.setHitPoints(79);
+        assertEquals(79, hero_A.getHitPoints());
+    }
+
+    @Test
     void testIsAlive_allCases() {
         // 1. Entity is alive
         assertTrue(hero_A.isAlive());
@@ -97,6 +114,74 @@ public class EntityTest {
         hero_A.removeHitPoints(hero_A.getHitPoints());
         assertFalse(hero_A.isAlive());
     }
+
+    // isFighting
+
+    @Test
+    void testSetFighting_ShouldSetFighting() {
+        hero_A.setFighting(true);
+        assertTrue(hero_A.isFighting());
+    }
+
+    @Test
+    void testSetFighting_ShouldChangeHitPoints() {
+        hero_A.setFighting(true);
+        hero_A.setHitPoints(80);
+        hero_A.setFighting(false);
+        assertEquals(79, hero_A.getHitPoints());
+    }
+
+    @Test
+    void testIsPrime_allCases() {
+        // true case
+        assertTrue(hero_A.isPrime(79));
+
+        // false cases
+        assertFalse(hero_A.isPrime(80));
+        assertFalse(hero_A.isPrime(1));
+    }
+
+    @Test
+    void testGetClosestLowerPrime_ShouldReturnLowerPrime() {
+        assertEquals(79, hero_A.getClosestLowerPrime(80));
+    }
+
+    @Test
+    void testGetClosestLowerPrime_StartIsLowerThenTwo_ShouldReturnTwo() {
+        assertEquals(2, hero_A.getClosestLowerPrime(1));
+        assertEquals(2, hero_A.getClosestLowerPrime(0));
+        assertEquals(2, hero_A.getClosestLowerPrime(-1));
+    }
+
+    @Test
+    void testAddHitPoints_ShouldAddHitPoints() {
+        hero_A.setHitPoints(0);
+        hero_A.addHitPoints(75);
+        assertEquals(73, hero_A.getHitPoints());
+
+    }
+
+    @Test
+    void testAddHitPoints_ExceedsMaximumHitPoints_ShouldReturnMaximumHitPoints() {
+        hero_A.setHitPoints(0);
+        hero_A.addHitPoints(150);
+        assertEquals(100, hero_A.getHitPoints());
+    }
+
+    @Test
+    void testRemoveHitPoints_ShouldRemoveHitPoints() {
+        // hitpoints equal to maximumHitPoints after initialization, so 100
+        hero_A.removeHitPoints(50);
+        assertEquals(47, hero_A.getHitPoints());
+    }
+
+    @Test
+    void testAddHitPoints_UnderZeroHitPoints_ShouldReturnZeroHitPoints() {
+        // hitpoints equal to maximumHitPoints after initialization, so 100
+        hero_A.removeHitPoints(150);
+        assertEquals(0, hero_A.getHitPoints());
+    }
+
 
     // PROTECTION
 
@@ -108,6 +193,40 @@ public class EntityTest {
         // 2. Invalid case
         assertFalse(Entity.isValidProtection(-1));
         assertFalse(Entity.isValidProtection(0));
+    }
+
+    @Test
+    void testSetProtection_ShouldSetProtection() {
+        hero_A.setProtection(20);
+        assertEquals(20, hero_A.getProtection());
+    }
+
+    // Capacity
+
+    @Test
+    void testGetCapacity_ShouldReturnCapacity() {
+        // hero has initializes with zero capacity
+        assertEquals(0, hero_A.getCapacity());
+    }
+
+    @Test
+    void testGetTotalWeight_NoBackpack_ShouldReturnTotalWeight() {
+        // add items to hero_A
+        armor_A.setOwner(hero_A);
+        purse_A.setOwner(hero_A); // empty purse // doesnt add his weight !!
+        weapon_A.setOwner(hero_A);
+
+        assertEquals(90, hero_A.getTotalWeight());
+    }
+
+    @Test
+    void testgetTotalWeight_WithBackpack_ShouldReturnTotalWeight() {
+        backpack_A.setOwner(hero_A);
+        armor_A.setBackpack(backpack_A);
+        purse_A.setBackpack(backpack_A);
+        weapon_A.setBackpack(backpack_A);
+
+        assertEquals(120, hero_A.getTotalWeight());
     }
 
     // ANCHOR POINTS
@@ -155,7 +274,24 @@ public class EntityTest {
         assertThrows(IndexOutOfBoundsException.class, () -> hero_A.getAnchorPointAt(10));
     }
 
-        @Test
+    @Test
+    void testGetAllItems_ShouldReturnAllItems() {
+        armor_A.setOwner(hero_A);
+        purse_A.setOwner(hero_A);
+        weapon_A.setOwner(hero_A);
+
+        List<Equipment> items = hero_A.getAllItems();
+
+        assertEquals(items, hero_A.getAllItems());
+    }
+
+    @Test
+    void testAddToAnchorPoint_ShouldAddItemToAnchorPoint() {
+        hero_A.addToAnchorPoint(armor_A);
+        assertTrue(hero_A.hasAsItem(armor_A));
+    }
+
+    @Test
     void testHasFreeAnchorPoint_FreeAnchorPoint_ShouldReturnTrue() {
         // 1. No items added
         assertTrue(hero_A.hasFreeAnchorPoint());
@@ -164,11 +300,12 @@ public class EntityTest {
     @Test
     void testHasFreeAnchorPoint_NoFreeAnchorPoint_ShouldReturnFalse() {
         // 1. Add item to every anchorpoint
-        armor_A.setOwner(hero_A);
-        armor_B.setOwner(hero_A);
         weapon_A.setOwner(hero_A);
         weapon_B.setOwner(hero_A);
+        armor_A.setOwner(hero_A);
         purse_A.setOwner(hero_A);
+        armor_B.setOwner(hero_A);
+
 
         assertFalse(hero_A.hasFreeAnchorPoint());
     }

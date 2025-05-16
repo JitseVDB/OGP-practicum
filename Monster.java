@@ -61,7 +61,7 @@ public class Monster extends Entity {
      *          |!isValidDamage(damage)
      */
     public Monster(String name, int maxHitPoints, int damage, List<Equipment> initialItems) {
-        super(name, maxHitPoints, 10);
+        super(name, maxHitPoints);
 
         if (!isValidDamage(damage))
             throw new IllegalArgumentException("Damage cannot be negative, must be below the maximum damage and must be a multiple of 7.");
@@ -306,7 +306,7 @@ public class Monster extends Entity {
         }
 
 
-        if (impact >= opponent.getProtection()) {
+        if (impact >= opponent.getRealProtection()) {
             // land a succesful hit
             int damage = getDamage();
             int newHitPoints = opponent.getHitPoints() - damage;
