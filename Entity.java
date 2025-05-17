@@ -82,8 +82,6 @@ public abstract class Entity {
             this.hitPoints = p;
         }
 
-
-
         // Initialize AnchorPoints
         initializeAnchorPoints();
     }
