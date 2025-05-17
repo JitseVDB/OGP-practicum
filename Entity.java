@@ -380,7 +380,7 @@ public abstract class Entity {
     public int getTotalWeight() {
         int totalWeight = 0;
 
-        for (int i = 1; i < getNbAnchorPoints(); i++) {
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
             Equipment item = getAnchorPointAt(i).getItem();
             if (item == null) continue;
 
@@ -539,7 +539,7 @@ public abstract class Entity {
     public List<Equipment> getAllItems() {
         List<Equipment> equipmentList = new ArrayList<>();
 
-        for (int i = 1; i < getNbAnchorPoints(); i++) {
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
             Equipment item = getAnchorPointAt(i).getItem();
             if (item != null) {
                 equipmentList.add(item);

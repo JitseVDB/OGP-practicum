@@ -191,8 +191,8 @@ public class EntityTest {
     void testGetTotalWeight_NoBackpack_ShouldReturnTotalWeight() {
         // add items to hero_A
         armor_A.setOwner(hero_A);
-        purse_A.setOwner(hero_A); // empty purse
         weapon_A.setOwner(hero_A);
+        purse_A.setOwner(hero_A); // empty purse
 
         assertEquals(90, hero_A.getTotalWeight());
     }
