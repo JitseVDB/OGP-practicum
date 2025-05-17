@@ -51,10 +51,10 @@ public class Hero extends Entity {
      *        the hero's intrinsic strength (stored rounded to two decimal places)
      *
      * @throws IllegalArgumentException
-     *          if strength ≤ 0.
+     *         If the name is invalid, or if maxHitPoints < 0, or if strength ≤ 0.
      *
      * @pre     The maximum amount of hitpoints must be positive
-     *          | maxHitPoints >= 0
+     *          | isValidMaxHitPoints(maxHitPoints)
      *
      * @post The hero's name is equal to the provided name.
      *      |getName().equals(name)
@@ -79,7 +79,7 @@ public class Hero extends Entity {
         super(name, maxHitPoints);
         if (strength <= 0)
             throw new IllegalArgumentException("Strength must be positive");
-        this.isFighting = false;
+
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.protection = 10;
         this.capacity = (int)(20 * intrinsicStrength);
@@ -119,7 +119,8 @@ public class Hero extends Entity {
         this(name, maxHitPoints, strength); // Roep de eenvoudige constructor aan
 
         for (Equipment item : startItems) {
-            item.setOwner(this);
+                item.setOwner(this);
+
         }
     }
 
@@ -676,16 +677,12 @@ public class Hero extends Entity {
 
         String name = anchorpoint.getName();
 
-        if (name.equals("leftHand") || name.equals("rightHand")) {
-            return item instanceof Weapon;
-        } else if (name.equals("back")) {
-            return true; // alle types mogen op de rug
-        } else if (name.equals("body")) {
+        if (name.equals("body")) {
             return item instanceof Armor;
         } else if (name.equals("belt")) {
             return item instanceof Purse;
         }
-        return false;
+        return !(item instanceof Purse);
     }
 
     /**
