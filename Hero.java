@@ -493,15 +493,9 @@ public class Hero extends Entity {
      **********************************************************/
 
     /**
-     * Attempts to collect equipment items from the given monster after it has been defeated.
      *
-     * @param monster
-     *        The monster whose belongings should be collected
+     * aanvullen
      *
-     * @post If monster == null, nothing happens.
-     * @post For each eligible item in monster.getAnchors():
-     *       if there is enough capacity and a valid empty anchor point,
-     *       the item is transferred and linked to this hero.
      */
     public void collectTreasureFrom(Monster monster) {
         if (monster == null) return;
@@ -509,24 +503,24 @@ public class Hero extends Entity {
         Map<String, Equipment> loot = monster.getAnchors();
 
         for (Equipment item : loot.values()) {
-            if (item == null) continue;
-            if (!canCarry(item)) continue;
-
-            // Zoek een geldig en leeg anchorpoint voor het item
-            for (AnchorPoint ap : anchorPoints) {
-                if (ap.isEmpty() && canHaveAsItemAt(item, ap)) {
-                    ap.setItem(item);
-                    if (item.getOwner() == null) {
-                        item.setOwner(this);
+            try {
+                item.setOwner(this); // stel eigenaar in en checkt ook of dit mag/kan
+                // item werd geplaatst, ga naar het volgende
+            } catch (IllegalArgumentException e) {
+                // Dit item past niet in de hero, probeer in backpack te steken
+                for (Equipment heroItem : getAllItems()) {
+                    if (heroItem instanceof Backpack) {
+                        try {
+                            item.setBackpack((Backpack) heroItem); // steek item in backpack als kan/mag
+                            // item werd geplaatst, ga naar het volgende
+                        } catch (IllegalArgumentException a) {
+                            // Dit item past niet in de hero, probeer de volgende
+                        }
                     }
-                    // bidirectionele link
-                    this.capacity += item.getWeight();
-                    break; // item werd geplaatst, ga naar het volgende item
                 }
             }
         }
     }
-
 
     /**********************************************************
      *                   Weapon Equipment
