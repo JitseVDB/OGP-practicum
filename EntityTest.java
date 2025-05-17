@@ -28,7 +28,7 @@ public class EntityTest {
 
     @BeforeEach
     public void setUpEntity() {
-        hero_A = new Hero("Ben", 100, 5.5);
+        hero_A = new Hero("Ben", 100, 100);
 
         // This initializes 5 anchorpoints as well and sets the hitpoints to closest prime number
 
@@ -183,25 +183,25 @@ public class EntityTest {
 
     @Test
     void testGetCapacity_ShouldReturnCapacity() {
-        // hero has initializes with zero capacity
-        assertEquals(0, hero_A.getCapacity());
+        // capacity = intrinsicStrength*2000
+        assertEquals(2000, hero_A.getCapacity());
     }
 
     @Test
     void testGetTotalWeight_NoBackpack_ShouldReturnTotalWeight() {
         // add items to hero_A
         armor_A.setOwner(hero_A);
-        purse_A.setOwner(hero_A); // empty purse // doesnt add his weight !!
+        purse_A.setOwner(hero_A); // empty purse
         weapon_A.setOwner(hero_A);
 
         assertEquals(90, hero_A.getTotalWeight());
     }
 
     @Test
-    void testgetTotalWeight_WithBackpack_ShouldReturnTotalWeight() {
+    void testGetTotalWeight_WithBackpack_ShouldReturnTotalWeight() {
         backpack_A.setOwner(hero_A);
         armor_A.setBackpack(backpack_A);
-        purse_A.setBackpack(backpack_A);
+        purse_A.setBackpack(backpack_A); // empty purse
         weapon_A.setBackpack(backpack_A);
 
         assertEquals(120, hero_A.getTotalWeight());

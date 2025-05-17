@@ -1,5 +1,6 @@
 
 import be.kuleuven.cs.som.annotate.Basic;
+import be.kuleuven.cs.som.annotate.Model;
 import be.kuleuven.cs.som.annotate.Raw;
 
 import java.util.Random;
@@ -74,13 +75,14 @@ public class Hero extends Entity {
     public Hero(String name, int maxHitPoints, double strength) {
         super(name, maxHitPoints);
         if (strength <= 0)
-            throw new IllegalArgumentException("Strength must be positive");// standaard protection=10
+            throw new IllegalArgumentException("Strength must be positive");
         if (maxHitPoints <= 0)
             throw new IllegalArgumentException("Maximum hitpoints must be positive");
         this.isFighting = false;
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
-        this.capacity = 0;
         this.protection = 10;
+        this.capacity = (int)(20 * intrinsicStrength);
+
     }
 
     /**
@@ -88,7 +90,7 @@ public class Hero extends Entity {
      * and a predefined set of equipment to be attached to specific anchor points.
      *
      * @param name
-     *        the hero's name
+     *        the name of the hero
      * @param maxHitPoints
      *        the maximum number of hit points
      * @param strength
@@ -97,7 +99,7 @@ public class Hero extends Entity {
      *        initialEquipment A list of items to assign to the hero’s anchors
      *
      * @throws IllegalArgumentException
-     *         If any argument is invalid, or if items cannot be assigned due to weight or anchor conflicts
+     *         If any argument is invalid, or if items cannot be assigned due to anchor conflicts
      *
      * @post The hero's name is equal to the provided name.
      *       | getName().equals(name)
@@ -109,33 +111,14 @@ public class Hero extends Entity {
      *       | getIntrinsicStrength() == Math.round(strength * 100) / 100.0
      * @post The hero is not in a fighting state.
      *       | !isFighting()
-     * @post All equipment is validly assigned to appropriate anchors.
+     * @post All equipment is assigned to appropriate anchors.
      */
 
     public Hero(String name, int maxHitPoints, double strength, Equipment... startItems) {
         this(name, maxHitPoints, strength); // Roep de eenvoudige constructor aan
 
         for (Equipment item : startItems) {
-            if (item == null) continue;
-
-            // Voeg het item toe als het mag
-            for (AnchorPoint ap : anchorPoints) {
-                if (ap.isEmpty() && canHaveAsItemAt(item, ap)) {
-                    if (item.getOwner() != this) {
-                        item.setOwner(this);
-                    }
-
-                    ap.setItem(item);
-                    // Zorg voor bidirectionele relatie
-                    this.capacity += item.getWeight();
-
-                    if (ap.getName().equals("body") && item instanceof Armor) {
-                        this.armor = (Armor) item;
-                    }
-
-                    break; // ga naar volgend item
-                }
-            }
+            item.setOwner(this);
         }
     }
 
@@ -367,55 +350,6 @@ public class Hero extends Entity {
         return this.intrinsicStrength;
     }
 
-
-    /**********************************************************
-     *                      Capacity
-     **********************************************************/
-
-    /**
-     * Variable setting the capacity of the hero
-     */
-    private int capacity;
-
-    /**
-     * Return the capacity of this hero
-     */
-    @Basic
-    public int getCapacity() {
-        return this.capacity;
-    }
-
-    /**
-     * Return the maximum capacity of this hero
-     */
-    @Basic
-    public int getMaxCapacity() {return (int)(20 * intrinsicStrength);}
-
-
-    /**
-     * Adds weight to the capacity
-     *
-     * @param amount
-     */
-    public void addCapacity(int amount) {
-        if(0 < amount && (amount+capacity) <= getMaxCapacity()) {
-            this.capacity += amount;
-        }
-    }
-
-    /**
-     * Removes weight from the capacity
-     *
-     * @param amount
-     */
-    public void removeCapacity(int amount) {
-        if(0 < amount && (capacity-amount) > 0) {
-            this.capacity -= amount;
-        }
-    }
-
-
-
     /**********************************************************
      *                      Armor
      **********************************************************/
@@ -615,22 +549,10 @@ public class Hero extends Entity {
      *        The weapon to equip
      *
      * @post The weapon is assigned to the hero’s left hand.
-     *       If the weapon is not null, it is placed on the "leftHand" anchor and its weight is added to capacity.
-     *     | getLeftHandWeapon() == weapon
-     *     | if (weapon != null)
-     *     |     then getAnchorPoint("leftHand").getItem() == weapon
-     *     |          and getCapacity() == old(getCapacity()) + weapon.getWeight()
+     *       | this.leftHandWeapon = weapon
      */
     public void equipLeftHand(Weapon weapon) {
-        int leftHandweight = 0;
         this.leftHandWeapon = weapon;
-        leftHandweight = weapon.getWeight();
-        AnchorPoint left = getAnchorPoint("leftHand");
-        if (left != null) {
-            left.setItem(weapon);
-        }
-
-        addCapacity(leftHandweight);
     }
 
     /**
@@ -642,20 +564,10 @@ public class Hero extends Entity {
      *        The weapon to equip
      *
      * @post The weapon is assigned to the hero’s right hand.
-     *       If the weapon is not null, it is placed on the "rightHand" anchor and its weight is added to capacity.
-     *     | getRightHandWeapon() == weapon
-     *     | if (weapon != null)
-     *     |     then getAnchorPoint("rightHand").getItem() == weapon
-     *     |          and getCapacity() == old(getCapacity()) + weapon.getWeight()
+     *     | this.rightHandWeapon = weapon
      */
     public void equipRightHand(Weapon weapon) {
         this.rightHandWeapon = weapon;
-        AnchorPoint right = getAnchorPoint("rightHand");
-        if (right != null) {
-            right.setItem(weapon);
-        }
-
-        addCapacity(this.rightHandWeapon.getWeight());
     }
 
     /**
@@ -692,62 +604,53 @@ public class Hero extends Entity {
     }
 
     /**
-     * Tries to assign the given item to one of the hero’s available anchor points.
+     * Add the given item to the first anchorpoint of this entity that accepts it.
      *
      * @param item
-     *        The item to add.
+     *        The equipment to add.
      *
-     * @throws IllegalArgumentException If no valid anchor point is available for the item
+     * @effect The item is added to the first valid anchor point.
+     *       | anchorpoint.setItem(item)
      *
-     * @post If the method completes, the item is placed at a valid anchor point and
-     *       its owner remains the same.
-     * @post If item is armor and placed on "body", getArmor() == item
+     * @effect if item is armor and is added to body, equip armor.
+     *         | if (item == armor)
+     *         |      getArmor() = item
+     *
+     * @effect if item is weapon and is added to righthand , equip weapon to righthand.
+     *         | if (item == weapon && anchorpoint == righthand )
+     *         |      getRightHandWeapon() = item
+     *
+     * @effect if item is weapon and is added to lefthand , equip weapon to lefthand.
+     *         | if (item == weapon && anchorpoint == lefthand )
+     *         |      getLeftHandWeapon() = item
+     *
+     *
      */
     @Override
     public void addToAnchorPoint(Equipment item) {
-        for (AnchorPoint ap : anchorPoints) {
-            if (ap.isEmpty() && canHaveAsItemAt(item, ap)) {
-                ap.setItem(item);
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            AnchorPoint anchorpoint = getAnchorPointAt(i);
 
-                // Als armor op "body", update armor-ref
-                if (ap.getName().equals("body") && item instanceof Armor) {
-                    this.armor = (Armor) item;
+            if (anchorpoint.isEmpty()) {
+                if (anchorpoint.getName().equals("body") && item instanceof Armor) {
+                    equipArmor((Armor) item);
+                }
+                if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon) {
+                    equipLeftHand((Weapon) item);
+                }
+                if (anchorpoint.getName().equals("rightHand") && item instanceof Weapon) {
+                    equipRightHand((Weapon) item);
                 }
 
+                anchorpoint.setItem(item);
                 return;
             }
         }
-
-        throw new IllegalArgumentException("No valid anchor point found.");
     }
 
     /**********************************************************
      *                      Items
      **********************************************************/
-
-    /**
-     * Determines whether this hero is allowed to carry the given item
-     * by checking if there exists any anchor point where it can be legally placed
-     *
-     * @param item
-     *        The item to check
-     *
-     * @post The result is true if there exists at least one anchor point such that:
-     *       the anchor is empty and canHaveAsItemAt(item, anchor) returns true
-     *       | result == (exists ap in anchorPoints:
-     *       |               ap.isEmpty() && canHaveAsItemAt(item, ap))
-     *
-     * @return true if the item is allowed at any empty and valid anchor point, false otherwise.
-     */
-    @Override
-    public boolean canHaveAsItem(Equipment item) {
-        for (AnchorPoint ap : anchorPoints) {
-            if (ap.isEmpty() && canHaveAsItemAt(item, ap))
-                return true;
-        }
-        return false;
-    }
-
 
     /**
      * Determines whether the given item can legally be placed at the specified anchor point.
@@ -769,6 +672,7 @@ public class Hero extends Entity {
      *
      * @return true if the item is allowed at the given anchor point, false otherwise.
      */
+    @Override
     public boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorpoint) {
         if (item == null || anchorpoint == null || anchorpoint.getName() == null) {
             return false;
@@ -783,106 +687,110 @@ public class Hero extends Entity {
         } else if (name.equals("body")) {
             return item instanceof Armor;
         } else if (name.equals("belt")) {
-            // check op de naam van de klasse zonder gebruik van instanceof als Purse nog niet bestaat
-            return item.getClass().getSimpleName().equals("Purse");
-        } else {
-            // onbekend ankerpunt
-            return false;
+            return item instanceof Purse;
         }
-    }
-
-
-    /**
-     * Checks whether this hero is able to carry the given equipment item
-     * without exceeding their maximum capacity.
-     * The check is based on the current carried weight and the item's weight.
-     *
-     * @param item
-     *        The equipment item to check
-     *
-     * @post The result is true if the current capacity plus the item’s weight
-     *       does not exceed the hero’s maximum capacity.
-     *     | result == (getCapacity() + item.getWeight()) <= getMaxCapacity()
-     */
-    public boolean canCarry(Equipment item) {
-        return (getCapacity() + item.getWeight()) <= getMaxCapacity();
+        return false;
     }
 
     /**
-     * Adds the given item to this hero by attaching it to a valid anchor point.
+     * Add the given item to the anchor points registered to this entity.
      *
-     * @param item
-     *        The item to be added.
+     * @param   item
+     *          The equipment to be added.
      *
-     * @throws IllegalArgumentException
-     *         If the item is already added, not allowed, or if it would exceed capacity.
-     * @throws IllegalStateException
-     *         If the item is not owned by this hero.
+     * @effect  The equipment is added to available anchor point.
+     *        | addToAnchorPoint(item)
      *
-     * @post The item is placed at a valid anchor point and capacity is increased by its weight.
-     *     | hasAsItem(item)
-     *     | and exists ap in anchorPoints such that ap.getItem() == item
-     *     | and getCapacity() == old(getCapacity()) + item.getWeight()
      *
-     * @effect Calls addToAnchorPoint(item) to perform the attachment.
+     * @throws  IllegalArgumentException
+     *          The item is already stored in this entity.
+     *        | hasAsItem(item)
+     *
+     * @throws  IllegalArgumentException
+     *          Hero can carry at most 2 armors
+     *          | item == armor && getNbArmorsCarried() >= 2
+     *
+     * @throws  IllegalStateException
+     *          The reference from the item to this entity has not yet been set.
+     *        | (item != null) && !item.getOwner() == this
+     *
+     * @note    This is an auxiliary method that completes a bidirectional relationship.
+     *          It should only be called from within the controlling class.
+     *          At that point, the other direction of the relationship is already set up,
+     *          so the given item is in a raw state.
+     *          All methods called with this raw item thus require a raw annotation of their parameter.
+     * @note    The throws clauses of the effects are cancelled by the throws clauses of this method.
      */
     @Override
-    protected void addAsItem(Equipment item) throws IllegalArgumentException, IllegalStateException {
-        if (hasAsItem(item))
-            throw new IllegalArgumentException("Item is already carried.");
-        if (!canHaveAsItem(item))
-            throw new IllegalArgumentException("Item not allowed.");
-        if (item != null && item.getOwner() != this)
-            throw new IllegalStateException("Item does not belong to this Hero.");
+    protected void addAsItem(Equipment item) throws IllegalArgumentException {
         if (item instanceof Armor && getNbArmorsCarried() >= 2)
             throw new IllegalArgumentException("Hero can carry at most 2 armors.");
-
-        // Gewicht controleren vóór toevoegen
-        if (!canCarry(item))
-            throw new IllegalArgumentException("To heavy.");
-
-        try {
-            addToAnchorPoint(item);
-            // Pas capaciteit aan
-            this.capacity += item.getWeight();
-        } catch (IllegalArgumentException e) {
-            assert false;
-        }
+        super.addAsItem(item);
     }
 
     /**
-     * Removes the given item from this hero.
+     * Remove the given item from this entity.
      *
      * @param item
-     *        The item to remove.
-     * @throws IllegalArgumentException
-     *         If the item is not linked to this hero.
+     *        The equipment to remove.
      *
-     * @post The item is no longer attached to any anchor point.
-     *       The hero’s capacity is decreased by the item’s weight.
-     *     | !hasAsItem(item)
-     *     | and getCapacity() == old(getCapacity()) - item.getWeight()
+     * @effect The item is removed from the anchor point it was registered at.
+     *         | anchorpoint.setItem(null)
+     *
+     * @effect if item is armor and is removed from body, unequip armor.
+     *         | if (item == armor && anchorpoint == body)
+     *         |      getArmor() = null
+     *
+     * @effect if item is weapon and is removed from lefthand , unequip weapon.
+     *         | if (item == weapon && anchorpoint == lefthand )
+     *         |      getLeftHandWeapon() = null
+     *
+     * @effect if item is weapon and is removed from righthand , unequip weapon.
+     *         | if (item == weapon && anchorpoint == righthand )
+     *         |      getRightHandWeapon() = null
+     *
+     * @throws IllegalArgumentException
+     *        Entity does not have the given item.
+     *       | !hasAsItem(item)
+     * @throws IllegalStateException
+     *         The reference of the given (effective) item to its owner must already be broken down.
+     *       | (item != null) && item.getOwner() == this
+     *
+     * @note This is an auxiliary method used to break a bidirectional relationship.
+     *       It should only be called from within the controlling class.
+     *       At that point, the reference from the item to this entity must already be cleared.
      */
+    @Model
+    @Raw
     @Override
-    protected void removeAsItem(Equipment item) throws IllegalArgumentException {
+    protected void removeAsItem(@Raw Equipment item) throws IllegalArgumentException, IllegalStateException {
         if (!hasAsItem(item))
-            throw new IllegalArgumentException("Item not with this Hero.");
+            throw new IllegalArgumentException("This entity does not have the item.");
 
-        for (AnchorPoint ap : anchorPoints) {
-            if (ap.getItem() == item) {
-                ap.setItem(null);
-                this.capacity -= item.getWeight();
+        if (item != null && item.getOwner() == this)
+            throw new IllegalStateException("Item still references this entity as its owner.");
 
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
+            AnchorPoint anchorpoint = getAnchorPointAt(i);
+            if (anchorpoint.getItem() == item) {
                 // Als dit armor was op het body-anker: reset armor-referentie
-                if (ap.getName().equals("body") && item instanceof Armor) {
-                    this.armor = null;
+                if (anchorpoint.getName().equals("body") && item instanceof Armor) {
+                    equipArmor(null);
+                }
+                if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon) {
+                    equipLeftHand(null);
+                }
+                if (anchorpoint.getName().equals("rightHand") && item instanceof Weapon) {
+                    equipRightHand(null);
                 }
 
+                anchorpoint.setItem(null);
                 return;
+
             }
+
         }
 
-        throw new IllegalArgumentException("Item not found in an anchor point.");
     }
 
     /**********************************************************

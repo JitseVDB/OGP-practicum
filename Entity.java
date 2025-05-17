@@ -82,6 +82,8 @@ public abstract class Entity {
             removeHitPoints(getHitPoints() - p);
         }
 
+
+
         // Initialize AnchorPoints
         initializeAnchorPoints();
     }
@@ -370,7 +372,6 @@ public abstract class Entity {
 
     /**
      * Returns the total weight of all the items which the entity is carrying.
-     *
      * If an item is a backpack, its total weight includes the contents of the backpack.
      * Empty anchor points are ignored.
      *
@@ -384,7 +385,7 @@ public abstract class Entity {
             if (item == null) continue;
 
             if (item instanceof Backpack)
-                totalWeight += ((Backpack) item).getTotalWeight(); // explicit cast
+                totalWeight += ((Backpack) item).getTotalWeight();
 
             if (item instanceof Purse)
                 totalWeight += ((Purse) item).getTotalWeight();
@@ -393,6 +394,22 @@ public abstract class Entity {
         }
 
         return totalWeight;
+    }
+
+    /**
+     * Checks whether this entity is able to carry the given equipment item
+     * without exceeding their capacity.
+     * The check is based on the current carried weight and the item's weight.
+     *
+     * @param item
+     *        The equipment item to check
+     *
+     * @post The result is true if the current capacity plus the item’s weight
+     *       does not exceed the hero’s maximum capacity.
+     *     | result == (getTotalWeight() + item.getWeight()) <= getCapacity()
+     */
+    public boolean canCarry(Equipment item) {
+        return (getTotalWeight() + item.getWeight()) <= getCapacity();
     }
 
     /**********************************************************
@@ -428,9 +445,7 @@ public abstract class Entity {
      * @throws  IllegalArgumentException
      *          The item is already stored in this entity.
      *        | hasAsItem(item)
-     * @throws  IllegalArgumentException
-     *          The item cannot be added to this entity (illegal equipment).
-     *        | !canHaveAsItem(item)
+
      * @throws  IllegalStateException
      *          The reference from the item to this entity has not yet been set.
      *        | (item != null) && !item.getOwner() == this
@@ -446,9 +461,6 @@ public abstract class Entity {
     protected void addAsItem(Equipment item) throws IllegalArgumentException, IllegalStateException {
         if (hasAsItem(item))
             throw new IllegalArgumentException("This item is already attached.");
-
-        if (!canHaveAsItem(item))
-            throw new IllegalArgumentException("This item is not allowed.");
 
         if (item != null && item.getOwner() != this)
             throw new IllegalStateException("Item does not reference this entity as its owner.");
@@ -538,7 +550,32 @@ public abstract class Entity {
     }
 
 
-    public abstract boolean canHaveAsItem(Equipment item);
+    /**
+     * Determines whether this entity is allowed to carry the given item
+     * by checking if there exists any anchor point where it can be legally placed
+     *
+     * @param   item
+     *          The item to check
+     *
+     * @return   The result is true there exists at least one anchor point such that:
+     *          the anchor is empty, the capacity is not exceeded and the item can be legally placed at anchorpoint
+     *          | result == (exists ap in anchorPoints:
+     *          |               ap.isEmpty() && canCarry()) && canHaveAsItemAt
+     *
+     *
+     */
+    public boolean canHaveAsItem(Equipment item) {
+        if (canCarry(item)) {
+            for (AnchorPoint ap : anchorPoints) {
+                if (ap.isEmpty() && canHaveAsItemAt(item, ap))
+                    return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    public abstract boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorPoint);
 
     /**
      * Add the given item to the first anchorpoint of this entity that accepts it.
@@ -549,12 +586,8 @@ public abstract class Entity {
      * @effect The item is added to the first valid anchor point.
      *       | anchorpoint.setItem(item)
      *
-     * @throws IllegalArgumentException
-     *         If no valid anchor point is found.
-     *       |    for I in 1..getNbAnchorPoints() :
-     * 	     | 	      (!canHaveAsItemAt(item, i))
      */
-    public void addToAnchorPoint(Equipment item) throws IllegalArgumentException {
+    public void addToAnchorPoint(Equipment item) {
         for (int i = 1; i <= getNbAnchorPoints(); i++) {
             AnchorPoint anchorpoint = getAnchorPointAt(i);
 
@@ -563,8 +596,6 @@ public abstract class Entity {
                 return;
             }
         }
-
-        throw new IllegalArgumentException("No valid anchor point available.");
     }
 
 
@@ -591,7 +622,6 @@ public abstract class Entity {
     @Model
     @Raw
     protected void removeAsItem(@Raw Equipment item) throws IllegalArgumentException, IllegalStateException {
-
         if (!hasAsItem(item))
             throw new IllegalArgumentException("This entity does not have the item.");
 
@@ -628,7 +658,7 @@ public abstract class Entity {
     }
 
     /*****************************************************************
-     *               Protection + GetAnchorPoints
+     * GetAnchorPoints
      *****************************************************************/
 
     /**

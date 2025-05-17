@@ -7,14 +7,11 @@ import be.kuleuven.cs.som.annotate.*;
 /**
  * A class representing monsters in the game
  *
- * @invar	  Each monster must have a properly spelled name.
- * 			    | canHaveAsName(getName())
+ * @invar	Each monster must have a properly spelled name.
+ * 			| canHaveAsName(getName())
  *
  * @invar   Each monster must have a valid damage.
  *          | isValidDamage(getDamage());
- *
- * @invar   Each monster must have a valid capacity.
- *          | isValidCapacity(getCapacity());
  *
  * @author  Jitse Vandenberghe
  *
@@ -167,49 +164,20 @@ public class Monster extends Entity {
     }
 
     /**
-     * Determines whether this monster is allowed to carry the given item
-     * by checking if there exists any anchor point where it can be legally placed
+     * Checks whether item can be legally added to anchorpoint
      *
-     * @param   item
-     *          The item to check
+     * @param item
+     *          item to check
+     * @param anchorPoint
+     *          anchorpoint to check
+     * @return  returns true always, because every item can be legally added to an anchorpoint in monster
      *
-     * @post    The result is true if there exists at least one anchor point such that:
-     *          the anchor is empty and the capacity is not exceeded.
-     *          | result == (exists ap in anchorPoints:
-     *          |               ap.isEmpty() && getTotalWeight() + item.getWeight() <= getCapacity)
-     *
-     * @return  true if the item if there adding the item does not exceed the capacity and
-     *          there is an empty anchorpoint, false otherwise.
      */
     @Override
-    public boolean canHaveAsItem(Equipment item) {
-        if (getTotalWeight() + item.getWeight() <= getCapacity()) {
-            for (AnchorPoint ap : anchorPoints) {
-                if (ap.isEmpty())
-                    return true;
-            }
-            return false;
-        }
-        return false;
+    public boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorPoint ) {
+        return true;
     }
 
-    /**********************************************************
-     * Capacity
-     **********************************************************/
-
-
-    /**
-     * Checks whether a given capacity is a valid capacity.
-     *
-     * @param 	capacity
-     * 			The capacity to check.
-     * @return	True if the capacity is a positive number
-     * 			| result == (capacity >= 0)
-     *
-     */
-    public boolean isValidCapacity(int capacity) {
-        return capacity >= 0;
-    }
 
     /**********************************************************
      * Damage
