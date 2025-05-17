@@ -307,7 +307,15 @@ public class Backpack extends StorageItem {
 
             // Iterate over each individual item in the list associated with the current identification number
             for (Equipment item : itemsWithSameID) {
-                totalWeight += item.getWeight();
+                if (item instanceof Backpack) {
+                    totalWeight += ((Backpack) item).getTotalWeight();
+                }
+                else if (item instanceof Purse) {
+                    totalWeight += ((Purse) item).getTotalWeight();
+                }
+                else {
+                    totalWeight += item.getWeight();
+                }
             }
         }
         return totalWeight;
