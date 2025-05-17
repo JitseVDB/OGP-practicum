@@ -25,16 +25,33 @@ import java.util.HashMap;
   *
  * @version 1.9
  *
- * @invar The hero's intrinsic strength is always stored with two decimal places.
- *        | Math.round(intrinsicStrength * 100) / 100.0 == intrinsicStrength
- * @invar The hero's capacity is always between 0 and its maximum capacity.
- *        | 0 <= getCapacity() <= getMaxCapacity()
- * @invar All items on anchor points are valid for their location.
- *        | for (AnchorPoint ap : anchorPoints)
- *        |     if (ap.getItem() != null) ==> canHaveAsItemAt(ap.getItem(), ap)
- * @invar The armor field matches the item on the body anchor, if any.
- *        | getArmor() == getAnchorPoint("body").getItem() || getArmor() == null
+ * @invar   Each hero must have a valid protection.
+ *          | isValidProtection(getProtection());
  *
+ * @invar	  Each hero must have a properly spelled name.
+ * 			      | canHaveAsName(getName())
+ *
+ * @invar   All items on anchor points are valid for their location.
+ *          | for (AnchorPoint ap : anchorPoints)
+ *          |     if (ap.getItem() != null) ==> canHaveAsItemAt(ap.getItem(), ap)
+ *
+ * @invar   The hero's intrinsic strength is always stored with two decimal places.
+ *          | Math.round(intrinsicStrength * 100) / 100.0 == intrinsicStrength
+ *
+ * @invar   The hero's capacity is always between 0 and its maximum capacity.
+ *          | 0 <= getCapacity() <= getMaxCapacity()
+ *
+ * @invar   The hero's strength is strictly positive.
+ *          | getIntrinsicStrength > 0
+ *
+ * @invar   The armor field matches the item on the body anchor, if any.
+ *          | getArmor() == getAnchorPoint("body").getItem() || getArmor() == null
+ *
+ * @invar   The left hand field matches the item on the body anchor, if any.
+ *          | getLeftHandWeapon() == getAnchorPoint("leftHand").getItem() || getLeftHandWeapon() == null
+ *
+ * @invar   The right hand field matches the item on the body anchor, if any.
+ *          | getRightHandWeapon() == getAnchorPoint("rightHand").getItem() || getRightHandWeapon() == null
  */
 public class Hero extends Entity {
 
