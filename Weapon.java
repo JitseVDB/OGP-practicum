@@ -72,7 +72,7 @@ public class Weapon extends Equipment {
      *          |        && (identification % 2 == 0)
      *          |        && (identification % 3 == 0)
      */
-    @Override
+    @Raw @Override
     public boolean canHaveAsIdentification(Class<?> equipmentType, long identification) {
         return super.canHaveAsIdentification(equipmentType, identification)
                 // The identification number must be divisible by 2 and 3.
@@ -163,6 +163,7 @@ public class Weapon extends Equipment {
      *          and is a multiple of 7.
      *          | result == (damage > 0 && damage <= maximumDamage && damage % 7 == 0)
      */
+    @Raw
     public boolean isValidDamage(int damage) {
         return damage > 0 && damage <= maximumDamage && damage % 7 == 0;
     }
@@ -175,7 +176,7 @@ public class Weapon extends Equipment {
     /**
      * Returns the maximum value of a weapon.
      */
-    @Override @Basic
+    @Override @Basic @Immutable
     public int getMaximumValue() {
         return 200;
     }
@@ -188,7 +189,7 @@ public class Weapon extends Equipment {
     /**
      * Returns the value per damage unit for a weapon, in dukaten.
      */
-    @Basic
+    @Basic @Immutable
     public int getValuePerDamageUnit() {
         return valuePerDamageUnit;
     }

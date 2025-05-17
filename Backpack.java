@@ -1,4 +1,5 @@
 import be.kuleuven.cs.som.annotate.Basic;
+import be.kuleuven.cs.som.annotate.Immutable;
 import be.kuleuven.cs.som.annotate.Model;
 import be.kuleuven.cs.som.annotate.Raw;
 
@@ -328,7 +329,7 @@ public class Backpack extends StorageItem {
     /**
      * Returns the maximum value of a piece of equipment.
      */
-    @Override @Basic
+    @Override @Basic @Immutable
     public int getMaximumValue() {
         return 500;
     }
