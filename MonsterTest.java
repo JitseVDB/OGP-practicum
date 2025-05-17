@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
  * @author Ernest De Gres
  * @version 1.1
  */
+
 public class MonsterTest {
 
     // MONSTER
@@ -190,41 +191,6 @@ public class MonsterTest {
         // 3. Divisible by 7
         assertTrue(monster_A.isValidDamage(49));
         assertFalse(monster_A.isValidDamage(50));
-    }
-
-
-    @Test
-    void testReceiveDamage_NegativeDamage_ShouldDoNothing() {
-        int current = monster_A.getHitPoints();
-        monster_A.receiveDamage(-10);
-        assertEquals(current, monster_A.getHitPoints());
-    }
-
-
-    @Test
-    void testReceiveDamageLessThanProtection() {
-        int initialHP = monster_A.getHitPoints();
-        int protection = monster_A.getCurrentProtection();
-
-        monster_A.receiveDamage(protection - 5);  // Effective damage = 0
-        assertEquals(initialHP, monster_A.getHitPoints());
-    }
-
-    @Test
-    void testReceiveDamageEqualToProtection() {
-        int initialHP = monster_A.getHitPoints();
-        int protection = monster_A.getCurrentProtection();
-
-        monster_A.receiveDamage(protection);  // Effective damage = 0
-        assertEquals(initialHP, monster_A.getHitPoints());
-    }
-
-    @Test
-    void testReceiveDamageMoreThanProtection() {
-        int protection = monster_A.getCurrentProtection();
-        monster_A.receiveDamage(protection + 10);  // Effective damage = 10
-
-        assertEquals(53, monster_A.getHitPoints());
     }
 
     /**

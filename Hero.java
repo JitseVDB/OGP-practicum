@@ -119,7 +119,8 @@ public class Hero extends Entity {
         this(name, maxHitPoints, strength); // Roep de eenvoudige constructor aan
 
         for (Equipment item : startItems) {
-            item.setOwner(this);
+                item.setOwner(this);
+
         }
     }
 
@@ -681,7 +682,7 @@ public class Hero extends Entity {
         } else if (name.equals("belt")) {
             return item instanceof Purse;
         }
-        return true;
+        return !(item instanceof Purse);
     }
 
     /**

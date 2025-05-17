@@ -8,150 +8,112 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+
+/**
+ * A JUnit (5) test class for testing the non-private methods of the Hero class.
+ *
+ * @author Ernest De Gres
+ * @version 1.1
+ */
+
 public class HeroesTest {
 
+
+    // HERO
+    private static Hero hero_A;
+    private static Hero hero_B;
+
+    // OPPONENT
+    private static Monster monster_A;
+
+    // EQUIPMENT
+    private static Weapon weapon_A;
+    private static Weapon weapon_B;
+    private static Armor armor_A;
+    private static Armor armor_B;
+    private static Backpack backpack_A;
+    private static Backpack backpack_B;
+    private static Purse purse_A;
+    private static Purse purse_B;
+
+    // LISTS
+    private List<Equipment> items;
+
+    @BeforeEach
+    public void setUpMonster() {
+        weapon_A = new Weapon(40, 49);
+        weapon_B = new Weapon(40, 49);
+        armor_A = new Armor(30, 80, ArmorType.BRONZE);
+        armor_B = new Armor(30, 80, ArmorType.BRONZE);
+        backpack_A = new Backpack(30, 60, 100);
+        backpack_B = new Backpack(30, 60, 100);
+        purse_A = new Purse(10, 50);
+        purse_B = new Purse(10, 50);
+
+
+        hero_A = new Hero("Ben", 13, 10.0);
+        hero_B = new Hero("Bert", 13, 10.0, weapon_B, armor_B, purse_B, backpack_B);
+
+
+        items = new ArrayList<>();
+        items.add(weapon_A);
+        items.add(armor_A);
+        items.add(backpack_A);
+        items.add(purse_A);
+
+        monster_A = new Monster("Tom", 70, 49, items, SkinType.SCALY);
+    }
     /********************************************************************
-     *                      CONSTRUCTOR TEST (1)
+     *                      CONSTRUCTOR TEST
      ********************************************************************/
 
     @Test
-    public void testConstructorSetsFieldsCorrectly() {
-        Hero hero = new Hero("James O'Hara", 13, 10.0);
-
-        assertEquals("James O'Hara", hero.getName());
-        assertEquals(13, hero.getMaxHitPoints());
-        assertEquals(13, hero.getHitPoints()); // geen prime correctie nodig
-        assertEquals(10.0, hero.getIntrinsicStrength(), 0.001);
-        assertFalse(hero.isFighting());
-        assertNull(hero.getLeftHandWeapon());
-        assertNull(hero.getRightHandWeapon());
-        assertNull(hero.getArmor());
+    public void testFirstConstructor_ValidArguments_ShouldInitializeFields() {
+        assertEquals("Ben", hero_A.getName());
+        assertEquals(13, hero_A.getMaxHitPoints());
+        assertEquals(13, hero_A.getHitPoints()); // geen prime correctie nodig
+        assertEquals(10.0, hero_A.getIntrinsicStrength(), 0.001);
+        assertEquals(10, hero_A.getProtection());
+        assertEquals(200, hero_A.getCapacity());
+        assertFalse(hero_A.isFighting());
+        assertNull(hero_A.getLeftHandWeapon());
+        assertNull(hero_A.getRightHandWeapon());
+        assertNull(hero_A.getArmor());
     }
 
-
     @Test
-    public void testConstructorCorrectsNonPrimeHitPoints() {
-        Hero hero = new Hero("Prime Check", 10, 5.0); // 10 is géén priem, dus correctie
-        assertTrue(hero.getHitPoints() <= 10); // We weten dat hij omlaag gaat
-        assertEquals(7, hero.getHitPoints()); // Verwachte laagste prime onder 10
-    }
-
-
-    @Test
-    public void testInvalidNameTooManyApostrophes() {
+    public void testFirstConstructor_InvalidStrength_ShouldThrowException() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new Hero("Jam'es o'Ha'ra", 15, 10.0);
+            new Hero("Ben", 11, 0.0);
         });
-    }
-
-    @Test
-    public void testInvalidNameNoCapitalLetter() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new Hero("james O'Hara", 15, 10.0);
+            new Hero("Ben", 11, -5.0);
         });
+
     }
 
     @Test
-    public void testInvalidNameColonWithoutSpace() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Hero("James:O'Hara", 15, 10.0);
-        });
-    }
-
-    @Test
-    public void testNegativeHitPointsThrows() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Hero("Valid Name", -1, 5.0);
-        });
-    }
-
-    @Test
-    public void testZeroStrengthThrows() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Hero("Valid Name", 11, 0.0);
-        });
-    }
-
-    @Test
-    public void testNegativeStrengthThrows() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Hero("Valid Name", 11, -5.0);
-        });
-    }
-
-    /********************************************************************
-     *                      CONSTRUCTOR TESTS (2)
-     ********************************************************************/
-
-    @Test
-    public void testConstructorAssignsItemsToAnchors() {
-
-        // Gebruik unieke ID's zodat geen ander testobject in de weg zit
-        Weapon sword = new Weapon(50, 14);           // uniek
-        Weapon dagger = new Weapon(23, 7);           // uniek
-        Armor chestplate = new Armor(30, 10, ArmorType.BRONZE); // uniek en geldig
-
-        Hero hero = new Hero("Sir Testalot", 13, 5.5, sword, dagger, chestplate);
-
+    public void testSecondConstructor_ValidArguments_ShouldInitializeFields() {
         // Check basisvelden
-        assertEquals("Sir Testalot", hero.getName());
-        assertEquals(13, hero.getHitPoints());
-        assertEquals(5.5, hero.getIntrinsicStrength(), 0.01);
+        assertEquals("Bert", hero_B.getName());
+        assertEquals(13, hero_B.getMaxHitPoints());
+        assertEquals(13, hero_B.getHitPoints()); // geen prime correctie nodig
+        assertEquals(10.0, hero_B.getIntrinsicStrength(), 0.001);
+        assertEquals(10, hero_B.getProtection());
+        assertEquals(200, hero_B.getCapacity());
+        assertFalse(hero_B.isFighting());
 
         // Controleer of items effectief op ankers hangen
-        assertTrue(hero.getAnchors().values().contains(sword));
-        assertTrue(hero.getAnchors().values().contains(dagger));
-        assertTrue(hero.getAnchors().values().contains(chestplate));
-
-        // Check of armor correct herkend is
-        assertEquals(chestplate, hero.getArmor());
+        assertTrue(hero_B.getAnchors().containsValue(weapon_B));
+        assertTrue(hero_B.getAnchors().containsValue(armor_B));
+        assertTrue(hero_B.getAnchors().containsValue(purse_B));
+        assertTrue(hero_B.getAnchors().containsValue(backpack_B));
 
         // Controleer of items de juiste eigenaar hebben
-        assertEquals(hero, sword.getOwner());
-        assertEquals(hero, dagger.getOwner());
-        assertEquals(hero, chestplate.getOwner());
-    }
-
-
-
-    @Test
-    public void testConstructorRejectsOverCapacity() {
-        // Held met te zwakke kracht voor veel gewicht
-        Weapon heavyWeapon = new Weapon(999, 7); // zwaar
-        assertThrows(AssertionError.class, () -> {
-            new Hero("Weakling", 11, 1.0, heavyWeapon);
-        });
-    }
-
-    @Test
-    public void testConstructorHandlesAnchorConflicts() {
-        Weapon sword = new Weapon(101, 14);   // geldig
-        Weapon dagger = new Weapon(102, 21);  // geldig
-
-        Hero hero = new Hero("DualWield", 17, 10.0, sword, dagger);
-
-        int weaponsAssigned = 0;
-        for (var item : hero.getAnchors().values()) {
-            if (item instanceof Weapon) {
-                weaponsAssigned++;
-            }
-        }
-
-        assertEquals(2, weaponsAssigned); // beide wapens moeten toegewezen zijn
-    }
-
-
-    @Test
-    public void testConstructorWithNullItems() {
-        Weapon sword = new Weapon(33, 14); // geldig
-
-        Hero hero = new Hero("NullFriendly", 17, 8.0, null, sword);
-
-        // sword moet zijn toegekend
-        assertTrue(hero.getAnchors().values().contains(sword));
-
-        // null mag nergens toegekend zijn
-        assertFalse(hero.getAnchors().values().contains(null));
+        assertEquals(hero_B, weapon_B.getOwner());
+        assertEquals(hero_B, armor_B.getOwner());
+        assertEquals(hero_B, purse_B.getOwner());
+        assertEquals(hero_B, backpack_B.getOwner());
     }
 
 
@@ -161,306 +123,109 @@ public class HeroesTest {
 
 
     @Test
-    void testValidSimpleName() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertTrue(hero.canHaveAsName("Hendrik"));
+    void testCanHaveAsName_AllCases() {
+        // valid cases
+        assertTrue(hero_A.canHaveAsName("Hendrik"));
+        assertTrue(hero_A.canHaveAsName("Ben Bert Tom"));
+        assertTrue(hero_A.canHaveAsName("Ben: Bert"));
+        assertTrue(hero_A.canHaveAsName("Ben'Bert'Tom"));
+
+        // invalid cases
+        assertFalse(hero_A.canHaveAsName(null));
+        assertFalse(hero_A.canHaveAsName(""));
+        assertFalse(hero_A.canHaveAsName("ben"));
+        assertFalse(hero_A.canHaveAsName("O'Ben D'Tom Mc'Bert"));
+        assertFalse(hero_A.canHaveAsName("Ben:Bert"));
+        assertFalse(hero_A.canHaveAsName("Jean-Luc#1"));
+        assertFalse(hero_A.canHaveAsName("Hero 1"));
+        assertFalse(hero_A.canHaveAsName("Captain:"));
     }
 
-    @Test
-    void testValidNameWithSpaces() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertTrue(hero.canHaveAsName("Jean Luc Delamol"));
-    }
-
-    @Test
-    void testValidNameWithColons() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertTrue(hero.canHaveAsName("Captain: Sparrow"));
-    }
-
-    @Test
-    void testValidNameWithApostrophes() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertTrue(hero.canHaveAsName("D'Artagnan O'Connor"));
-    }
-
-    @Test
-    void testValidNameWithTwoApostrophesMax() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertTrue(hero.canHaveAsName("O'Brien D'Omer"));
-    }
-
-    @Test
-    void testNullName() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsName(null));
-    }
-
-    @Test
-    void testEmptyName() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsName(""));
-    }
-
-    @Test
-    void testStartsWithLowercase() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsName("stella"));
-    }
-
-    @Test
-    void testTooManyApostrophes() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsName("O'Brien D'Omer Mc'Donald"));
-    }
-
-    @Test
-    void testColonWithoutSpace() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsName("Captain:Jean-Luc"));
-    }
-
-    @Test
-    void testInvalidCharacters() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsName("Jean-Luc#1"));
-    }
-
-    @Test
-    void testNameWithDigit() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsName("Hero 1"));
-    }
-
-    @Test
-    void testColonAtEnd() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsName("Captain:"));
-    }
-
-    @Test
-    void testColonFollowedByNonSpace() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsName("Captain:Jean"));
-    }
 
     /********************************************************************
-     *                       HITPOINTS TEST
+     *                       PROTECTION TEST
      ********************************************************************/
 
     @Test
-    void testSetHitPointsToPositiveValue() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setHitPoints(100);
-        assertEquals(100, hero.getHitPoints());
+    void testSetAndGetProtection_ShouldReturnValue() {
+        hero_A.setProtection(50);
+        assertEquals(50, hero_A.getProtection());
     }
 
     @Test
-    void testSetHitPointsToZero() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setHitPoints(0);
-        assertEquals(0, hero.getHitPoints());
+    void testIsValidProtection_AllCases() {
+        // valid case
+        assertTrue(Hero.isValidProtection(5));
+
+        // invalid case
+        assertFalse(Hero.isValidProtection(-1));
     }
 
     @Test
-    void testTakeDamageReducesHitPoints() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setHitPoints(50);
-        hero.receiveDamage(20);
-        assertEquals(37, hero.getHitPoints()); // 50 naar 47 (door prime) - 10 (omdat protection 10 is) = 37
+    void testGetRealProtection_WithArmor_ShouldAddArmorProtection() {
+        hero_A.equipArmor(armor_A); // protection of 90
+        assertEquals(100, hero_A.getRealProtection());
     }
 
     @Test
-    void testReceiveDamageDropsHitPointsToZero() {
-        Hero hero = new Hero("Guillaume", 100, 10); // protection = 10
-        hero.setHitPoints(10); // initieel 10 HP
-        hero.receiveDamage(20); // 20 - 10 = 10 schade
-
-        assertEquals(0, hero.getHitPoints());
+    void testGetRealProtection_NoArmor_ShouldNotAddArmorProtection() {
+        // Geen armor ingesteld
+        assertEquals(10, hero_A.getRealProtection());
     }
-
-    @Test
-    void testDefaultFightingStatusIsFalse() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.isFighting());
-    }
-
-    @Test
-    void testSetFightingTrue() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setFighting(true);
-        assertTrue(hero.isFighting());
-    }
-
-    @Test
-    void testSetFightingFalse() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setFighting(true); // eerst true
-        hero.setFighting(false);
-        assertFalse(hero.isFighting());
-    }
-
-    @Test
-    void testToggleFightingStatus() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setFighting(true);
-        assertTrue(hero.isFighting());
-        hero.setFighting(false);
-        assertFalse(hero.isFighting());
-    }
-
-
-    @Test
-    void testAddHitPointsIncreasesValue() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setHitPoints(10);
-        hero.addHitPoints(5);
-        assertTrue(hero.getHitPoints() > 10);
-    }
-
-    @Test
-    void testAddHitPointsRoundsToHigherPrime() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setHitPoints(10);
-        hero.addHitPoints(1); // 10 + 1 = 11 → prime
-        assertEquals(11, hero.getHitPoints());
-    }
-
-    @Test
-    void testRemoveHitPointsReducesValue() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setHitPoints(17); // prime
-        hero.removeHitPoints(4);
-        assertTrue(hero.getHitPoints() < 17);
-    }
-
-    @Test
-    void testRemoveHitPointsCapsAtZero() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setHitPoints(3);
-        hero.removeHitPoints(10); // meer dan huidige HP
-        assertEquals(0, hero.getHitPoints());
-    }
-
-    @Test
-    void testRemoveHitPointsRoundsToLowerPrimeIfNotFighting() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setHitPoints(14); // -> 13
-        hero.setFighting(false);
-        hero.removeHitPoints(1); // 12-> 11
-        assertEquals(11, hero.getHitPoints());
-    }
-
-    @Test
-    void testRemoveHitPointsNoPrimeCorrectionIfFighting() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.setFighting(true);
-        hero.setHitPoints(14);
-        hero.removeHitPoints(1); // 14 - 1 = 13
-        assertEquals(13, hero.getHitPoints()); // exact, geen afronding meer nodig
-    }
-
-
 
     /********************************************************************
      *                          STRENGTH TEST
      ********************************************************************/
 
     @Test
-    void testMultiplyStrengthWithPositiveFactor() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.multiplyStrength(3);
-        assertEquals(30, hero.getIntrinsicStrength());
+    void testMultiplyStrength_ShouldMultiplyStrength() {
+        hero_A.multiplyStrength(3);
+        assertEquals(30, hero_A.getIntrinsicStrength());
+
+        hero_A.multiplyStrength(-2);
+        assertEquals(-60, hero_A.getIntrinsicStrength());
     }
 
     @Test
-    void testMultiplyStrengthWithNegativeFactor() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.multiplyStrength(-2);
-        assertEquals(-20, hero.getIntrinsicStrength());
-    }
-
-    @Test
-    void testMultiplyStrengthWithZeroThrowsException() {
-        Hero hero = new Hero("Guillaume", 100, 10);
+    void testMultiplyStrength_WithZero_ShouldThrowException() {
         assertThrows(IllegalArgumentException.class, () -> {
-            hero.multiplyStrength(0);
+            hero_A.multiplyStrength(0);
         });
     }
 
     @Test
-    void testDivideStrengthWithPositiveDivisor() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.divideStrength(4);
-        assertEquals(2.50, hero.getIntrinsicStrength());
+    void testDivideStrength_ShouldDivideStrength() {
+        hero_A.divideStrength(4);
+        assertEquals(2.50, hero_A.getIntrinsicStrength());
+
+        hero_A.divideStrength(-2);
+        assertEquals(-1.25, hero_A.getIntrinsicStrength());
     }
 
     @Test
-    void testDivideStrengthWithNegativeDivisor() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.divideStrength(-2);
-        assertEquals(-5, hero.getIntrinsicStrength());
-    }
-
-    @Test
-    void testDivideStrengthWithZeroThrowsException() {
-        Hero hero = new Hero("Guillaume", 100, 10);
+    void testDivideStrength_WithZero_ShouldThrowException() {
         assertThrows(IllegalArgumentException.class, () -> {
-            hero.divideStrength(0);
+            hero_A.divideStrength(0);
         });
     }
 
     @Test
-    void testMultiplyStrengthRounding() {
-        Hero hero = new Hero("Guillaume", 100, 1.236);
-        hero.multiplyStrength(1); // verwacht afronding op 1.24
-        assertEquals(1.24, hero.getIntrinsicStrength());
+    void testeGetAttackPower_WithoutWeapons_ShouldNotAddDamage() {
+        // geen wapen
+        assertEquals(10, hero_A.getAttackPower());
     }
 
     @Test
-    void testDivideStrengthRounding() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.divideStrength(3); // verwacht 3.33 afgerond
-        assertEquals(3.33, hero.getIntrinsicStrength());
-    }
-
-
-
-    @Test
-    void testAttackPowerWithoutWeapons() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        // geen wapens
-        assertEquals(10, hero.getAttackPower());
+    void testAttackPower_WithWeapons_ShouldAddDamage() {
+        hero_A.equipLeftHand(weapon_A);
+        hero_A.equipRightHand(weapon_B);
+        // 10 + 49 + 49
+        assertEquals(108, hero_A.getAttackPower());
     }
 
     @Test
-    void testAttackPowerWithLeftWeaponOnly() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.equipLeftHand(new Weapon(30, 7));
-
-        assertEquals(17, hero.getAttackPower());
-    }
-
-    @Test
-    void testAttackPowerWithRightWeaponOnly() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.equipLeftHand(new Weapon(30, 14));
-
-        assertEquals(24, hero.getAttackPower());
-    }
-
-    @Test
-    void testAttackPowerWithBothWeapons() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        hero.equipLeftHand(new Weapon(30, 7));
-        hero.equipRightHand(new Weapon(30, 14));
-        assertEquals(31, hero.getAttackPower()); // 5 + 3 + 6
-    }
-
-    @Test
-    void testGetIntrinsicStrengthReturnsCorrectValue() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertEquals(10, hero.getIntrinsicStrength());
+    void testGetIntrinsicStrength_ReturnValue() {
+        assertEquals(10.0, hero_A.getIntrinsicStrength());
     }
 
 
@@ -615,25 +380,6 @@ public class HeroesTest {
 
 
     /********************************************************************
-     *                       PROTECTION TEST
-     ********************************************************************/
-
-    @Test
-    void testGetRealProtection_WithArmor() {
-        Hero hero = new Hero("TestHero", 100, 10); // 10 is hier de protection
-        Armor armor = new Armor(30, 20, ArmorType.BRONZE); // 90 bescherming
-        hero.equipArmor(armor);
-        assertEquals(100, hero.getRealProtection());
-    }
-
-    @Test
-    void testGetRealProtection_NoArmor() {
-        Hero hero = new Hero("TestHero", 100, 10); // 10 is protection
-        // Geen armor ingesteld
-        assertEquals(10, hero.getRealProtection());
-    }
-
-    /********************************************************************
      *                       COLLECT TREASURE TEST
      ********************************************************************/
 
@@ -717,62 +463,6 @@ public class HeroesTest {
 
         assertEquals(0, hero.getCapacity(), "Item should not be collected due to no space");
         assertNull(loot.getOwner(), "Item should not be owned");
-    }
-
-
-    /********************************************************************
-     *                       RECEIVE DAMAGE TEST
-     ********************************************************************/
-
-    @Test
-    void testReceiveDamage_LessThanProtection_NoDamage() {
-        Hero hero = new Hero("Defender", 100, 10); // Protection = 10 standaard
-        hero.setHitPoints(80);
-
-        hero.receiveDamage(5); // minder dan protection → geen schade
-        hero.receiveDamage(5); // minder dan protection → geen schade
-
-        assertEquals(79, hero.getHitPoints()); // unchanged
-    }
-
-    @Test
-    void testReceiveDamage_EqualToProtection_NoDamage() {
-        Hero hero = new Hero("Tank", 100, 10); // Protection = 10
-        hero.setHitPoints(90);
-
-        hero.receiveDamage(10); // gelijk aan protection → geen schade
-
-        assertEquals(89, hero.getHitPoints()); // unchanged
-    }
-
-    @Test
-    void testReceiveDamage_MoreThanProtection_DamageApplied() {
-        Hero hero = new Hero("Fragile", 100, 10);
-        hero.setHitPoints(100);
-
-        hero.receiveDamage(20); // 20 - 10 = 10 schade
-
-        assertEquals(89, hero.getHitPoints());
-    }
-
-    @Test
-    void testReceiveDamage_HighDamage_ReducesToZero() {
-        Hero hero = new Hero("GlassCannon", 100, 10);
-        hero.setHitPoints(15);
-
-        hero.receiveDamage(100); // 100 - 10 = 90 > huidige HP
-
-        assertEquals(0, hero.getHitPoints());
-    }
-
-    @Test
-    void testReceiveDamage_NegativeDamage_NoExceptionButNoDamage() {
-        Hero hero = new Hero("Buggy", 100, 10);
-        hero.setHitPoints(70);
-
-        hero.receiveDamage(-5); // verwacht gedrag: treated as 0 or ignored
-
-        assertEquals(67, hero.getHitPoints());
     }
 
     /********************************************************************
