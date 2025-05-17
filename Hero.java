@@ -476,22 +476,22 @@ public class Hero extends Entity {
      **********************************************************/
 
      /**
-     * Heals this hero after successfully killing a monster.
-     *
-     * A random percentage between 0 and 100 (inclusive) is generated.
-     * The hero then regains that percentage of their missing hit points.
-     * The amount healed is rounded down to the nearest integer.
-     *
-     * @post If the hero is already at full health, no healing is applied.
-     *       Otherwise, the number of hit points gained is equal to
-     *       (getMaxHitPoints() - getHitPoints()) * percentage / 100,
-     *       where percentage is a random integer from 0 to 100.
-     *       | missing = getMaxHitPoints() - getHitPoints()
-     *       | if (missing <= 0)
-     *       |     then no change
-     *       | else
-     *       |     result of addHitPoints == (missing * percentage) / 100
-     */
+      * Heals this hero after successfully killing a monster.
+      *
+      * A random percentage between 0 and 100 (inclusive) is generated.
+      * The hero then regains that percentage of their missing hit points.
+      * The amount healed is rounded down to the nearest integer.
+      *
+      * @post If the hero is already at full health, no healing is applied.
+      *       Otherwise, the number of hit points gained is equal to
+      *       (getMaxHitPoints() - getHitPoints()) * percentage / 100,
+      *       where percentage is a random integer from 0 to 100.
+      *       | missing = getMaxHitPoints() - getHitPoints()
+      *       | if (missing <= 0)
+      *       |     then no change
+      *       | else
+      *       |     result of addHitPoints == (missing * percentage) / 100
+      */
     private void healAfterKill() {
         int missing = getMaxHitPoints() - getHitPoints();
         if (missing <= 0) return;
@@ -507,9 +507,27 @@ public class Hero extends Entity {
      **********************************************************/
 
     /**
+     * Collects all treasure items from the given monster.
      *
-     * aanvullen
+     * @param monster
+     *        The monster from which to collect treasure. If null, no action is performed.
      *
+     * @post For each non-null item in the monster’s anchors, if setting this hero as owner succeeds,
+     *       then the item’s owner is this hero.
+     *       | if (item != null && item.setOwner(this) succeeds)
+     *       |    then item.getOwner() == this
+     *
+     * @post For each non-null item in the monster’s anchors, if setting this hero as owner throws an exception
+     *       and the item can be placed in a backpack owned by this hero, then the item is placed in such backpack.
+     *       | if (item != null && item.setOwner(this) throws IllegalArgumentException &&
+     *       |     exists Backpack bp in getAllItems() where item.setBackpack(bp) succeeds)
+     *       |    then item.getBackpack() != null && getAllItems().contains(item.getBackpack())
+     *
+     * @post For each non-null item in the monster’s anchors, if neither ownership nor backpack placement succeeds,
+     *       the item remains unassigned (owner and backpack unchanged).
+     *       | if (item != null && item.setOwner(this) throws IllegalArgumentException &&
+     *       |     forall Backpack bp in getAllItems(), item.setBackpack(bp) throws IllegalArgumentException)
+     *       |    then item.getOwner() != this && item.getBackpack() == null
      */
     public void collectTreasureFrom(Monster monster) {
         if (monster == null) return;
