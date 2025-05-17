@@ -75,7 +75,7 @@ public class Armor extends Equipment {
      *          | result == super.isValidIdentification(equipmentType, identification)
      *          |        && isPrime(identification)
      */
-    @Override
+    @Raw @Override
     public boolean canHaveAsIdentification(Class<?> equipmentType, long identification) {
         return super.canHaveAsIdentification(equipmentType, identification)
                 // The identification number must be a prime number.
@@ -240,7 +240,7 @@ public class Armor extends Equipment {
     /**
      * Returns the maximum value of a piece of armor.
      */
-    @Basic
+    @Basic @Immutable
     public int getMaximumValue() {
         return 1000;
     }
@@ -267,6 +267,7 @@ public class Armor extends Equipment {
     /**
      * Return the type of armor of this piece of armor.
      */
+    @Basic @Immutable
     public ArmorType getType() {
         return type;
     }
