@@ -592,8 +592,10 @@ public abstract class Entity {
             AnchorPoint anchorpoint = getAnchorPointAt(i);
 
             if (anchorpoint.isEmpty()) {
-                anchorpoint.setItem(item);
-                return;
+                if (canHaveAsItemAt(item, anchorpoint)) {
+                    anchorpoint.setItem(item);
+                    return;
+                }
             }
         }
     }
