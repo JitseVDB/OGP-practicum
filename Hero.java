@@ -431,14 +431,23 @@ public class Hero extends Entity {
 
     /**
      * Calculates the damage dealt by this hero when a hit is successful.
-     * The total power is the hero’s intrinsic strength + the damage values of any weapons held in the left and right hands
-     * From this total, 10 is subtracted and the result is divided by 2.
-     * Any negative result is rounded up to zero. All decimals are truncated.
      *
-     * @return The integer damage value to apply.
+     * The damage is based on the sum of the hero’s intrinsic strength and the damage values
+     * of any weapons held in the left and right hands. From this total, 10 is subtracted,
+     * and the result is divided by 2. If the result is negative, it is rounded up to 0.
+     * The final result is truncated to an integer.
      *
-     * @post The result is equal to (totalPower - 10) / 2)
-     *       where totalPower = intrinsicStrength + damage from left and right hand weapons.
+     * @return The damage dealt as a non-negative integer.
+     *         | totalPower = getIntrinsicStrength()
+     *         | if (getLeftHandWeapon() != null)
+     *         |     totalPower += getLeftHandWeapon().getDamage()
+     *         | if (getRightHandWeapon() != null)
+     *         |     totalPower += getRightHandWeapon().getDamage()
+     *         | rawResult = (totalPower - 10) / 2
+     *         | if (rawResult < 0)
+     *         |     result == 0
+     *         | else
+     *         |     result == (int) rawResult
      */
     private int calculateDamage() {
         int leftDamage = 0;
@@ -463,26 +472,33 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                      Heal
+     * Heal
      **********************************************************/
 
-    /**
-     * Heals this hero after killing a monster.
-     * A random integer percentage between 0 and 100 is generated.
-     * The hero recovers that percentage of the missing hit points, rounded down.
+     /**
+     * Heals this hero after successfully killing a monster.
      *
+     * A random percentage between 0 and 100 (inclusive) is generated.
+     * The hero then regains that percentage of their missing hit points.
+     * The amount healed is rounded down to the nearest integer.
      *
-     * @post If the hero had missing hit points, they are increased by a random
-     *       percentage of that missing amount, via addHitPoints(int).
-     * @effect Uses addHitPoints(int) to apply the healing.
+     * @post If the hero is already at full health, no healing is applied.
+     *       Otherwise, the number of hit points gained is equal to
+     *       (getMaxHitPoints() - getHitPoints()) * percentage / 100,
+     *       where percentage is a random integer from 0 to 100.
+     *       | missing = getMaxHitPoints() - getHitPoints()
+     *       | if (missing <= 0)
+     *       |     then no change
+     *       | else
+     *       |     result of addHitPoints == (missing * percentage) / 100
      */
     private void healAfterKill() {
-        int missing = getMaxHitPoints() - getHitPoints();     // left over (missing) hitpoints (100-70 = 30 hitpoints left)
-        if (missing <= 0) return;                                   // the leftover hitpoints can't be an negative number
-        Random d= new Random();                                     //
-        int percentage = d.nextInt(101);                     // percentage random number between 0-100
-        int healAmount = (missing * percentage) / 100;      //
-        addHitPoints(healAmount);                           // add healAmount to hitpoints
+        int missing = getMaxHitPoints() - getHitPoints();
+        if (missing <= 0) return;
+        Random d= new Random();
+        int percentage = d.nextInt(101); 
+        int healAmount = (missing * percentage) / 100;
+        addHitPoints(healAmount); 
     }
 
 
@@ -521,42 +537,47 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                   Weapon Equipment
+     * Weapon Equipment
      **********************************************************/
-
+ 
     /**
-     * Stands for which weapon is carried in the left and right hand.
-     * Standard the hero carries no weapons
+     * The weapon currently equipped in the hero's left hand.
      */
     private Weapon leftHandWeapon = null;
+    
+    /**
+     * The weapon currently equipped in the hero's right hand.
+     */
     private Weapon rightHandWeapon = null;
 
 
     /**
-     * Equips the given weapon in the hero’s left hand.
-     * The weapon is assigned to the leftHandWeapon field and linked to the "leftHand" anchor point.
-     * The weapon’s weight is added to the hero’s current capacity.
+     * Set the weapon equiped in the left hand to the given weapon.
      *
-     * @param weapon
-     *        The weapon to equip
+     * @param   weapon
+     *          The weapon to equip
      *
-     * @post The weapon is assigned to the hero’s left hand.
-     *       | this.leftHandWeapon = weapon
+     * @post    The equipped weapon is set to the given weapon.
+     *          | new.getLeftHandWeapon() = weapon
+     *
+     * @note    This method does not handle the logic of equipping the weapon itself;  
+     *          it only updates the reference to the currently equipped weapon.
      */
     public void equipLeftHand(Weapon weapon) {
         this.leftHandWeapon = weapon;
     }
 
     /**
-     * Equips the given weapon in the hero’s right hand.
-     * The weapon is stored in the rightHandWeapon field and linked to the "rightHand" anchor point.
-     * The weapon’s weight is added to the hero’s current capacity.
+     * Set the weapon equiped in the right hand to the given weapon.
      *
-     * @param weapon
-     *        The weapon to equip
+     * @param   weapon
+     *          The weapon to equip
      *
-     * @post The weapon is assigned to the hero’s right hand.
-     *     | this.rightHandWeapon = weapon
+     * @post    The equipped weapon is set to the given weapon.
+     *          | new.getRightHandWeapon() = weapon
+     *
+     * @note    This method does not handle the logic of equipping the weapon itself;  
+     *          it only updates the reference to the currently equipped weapon.
      */
     public void equipRightHand(Weapon weapon) {
         this.rightHandWeapon = weapon;
@@ -577,15 +598,21 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                      AnchorPoints
+     * AnchorPoints
      **********************************************************/
 
-    /**
-     *  Initializes the default anchor points for this hero.
-     *
-     *  @post The hero has exactly five anchor points with the names:
-     *       "leftHand", "rightHand", "back", "body", and "belt".
-     */
+   /**
+    * Initializes the default anchor points for this hero.
+    *
+    * @post The hero has exactly five anchor points.
+    *       | getAnchorPoints().size() == 5
+    *
+    * @post The hero has anchor points named
+    *       "leftHand", "rightHand", "back", "body", and "belt".
+    *       | getAnchorPoints().stream().allMatch(ap -> 
+    *       |     ap.getName().equals("leftHand") || ap.getName().equals("rightHand") ||
+    *       |     ap.getName().equals("back") || ap.getName().equals("body") || ap.getName().equals("belt"))
+    */
     @Override
     public void initializeAnchorPoints() {
         addAnchorPoint(new AnchorPoint("leftHand"));
@@ -598,25 +625,26 @@ public class Hero extends Entity {
     /**
      * Add the given item to the first anchorpoint of this entity that accepts it.
      *
-     * @param item
-     *        The equipment to add.
+     * @param   item
+     *          The equipment to add.
      *
-     * @effect The item is added to the first valid anchor point.
-     *       | anchorpoint.setItem(item)
+     * @effect  The item is added to the first valid anchor point.
+     *          | anchorpoint.setItem(item)
      *
-     * @effect if item is armor and is added to body, equip armor.
-     *         | if (item == armor)
-     *         |      getArmor() = item
-     *
-     * @effect if item is weapon and is added to righthand , equip weapon to righthand.
-     *         | if (item == weapon && anchorpoint == righthand )
-     *         |      getRightHandWeapon() = item
-     *
-     * @effect if item is weapon and is added to lefthand , equip weapon to lefthand.
-     *         | if (item == weapon && anchorpoint == lefthand )
-     *         |      getLeftHandWeapon() = item
-     *
-     *
+     * @effect If the item is armor and is added to the "body" anchor point,
+     *         the hero equips that armor.
+     *         | if (anchorpoint.getName().equals("body") && item instanceof Armor)
+     *         |     then getArmor() == item
+     * 
+     * @effect If the item is a weapon and is added to the "leftHand" anchor point,
+     *         the hero equips that weapon on the left hand.
+     *         | if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon)
+     *         |     then getLeftHandWeapon() == item
+     * 
+     * @effect If the item is a weapon and is added to the "rightHand" anchor point,
+     *         the hero equips that weapon on the right hand.
+     *         | if (anchorpoint.getName().equals("rightHand") && item instanceof Weapon)
+     *         |     then getRightHandWeapon() == item
      */
     @Override
     public void addToAnchorPoint(Equipment item) {
@@ -643,28 +671,46 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                      Items
+     * Items
      **********************************************************/
 
     /**
      * Determines whether the given item can legally be placed at the specified anchor point.
-     *
-     * The legality is based on the type of the item and the name of the anchor point:
-     * - "leftHand" or "rightHand": only weapons are allowed
+     * 
+     * The rules for legality depend on the anchor point's name:
+     * - "leftHand" and "rightHand": only weapons are allowed
      * - "body": only armor is allowed
      * - "belt": only purses are allowed
      * - "back": any item is allowed
-     * - unknown or unsupported anchors: not allowed
-     *
+     * - For any other or unknown anchor names, no items are allowed.
+     * 
      * @param item
-     *        The item to check.
+     *        The equipment item to check.
      * @param anchorpoint
-     *        The anchor point to check against
-     * @post Returns false if item == null, or anchorpoint == null, or anchorpoint.getName() == null.
-     * @post For a known anchor name, returns true if the item type matches the allowed type.
-     * @post For unknown anchor names, returns false.
-     *
-     * @return true if the item is allowed at the given anchor point, false otherwise.
+     *        The anchor point where the item would be placed.
+     * 
+     * @post Returns false if item, anchorpoint, or anchorpoint's name is null.
+     *       | (item == null) || (anchorpoint == null) || (anchorpoint.getName() == null) ==> result == false
+     * 
+     * @post For anchor points "body", returns true only if the item is an Armor.
+     *       | anchorpoint.getName().equals("body") ==> result == (item instanceof Armor)
+     * 
+     * @post For anchor point "belt", returns true only if the item is a Purse.
+     *       | anchorpoint.getName().equals("belt") ==> result == (item instanceof Purse)
+     * 
+     * @post For anchor points "leftHand" or "rightHand", returns true only if the item is a Weapon.
+     *       | (anchorpoint.getName().equals("leftHand") || anchorpoint.getName().equals("rightHand")) 
+     *       |    ==> result == (item instanceof Weapon)
+     * 
+     * @post For anchor point "back", any item is allowed.
+     *       | anchorpoint.getName().equals("back") ==> result == true
+     * 
+     * @post For any other anchor names, returns false.
+     *       | !(anchorpoint.getName().equals("body") || anchorpoint.getName().equals("belt") 
+     *       |   || anchorpoint.getName().equals("leftHand") || anchorpoint.getName().equals("rightHand") 
+     *       |   || anchorpoint.getName().equals("back")) ==> result == false
+     * 
+     * @return True if the item is allowed at the specified anchor point; false otherwise.
      */
     @Override
     public boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorpoint) {
@@ -683,76 +729,59 @@ public class Hero extends Entity {
     }
 
     /**
-     * Add the given item to the anchor points registered to this entity.
+     * Add the given item to the anchor points registered to this hero.
      *
      * @param   item
      *          The equipment to be added.
      *
-     * @effect  The equipment is added to available anchor point.
-     *        | addToAnchorPoint(item)
-     *
-     *
-     * @throws  IllegalArgumentException
-     *          The item is already stored in this entity.
-     *        | hasAsItem(item)
+     * @effect  The item is added to this hero’s anchor points by calling the superclass method.
+     *          | super.addAsItem(item)
      *
      * @throws  IllegalArgumentException
      *          Hero can carry at most 2 armors
      *          | item == armor && getNbArmorsCarried() >= 2
-     *
-     * @throws  IllegalStateException
-     *          The reference from the item to this entity has not yet been set.
-     *        | (item != null) && !item.getOwner() == this
-     *
-     * @note    This is an auxiliary method that completes a bidirectional relationship.
-     *          It should only be called from within the controlling class.
-     *          At that point, the other direction of the relationship is already set up,
-     *          so the given item is in a raw state.
-     *          All methods called with this raw item thus require a raw annotation of their parameter.
-     * @note    The throws clauses of the effects are cancelled by the throws clauses of this method.
      */
-    @Override
+    @Model @Override
     protected void addAsItem(Equipment item) throws IllegalArgumentException {
         if (item instanceof Armor && getNbArmorsCarried() >= 2)
             throw new IllegalArgumentException("Hero can carry at most 2 armors.");
         super.addAsItem(item);
     }
 
-    /**
-     * Remove the given item from this entity.
-     *
-     * @param item
-     *        The equipment to remove.
-     *
-     * @effect The item is removed from the anchor point it was registered at.
-     *         | anchorpoint.setItem(null)
-     *
-     * @effect if item is armor and is removed from body, unequip armor.
-     *         | if (item == armor && anchorpoint == body)
-     *         |      getArmor() = null
-     *
-     * @effect if item is weapon and is removed from lefthand , unequip weapon.
-     *         | if (item == weapon && anchorpoint == lefthand )
-     *         |      getLeftHandWeapon() = null
-     *
-     * @effect if item is weapon and is removed from righthand , unequip weapon.
-     *         | if (item == weapon && anchorpoint == righthand )
-     *         |      getRightHandWeapon() = null
-     *
-     * @throws IllegalArgumentException
-     *        Entity does not have the given item.
-     *       | !hasAsItem(item)
-     * @throws IllegalStateException
-     *         The reference of the given (effective) item to its owner must already be broken down.
-     *       | (item != null) && item.getOwner() == this
-     *
-     * @note This is an auxiliary method used to break a bidirectional relationship.
-     *       It should only be called from within the controlling class.
-     *       At that point, the reference from the item to this entity must already be cleared.
-     */
-    @Model
-    @Raw
-    @Override
+   /**
+    * Removes the given item from this hero.
+    *
+    * @param  item
+    *         The equipment to remove.
+    *
+    * @effect The item is removed from the anchor point where it is currently registered.
+    *         | anchorpoint.setItem(null)
+    *
+    * @effect If the removed item is armor and was equipped on the body, the hero’s armor reference is cleared.
+    *         | if (item instanceof Armor && anchorpoint.getName().equals("body"))
+    *         |     getArmor() == null
+    *
+    * @effect If the removed item is a weapon and was equipped on the left hand, the left hand weapon reference is cleared.
+    *         | if (item instanceof Weapon && anchorpoint.getName().equals("leftHand"))
+    *         |     getLeftHandWeapon() == null
+    *
+    * @effect If the removed item is a weapon and was equipped on the right hand, the right hand weapon reference is cleared.
+    *         | if (item instanceof Weapon && anchorpoint.getName().equals("rightHand"))
+    *         |     getRightHandWeapon() == null
+    *
+    * @throws IllegalArgumentException
+    *         If this hero does not have the given item.
+    *         | !hasAsItem(item)
+    *
+    * @throws IllegalStateException
+    *         If the given item still references this hero as its owner.
+    *         | (item != null) && item.getOwner() == this
+    *
+    * @note This is an auxiliary method used to break a bidirectional association.
+    *       It should only be called internally by the controlling class,
+    *       and only after the reference from the item back to this hero has been cleared.
+    */
+    @Model @Raw @Override
     protected void removeAsItem(@Raw Equipment item) throws IllegalArgumentException, IllegalStateException {
         if (!hasAsItem(item))
             throw new IllegalArgumentException("This entity does not have the item.");
@@ -776,10 +805,7 @@ public class Hero extends Entity {
 
                 anchorpoint.setItem(null);
                 return;
-
             }
-
         }
-
     }
 }
