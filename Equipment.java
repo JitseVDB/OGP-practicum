@@ -150,6 +150,7 @@ public abstract class Equipment {
      * @post    The size of the set of IDs for the specified equipment type will increase by 1 after adding the new ID.
      *          | (equipmentByType.get(equipmentType).size() == old(equipmentByType.get(equipmentType).size()) + 1)
      */
+    @Model
     private static void addIdentification(Class<?> equipmentType, long identification) {
         // Get the existing set of ID's for the given type of equipment
         Set<Long> existingIDs = equipmentByType.get(equipmentType);
@@ -250,7 +251,7 @@ public abstract class Equipment {
     /**
      * Returns the maximum value of a piece of equipment.
      */
-    @Basic
+    @Basic @Immutable
     public int getMaximumValue() {
         return Integer.MAX_VALUE;
     }
@@ -331,19 +332,21 @@ public abstract class Equipment {
      * @post    The owner of this item is set to the given owner.
      *          | new.getOwner() == owner
      *
-     * @effect  If the current owner is different from the given owner and the item is not stored in a backpack,
-     *          it is removed from the current owner.
+     * @effect  If the current owner differs from owner and this item is
+     *          not stored in a backpack, it is detached from its former
+     *          owner.
      *          | if (getOwner() != owner && !hasProperBackpack())
-     *          | then getOwner().removeAsItem(this)
+     *          |   then getOwner().removeAsItem(this)
      *
-     * @effect  If the item is currently stored in a backpack, it is removed from that backpack.
+     * @effect  If the item is stored in a backpack, it is first removed
+     *          from that backpack before any owner change takes place.
      *          | if hasProperBackpack()
-     *          | then setBackpack(null)
+     *          |   then setBackpack(null)
      *
-     * @effect  If the given owner is effective (non-null) and different from the current owner,
-     *          the item is added to the new owner.
+     * @effect  If owner is effective (non-null) and differs from the
+     *          current owner, the item is appended to the new owner.
      *          | if (owner != null && getOwner() != owner)
-     *          | then owner.addAsItem(this)
+     *          |   then owner.addAsItem(this)
      *
      * @throws  IllegalArgumentException
      *          The given owner is non-null but cannot have this item.
@@ -367,34 +370,47 @@ public abstract class Equipment {
         // First, set up / break down the relationship from this side:
         this.owner = owner;
 
+        // Case: owner is different from the previous owner and the item is not in a backpack
+        if ((previousOwner != owner) && (!hasProperBackpack())) {
 
-        // Then, break down the old relationship from the other side, if it existed
-        // if item in backpack, you do not have to remove item from owner
-        if ((previousOwner != null) && (!hasProperBackpack())) {
-            try {
-                previousOwner.removeAsItem(this);
-                // the prime object is now in a raw state!
-            } catch (IllegalArgumentException e) {
-                // Should never occur!
-                assert false;
+
+            // Then, break down the old relationship from the other side, if it existed
+            // if item in backpack, you do not have to remove item from owner
+            if ((previousOwner != null) && (!hasProperBackpack())) {
+                try {
+                    previousOwner.removeAsItem(this);
+                    // the prime object is now in a raw state!
+                } catch (IllegalArgumentException e) {
+                    // Should never occur!
+                    assert false;
+                }
+            }
+
+            // Finally, set up the new relationship from the other side, if needed
+            if (owner != null) {
+                try {
+                    owner.addAsItem(this);
+                } catch (IllegalArgumentException e) {
+                    // Should never occur!
+                    assert false;
+                }
             }
         }
 
-        // if item in backpack, then remove item from backpack
-        if (hasProperBackpack()) {
+        // Case: item was in a backpack
+        else if (hasProperBackpack()) {
             setBackpack(null);
             // Re-set owner
             this.owner = owner;
-        }
 
-
-        // Finally, set up the new relationship from the other side, if needed
-        if (owner != null) {
-            try{
-                owner.addAsItem(this);
-            }catch(IllegalArgumentException e) {
-                // Should never occur!
-                assert false;
+            // Finally, set up the new relationship from the other side, if needed
+            if (owner != null) {
+                try {
+                    owner.addAsItem(this);
+                } catch (IllegalArgumentException e) {
+                    // Should never occur!
+                    assert false;
+                }
             }
         }
     }
@@ -547,7 +563,7 @@ public abstract class Equipment {
      * @param   shiny
      *          True if the equipment should be shiny, false otherwise.
      */
-    @Model
+    @Basic @Raw
     void setShiny(boolean shiny) {
         this.isShiny = shiny;
     }
@@ -583,7 +599,7 @@ public abstract class Equipment {
      *          | else
      *          |     getCondition() == old(getCondition())
      */
-    @Model
+    @Basic @Raw
     void setCondition(Condition condition) {
         if (getCondition() == Condition.GOOD) {
             this.condition = condition;
