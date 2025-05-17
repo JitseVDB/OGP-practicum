@@ -82,11 +82,13 @@ public class EntityTest {
     void testIsValidHitPoints_allCases() {
         // 1. Valid cases
         assertTrue(hero_A.isValidHitPoints(0));
-        assertTrue(hero_A.isValidHitPoints(97));
+        assertTrue(hero_A.isValidHitPoints(97)); // !isFighting and isPrime so true
+
 
         // 2. Invalid cases
         assertFalse(hero_A.isValidHitPoints(-1));
         assertFalse(hero_A.isValidHitPoints(101)); // more than maxHitPoints
+        assertFalse(hero_A.isValidHitPoints(80)); // !isFighting and !isPrime so false
     }
 
     @Test
@@ -288,4 +290,23 @@ public class EntityTest {
         assertFalse(hero_A.hasFreeAnchorPoint());
     }
 
+    @Test
+    void testCanHaveAsItem_CantCarryItem_ShouldReturnFalse() {
+        // so hero can carry this but nothing more
+        Armor heavyArmor = new Armor(2000, 20, ArmorType.BRONZE);
+        heavyArmor.setOwner(hero_A);
+        assertFalse(hero_A.canHaveAsItem(armor_A));
+    }
+
+    @Test
+    void testCanHaveAsItem_NoAvailableAnchorPoint_ShouldReturnFalse() {
+        // fill all anchorpoints
+        backpack_A.setOwner(hero_A);
+        weapon_A.setOwner(hero_A);
+        weapon_B.setOwner(hero_A);
+        armor_A.setOwner(hero_A);
+        purse_A.setOwner(hero_A);
+
+        assertFalse(hero_A.canHaveAsItem(armor_B));
+    }
 }
