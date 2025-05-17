@@ -51,10 +51,10 @@ public class Hero extends Entity {
      *        the hero's intrinsic strength (stored rounded to two decimal places)
      *
      * @throws IllegalArgumentException
-     *          if strength ≤ 0.
+     *         If the name is invalid, or if maxHitPoints < 0, or if strength ≤ 0.
      *
      * @pre     The maximum amount of hitpoints must be positive
-     *          | maxHitPoints >= 0
+     *          | isValidMaxHitPoints(maxHitPoints)
      *
      * @post The hero's name is equal to the provided name.
      *      |getName().equals(name)
@@ -79,7 +79,7 @@ public class Hero extends Entity {
         super(name, maxHitPoints);
         if (strength <= 0)
             throw new IllegalArgumentException("Strength must be positive");
-        this.isFighting = false;
+
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.protection = 10;
         this.capacity = (int)(20 * intrinsicStrength);

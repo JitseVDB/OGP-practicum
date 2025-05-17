@@ -44,15 +44,18 @@ public abstract class Entity {
      * @param   maxHitPoints
      *          The maximum number of hitpoints.
      *
-     * @pre     The maximum amount of hitpoints must be positive
-     *          | maxHitPoints >= 0
+     * @pre     The maximum amount of hitpoints must be strictly positive
+     *          | isValidMaxHitPoints(getMaxHitPoints())
      *
      * @post    The name of the entity is set to the given name.
      *          | new.getName() == name
      *
-     * @post    The maximum and current hitpoints are set to the given value.
+     * @post    The maximum hitpoints is set to the given value.
      *          | new.getMaxHitPoints() == maxHitPoints
-     *          | new.getHitPoints() == maxHitPoints
+     *
+     * @post    The hitpoints are set to the given value, unless it is not prime. In that case, they are corrected to the closest lower prime.
+     *          | if (!isPrime(maxHitPoints)) then new.getHitPoints() == getClosestLowerPrime(maxHitPoints)
+     *          | else new.getHitPoints() == maxHitPoints
      *
      * @post    The new entity is not fighting.
      *          | !new.isFighting()
@@ -74,7 +77,6 @@ public abstract class Entity {
         this.maxHitPoints = maxHitPoints;
         this.hitPoints = maxHitPoints;
         this.anchorPoints = new ArrayList<>();
-        this.isFighting = false;
 
         // Prime-correction at initialization, because not fighting
         if (!isPrime(getHitPoints())) {
@@ -112,6 +114,7 @@ public abstract class Entity {
      * @return  True if name is valid
      *
      */
+    @Raw
     public abstract boolean canHaveAsName(String name);
 
     /**********************************************************
@@ -121,7 +124,7 @@ public abstract class Entity {
     /**
      * Variable that indicates whether the entity is currently fighting. He is initialized as not fighting
      */
-    public boolean isFighting;
+    private boolean isFighting = false;
 
     /**
      * The current number of hitpoints of the entity.
@@ -155,10 +158,11 @@ public abstract class Entity {
      * @param   hitPoints
      *          The amount of hitpoints to set.
      *
-     * @pre isValidHitPoints()
+     * @pre     The amount of hitpoints must be valid.
+     *          isValidHitPoints()
      *
-     * @post hitpoints is set to the given amount
-     *      |   getHitPoints() = hitpoints
+     * @post    hitpoints is set to the given amount
+     *          | new.getHitPoints() == hitpoints
      *
      */
     @Raw @Basic
@@ -187,7 +191,7 @@ public abstract class Entity {
      * @param   maxHitPoints
      *          The amount to check.
      *
-     * @return  True if and only if the amount of maximum hitpoints is positive.
+     * @return  True if and only if the amount of maximum hitpoints is strictly positive.
      *          | result == (maxHitPoints > 0)
      */
     public static boolean isValidMaxHitPoints(int maxHitPoints) {
