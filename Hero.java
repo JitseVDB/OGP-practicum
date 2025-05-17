@@ -18,7 +18,11 @@ import java.util.HashMap;
  * supplied at construction, and a current amount of hit points that may change during combat.
  * The hero's intrinsic strength is stored with two decimal places and determines the hero's carrying capacity.
  *
+ * 
+ * @author Jitse Vandenberghe
+ * @author Ernest De Gres
  * @author Guillaume Vandemoortele
+  *
  * @version 1.9
  *
  * @invar The hero's intrinsic strength is always stored with two decimal places.
@@ -35,45 +39,38 @@ import java.util.HashMap;
 public class Hero extends Entity {
 
     /**********************************************************
-     *                      Constructors
+     * Constructors
      **********************************************************/
 
     /**
-     * Initializes a hero with the given name, maximum hit points, and intrinsic strength.
-     * A new hero is initialized as not fighting. Both weapon slots are empty and no armor is equipped.
-     * The hero's current hit points are set equal to the maximum hit points at creation.
+     * Initializes a new hero with the given name, maximum hit points, and intrinsic strength.
      *
-     * @param name
-     *        the hero's name
-     * @param maxHitPoints
-     *        the maximum number of hit points
-     * @param strength
-     *        the hero's intrinsic strength (stored rounded to two decimal places)
+     * @param   name
+     *          The name of the hero.
      *
-     * @throws IllegalArgumentException
-     *         If the name is invalid, or if maxHitPoints < 0, or if strength ≤ 0.
+     * @param   maxHitPoints
+     *          The maximum number of hit points the hero can have.
      *
-     * @pre     The maximum amount of hitpoints must be positive
-     *          | isValidMaxHitPoints(maxHitPoints)
+     * @param   strength
+     *          The intrinsic strength of the hero. Must be strictly positive.
      *
-     * @post The hero's name is equal to the provided name.
-     *      |getName().equals(name)
-     * @post The hero's maximum hit points are set correctly.
-     *      | getMaxHitPoints() == maxHitPoints
-     * @post The hero's current hit points equal the maximum hit points.
-     *      |getHitPoints() == maxHitPoints
-     * @post The hero's intrinsic strength is rounded correctly.
-     *      |getIntrinsicStrength() == Math.round(strength * 100) / 100.0
-     * @post The hero is not in a fighting state.
-     *      |!isFighting()
-     * @post The hero is not holding a weapon in the left hand.
-     *      |getLeftHandWeapon() == null
-     * @post The hero is not holding a weapon in the right hand
-     *      | getRightHandWeapon() == null
-     * @post The hero is not wearing any armor.
-     *      |getArmor() == null
-     * @post protection is set to 10;
-     *      | getProtection() = 10
+     * @effect  The hero is initialized as an entity with the given
+     *          name and maximum hit points.
+     *          | super(name, maxHitPoints)
+     *
+     * @post    The intrinsic strength of the hero is set to the given strength,
+     *          rounded to two decimal places.
+     *          | new.getIntrinsicStrength() == roundToTwoDecimals(strength)
+     *
+     * @post    The protection of the hero is initialized to 10.
+     *          | new.getProtection() == 10
+     *
+     * @post    The capacity of the hero is set to 20 times the intrinsic strength.
+     *          | new.getCapacity() == (int)(20 * getIntrinsicStrength())
+     *
+     * @throws  IllegalArgumentException
+     *          If the given strength is not strictly positive.
+     *          | strength <= 0
      */
     public Hero(String name, int maxHitPoints, double strength) {
         super(name, maxHitPoints);
@@ -87,112 +84,82 @@ public class Hero extends Entity {
     }
 
     /**
-     * Constructs a new Hero with the given name, maximum hit points, intrinsic strength,
-     * and a predefined set of equipment to be attached to specific anchor points.
+     * Initializes a new hero with the given name, maximum hit-points, intrinsic strength
+     * and an initial set of equipment items.
      *
      * @param name
-     *        the name of the hero
+     *        The hero’s name.
+     *
      * @param maxHitPoints
-     *        the maximum number of hit points
+     *        The maximum number of hit-points the hero can have.
+     *
      * @param strength
-     *        the hero's intrinsic strength (stored rounded to two decimal places)
+     *        The intrinsic strength of the hero. Must be strictly positive.
+     *
      * @param startItems
-     *        initialEquipment A list of items to assign to the hero’s anchors
+     *        Zero or more equipment items that will be assigned to this hero at creation.
      *
-     * @throws IllegalArgumentException
-     *         If any argument is invalid, or if items cannot be assigned due to anchor conflicts
+     * @effect  Calls the simpler constructor
+     *          Hero(String name, int maxHitPoints, double strength) to set the
+     *          basic fields (name, hit-points, intrinsic strength, protection and capacity).
+     *          | this(name, maxHitPoints, strength)
      *
-     * @post The hero's name is equal to the provided name.
-     *       | getName().equals(name)
-     * @post The hero's maximum hit points are set correctly.
-     *       | getMaxHitPoints() == maxHitPoints
-     * @post The hero's current hit points equal the maximum hit points.
-     *       | getHitPoints() == maxHitPoints
-     * @post The hero's intrinsic strength is correctly rounded.
-     *       | getIntrinsicStrength() == Math.round(strength * 100) / 100.0
-     * @post The hero is not in a fighting state.
-     *       | !isFighting()
-     * @post All equipment is assigned to appropriate anchors.
+     * @effect  Each equipment item in startItems is made the property of this hero.
+     *          Empty (null) elements are ignored.
+     *          | for each item in startItems:
+     *          |       if (item != null) then item.getOwner() == this
      */
-
     public Hero(String name, int maxHitPoints, double strength, Equipment... startItems) {
-        this(name, maxHitPoints, strength); // Roep de eenvoudige constructor aan
+        this(name, maxHitPoints, strength); // delegate to base constructor
 
         for (Equipment item : startItems) {
+            if (item != null) {
                 item.setOwner(this);
-
+            }
         }
     }
 
     /**********************************************************
-     *                          Name
+     * Name
      **********************************************************/
 
     /**
-     * Checks whether the given name is valid according to these specific rules:
-     *      non-null, non-empty, starts with an uppercase letter
-     *      and contains only letters, spaces, colons (each followed by a space),
-     *      and at maximum 2 apostrophes
-     * @param	name
-     * 			The name to be validated.
+     * Check whether the given name is a legal name for a hero.
      *
-     * @post	If the name is null, empty, or does not start with an uppercase letter,
-     * 			the result is false.
-     * 			If the name contains characters other than letters
-     * 		   	or the name isn't part of the allowed characters
-     * 			or more than two apostrophes, or if a colon is not followed by a space,
-     * 			the result is false.
-     * 			In all other cases, the result is true.
-     * 			| if (name == null || name.isEmpty() || !Character.isUpperCase(name.charAt(0)))
-     * 			|		then result == false
-     * 			| else if (name contains invalid characters
-     * 			|			or more than two apostrophes
-     * 			|			or ':' not followed by ' ')
-     * 			|		then result == false
-     * 			| else result == true
+     * @param  	name
+     *			The name to be checked
      *
-     *
-     * @effect	The method does not alter any state or have side effects. It just checks
-     *          if the name is valid and gives back true or false.
-     * 			| result == true <==> name is valid according to the defined format
+     * @return	True if the given string is effective, not
+     * 			empty, the name start with a capital letter,
+     * 		    has at most 2 apostrophes, consisting only of
+     * 		    letters, spaces apostrophes and colons, and
+     * 		    each colon must be followed by a space ; false otherwise.
+     *          | result ==
+     *          |     (name != null)
+     *          |     && !name.isEmpty()
+     *          |     && Character.isUpperCase(name.charAt(0))
+     *          |     && name.chars().filter(c -> c == '\'').count() <= 2
+     *          |     && name.matches("[A-Za-z ':]+")
+     *          |     && (for all i in [0..name.length()-1]:
+     *          |         if (name.charAt(i) == ':') then (i+1 < name.length() && name.charAt(i+1) == ' '))
      */
     @Override
     public boolean canHaveAsName(String name) {
-        char[] allowedChars = {' ', ':', '\''};
+        if (name == null || name.isEmpty()) return false;
 
-        if (name == null || name.isEmpty() || !Character.isUpperCase(name.charAt(0))) {
-            return false;
-        }
+        // Must start with uppercase
+        if (!Character.isUpperCase(name.charAt(0))) return false;
 
-        int apostrophes = 0;
+        // At most two apostrophes
+        long apostropheCount = name.chars().filter(c -> c == '\'').count();
+        if (apostropheCount > 2) return false;
 
+        // Must match allowed pattern
+        if (!name.matches("[A-Za-z' :]+")) return false;
+
+        // Each ':' must be followed by a space
         for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-
-            if (Character.isLetter(c)) {
-                continue;
-            }
-
-            boolean allowed = false;
-            for (char ac : allowedChars) {
-                if (c == ac) {
-                    allowed = true;
-                    break;
-                }
-            }
-
-            if (!allowed) {
-                return false;
-            }
-
-            if (c == '\'') {
-                apostrophes++;
-                if (apostrophes > 2) {
-                    return false;
-                }
-            }
-
-            if (c == ':') {
+            if (name.charAt(i) == ':') {
                 if (i + 1 >= name.length() || name.charAt(i + 1) != ' ') {
                     return false;
                 }
@@ -215,21 +182,22 @@ public class Hero extends Entity {
     /**
      * Returns the protection factor of the entity.
      */
-    @Raw
-    @Basic
+    @Raw @Basic
     public int getProtection() {
         return protection;
     }
 
     /**
-     * Sets the raw protection value of this entity.
+     * Sets the raw protection value of this hero.
      *
-     * @param protection
-     *        The new base protection value.
+     * @param   protection
+     *          The new base protection value.
      *
-     * @pre isValidProtection()
+     * @pre     The given protection must be legal.
+     *          | isValidProtection()
      *
-     * @post geProtection() == protection
+     * @post    The given protection is registered as the protection of this hero.
+     *          | new.getProtection() == protection
      */
     public void setProtection(int protection) {
         this.protection = protection;
@@ -242,54 +210,59 @@ public class Hero extends Entity {
      *          The protection factor to check.
      *
      * @return  True if and only if the protection factor is strictly positive.
-     *          | result == (protection >= 0)
+     *          | result == (protection > 0)
      */
     public static boolean isValidProtection(int protection) {
         return protection > 0;
     }
 
     /**
-     * Calculates the total protection value of this hero during combat.
-     * The total protection is the hero’s base protection value + the protection provided by the equipped armor (if armor != null)
+     * Returns the total protection value of this hero during combat.
      *
-     * @return The total protection value of this hero.
+     * The total protection is the sum of the hero’s base protection
+     * and the protection provided by the equipped armor, if any.
      *
-     * @post The result is equal to getProtection() + armor.getCurrentProtection()
+     * @return The hero’s base protection plus armor protection if armor is equipped;
+     *         otherwise just the base protection.
+     *         | if getArmor() == null
+     *         |    then result == getProtection()
+     *         |    else result == getProtection() + getArmor().getCurrentProtection()
      */
-
     @Basic
     public int getRealProtection() {
-        int base = getProtection(); // = standaardbescherming (bv. 10)
+        int base = getProtection(); // = standard protection
         int armorBonus = 0;
         if (armor != null) {
-            armorBonus = armor.getCurrentProtection(); // bv. 20
+            armorBonus = armor.getCurrentProtection();
         }
         return base + armorBonus;
     }
 
 
     /**********************************************************
-     *                      Strenght
+     * Strength
      **********************************************************/
 
     /**
-     * The intrinsic strength of the hero.
-     * Must be a positive decimal number, typically with 2 digits after the comma.
+     * The intrinsic strength of the hero, stored as a decimal number
+     * rounded to two decimal places.
      */
     private double intrinsicStrength;
 
 
-    /**
+     /**
      * Multiply the strength by a given integer.
      *
-     * @param factor
-     *        A non-zero integer.
+     * @param   factor
+     *          A non-zero integer.
      *
-     * @post The intrinsic strength is updated to its previous value multiplied by the factor,
-     *       rounded to two decimal places.
-     *       | getIntrinsicStrength() == Math.round(old(getIntrinsicStrength()) * factor * 100) / 100.0
+     * @post    The intrinsic strength is updated to its previous value multiplied by the factor,
+     *          rounded to two decimal places.
+     *          | new.getIntrinsicStrength() == Math.round(old(getIntrinsicStrength()) * factor * 100) / 100.0
      *
-     * @throws IllegalArgumentException if factor is zero.
+     * @throws  IllegalArgumentException
+     *          If the given factor is not 0.
+     *          | factor == 0
      */
     public void multiplyStrength(int factor) {
         if (factor == 0)
@@ -303,14 +276,16 @@ public class Hero extends Entity {
     /**
      * Divide the strength by a given integer.
      *
-     * @param divisor
-     *        A non-zero integer.
+     * @param   divisor
+     *          A non-zero integer.
      *
-     * @post The intrinsic strength is updated to its previous value divided by the divisor,
-     *       rounded to two decimal places.
-     *     | getIntrinsicStrength() == Math.round(old(getIntrinsicStrength()) / divisor * 100) / 100.0
+     * @post    The intrinsic strength is updated to its previous value divided by the divisor,
+     *          rounded to two decimal places.
+     *          | new.getIntrinsicStrength() == Math.round(old(getIntrinsicStrength()) / divisor * 100) / 100.0
      *
-     * @throws IllegalArgumentException if divisor is zero.
+     * @throws  IllegalArgumentException
+     *          If the given factor is not 0.
+     *          | factor == 0
      */
     public void divideStrength(int divisor) {
         if (divisor == 0)
@@ -324,15 +299,14 @@ public class Hero extends Entity {
     /**
      * Calculates the current attack power of this hero.
      * The attack power is the sum of the hero’s intrinsic strength,
-     * ,the damage of the weapon in the left hand (if any)
-     * ,the damage of the weapon in the right hand (if any)
+     * the damage of the weapon in the left hand (if any),
+     * and the damage of the weapon in the right hand (if any).
      *
-     * @return The total attack power as a double.
-     *
-     * @post The result is equal to the hero's intrinsic strength plus the damage of both equipped weapons.
-     *     | result == intrinsicStrength
-     *     |          + (leftHandWeapon.getDamage())
-     *     |          + (rightHandWeapon.getDamage())
+     * @return  The total attack power as a double.
+     *          | let weaponDamage = 0;
+     *          | if (getLeftHandWeapon() != null) then weaponDamage += getLeftHandWeapon().getDamage()
+     *          | if (getRightHandWeapon() != null) then weaponDamage += getRightHandWeapon().getDamage()
+     *          | result == getIntrinsicStrength() + weaponDamage
      */
     @Basic
     public double getAttackPower() {
@@ -344,6 +318,7 @@ public class Hero extends Entity {
         return intrinsicStrength + weaponDamage;
     }
 
+
     /**
      * Return the intrinsic strength of this hero
      */
@@ -353,7 +328,7 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                      Armor
+     * Armor
      **********************************************************/
 
     /**
@@ -370,7 +345,11 @@ public class Hero extends Entity {
     }
 
     /**
-     * Returns how many Armor items this hero is currently carrying.
+     * Returns the number of armor items this hero is currently carrying.
+     *
+     * @return  The number of equipment items currently carried by the hero
+     *          that are instances of Armor.
+     *          | result == the number of anchor points where getItem() instanceof Armor
      */
     @Basic
     public int getNbArmorsCarried() {
@@ -384,33 +363,50 @@ public class Hero extends Entity {
         return count;
     }
 
+    /**
+     * Set the equipped armor to the given armor.
+     *
+     * @param   armor
+     *          The armor to equip
+     *
+     * @post    The equipped armor is set to the given armor.
+     *          | new.getArmor() = armor
+     *
+     * @note    This method does not handle the logic of equipping the armor itself;  
+     *          it only updates the reference to the currently worn armor.
+     */
     public void equipArmor(Armor armor) {
         this.armor = armor;
     }
 
 
     /**********************************************************
-     *                      Hit
+     * Hit
      **********************************************************/
 
     /**
-     * Attempt to hit the given monster.
-     * A random number between 0 and 100 is rolled. If the result is greater than or
-     * equal to the monster's real protection, the hit succeeds and damage is applied.
-     * The damage is calculated based on the hero’s intrinsic strength and equipped weapons.
-     * If the damage kills the monster, the hero heals a random percentage of their missing
-     * hit points using healAfterKill().
+     * Attacks the given monster. If the random attack roll exceeds or equals
+     * the monster's current protection value, damage is dealt.
+     * 
+     * If the monster is defeated (i.e. its hit points drop to 0 or below),
+     * the hero is healed and any treasure the monster was carrying is collected.
      *
-     * @param monster
-     *        The monster to attack
-     * @throws NullPointerException
-     *         if monster is null
+     * @param    monster
+     *           The monster to be attacked.
      *
-     * @effect If the hit is successful and fatal, the hero heals.
-     *         | healAfterKill()
-     * @effect The monster's hit points are reduced.
-     * @effect The hero's fighting state is toggled on and off around the attack.
+     * @effect    If the random attack roll exceeds or equals the monster's
+     *            current protection value, damage is dealt.
+     *            | if (roll >= monster.getCurrentProtection() then monster.removeHitPoints(calaculateDamage)
      *
+     * @effect    If the damage exceeds the hitpoints of the monster the hero is healed.
+     *            | if (damage >= old.monster.getHitPoints) then healAfterKill()
+     *
+     * @effect    If the  damage exceeds the hitpoints of the monster the hero collects the treasure from the monster.
+     *            | if (damage >= old.monster.getHitPoints) then collectTreasureFrom(monster)
+     *
+     * @throws   NullPointerException
+     *           If the given monster is null.
+     *           | monster == null
      */
     public void hit(Monster monster) {
         if (monster == null) {
@@ -431,7 +427,6 @@ public class Hero extends Entity {
                 collectTreasureFrom(monster);
             }
         }
-
     }
 
     /**
