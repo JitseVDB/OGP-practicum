@@ -449,8 +449,8 @@ public class Monster extends Entity {
         List<Equipment> shinyLoot = new ArrayList<>();
         List<Equipment> nonShinyLoot = new ArrayList<>();
 
-        // Step 1: Collect all items and remove them from opponent
-        for (int i = 1; i < opponent.getNbAnchorPoints(); i++) {
+        // Step 1: Collect all items and sort between shiny and nonShiny
+        for (int i = 1; i <= opponent.getNbAnchorPoints(); i++) {
             AnchorPoint ap = opponent.getAnchorPointAt(i);
             Equipment item = ap.getItem();
             if (item != null) {
@@ -465,24 +465,30 @@ public class Monster extends Entity {
 
         // Step 2: Try to loot shiny weapons/armors
         for (Equipment item : shinyLoot) {
-            if (hasFreeAnchorPoint()) {
-                item.setOwner(this);
-            } else if ((item instanceof Weapon || item instanceof Armor)){
+            try {
+                item.setOwner(this); // stel eigenaar in en checkt ook of dit mag/kan
+            } catch (IllegalArgumentException e) {
                 // Destroy non-looted weapons and armors only
-                item.destroy();
+                if ((item instanceof Weapon || item instanceof Armor)) {
+                    // Destroy non-looted weapons and armors only
+                    item.destroy();
+                }
+                // Backpacks and purses not looted remain on the ground, do nothing
             }
-            // Backpacks and purses not looted remain on the ground, do nothing
         }
 
         // Step 3: Try to loot non-shiny weapons/armors or backpacks and purses
         for (Equipment item : nonShinyLoot) {
-            if (hasFreeAnchorPoint()) {
-                item.setOwner(this);
-            } else if ((item instanceof Weapon || item instanceof Armor)){
+            try {
+                item.setOwner(this); // stel eigenaar in en checkt ook of dit mag/kan
+            } catch (IllegalArgumentException e) {
                 // Destroy non-looted weapons and armors only
-                item.destroy();
+                if ((item instanceof Weapon || item instanceof Armor)) {
+                    // Destroy non-looted weapons and armors only
+                    item.destroy();
+                }
+                // Backpacks and purses not looted remain on the ground, do nothing
             }
-            // Backpacks and purses not looted remain on the ground, do nothing
         }
     }
 }
