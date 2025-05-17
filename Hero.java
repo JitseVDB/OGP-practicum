@@ -676,16 +676,12 @@ public class Hero extends Entity {
 
         String name = anchorpoint.getName();
 
-        if (name.equals("leftHand") || name.equals("rightHand")) {
-            return item instanceof Weapon;
-        } else if (name.equals("back")) {
-            return true; // alle types mogen op de rug
-        } else if (name.equals("body")) {
+        if (name.equals("body")) {
             return item instanceof Armor;
         } else if (name.equals("belt")) {
             return item instanceof Purse;
         }
-        return false;
+        return true;
     }
 
     /**
