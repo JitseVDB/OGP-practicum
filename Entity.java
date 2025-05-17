@@ -387,7 +387,7 @@ public abstract class Entity {
             if (item instanceof Backpack)
                 totalWeight += ((Backpack) item).getTotalWeight();
 
-            if (item instanceof Purse)
+            else if (item instanceof Purse)
                 totalWeight += ((Purse) item).getTotalWeight();
 
             else totalWeight += item.getWeight();
