@@ -426,6 +426,7 @@ public class Hero extends Entity {
 
             if (damage >= beforeHP) {
                 healAfterKill();
+                collectTreasureFrom(monster);
             }
         }
 
@@ -785,27 +786,5 @@ public class Hero extends Entity {
 
         }
 
-    }
-
-    /**********************************************************
-     *                   Receiving Damage
-     **********************************************************/
-
-
-    /**
-     * Player gets damaged and loses his hitpoints
-     * if the given damage is greater than the hero's protection.
-     * @param damage
-     *        The amount of damage to apply.
-     *
-     * @post The hero's hit points are reduced by (damage - getRealProtection())
-     *
-     * @effect Calls removeHitPoints(int) with the adjusted damage value.
-     */
-    @Override
-    public void receiveDamage(int damage) {
-        int actual = damage - getProtection();
-        if (actual < 0) actual = 0;
-        super.removeHitPoints(actual);
     }
 }

@@ -237,22 +237,6 @@ public class Monster extends Entity {
         return damage > 0 && damage <= maximumDamage && damage % 7 == 0;
     }
 
-    /**
-     * Applies damage to this monster.
-     * The effective damage is reduced by the monster's protection factor.
-     *
-     * @param   damage
-     *          The raw damage value to apply (must be non-negative).
-     */
-    @Override
-    public void receiveDamage(int damage) {
-        if (damage < 0) return;
-
-        int effectiveDamage = Math.max(0, damage - getCurrentProtection());
-        int newHitPoints = Math.max(0, getHitPoints() - effectiveDamage);
-
-        removeHitPoints(getHitPoints() - newHitPoints);
-    }
 
     /**********************************************************
      * Protection

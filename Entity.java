@@ -79,7 +79,7 @@ public abstract class Entity {
         // Prime-correction at initialization, because not fighting
         if (!isPrime(getHitPoints())) {
             int p = getClosestLowerPrime(getHitPoints());
-            removeHitPoints(getHitPoints() - p);
+            this.hitPoints = p;
         }
 
 
@@ -223,15 +223,6 @@ public abstract class Entity {
         return false;
     }
 
-    /**
-     * Reduces the hitpoints of an entity based on the amount of damage and after specific calculations
-     *
-     * @param damage
-     *        The amount of damage to apply.
-     *
-     * @post The hitpoints are reduced after calculations
-     */
-    public abstract void receiveDamage(int damage);
 
     /**
      * Check whether the entity is still alive.
