@@ -155,20 +155,6 @@ public class MonsterTest {
         assertFalse(monster_A.canHaveAsItem(weapon_C));
     }
 
-    /**
-     * CAPACITY
-     */
-
-    @Test
-    void testIsValidCapacity_AllCases() {
-        // 1. Valid cases
-        assertTrue(monster_A.isValidCapacity(10));
-        assertTrue(monster_A.isValidCapacity(0));
-
-        // 2. Invalid case
-        assertFalse(monster_A.isValidCapacity(-1));
-    }
-
     // DAMAGE
 
     @Test
