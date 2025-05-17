@@ -51,7 +51,10 @@ public class Hero extends Entity {
      *        the hero's intrinsic strength (stored rounded to two decimal places)
      *
      * @throws IllegalArgumentException
-     *         If the name is invalid, or if maxHitPoints < 0, or if strength ≤ 0.
+     *          if strength ≤ 0.
+     *
+     * @pre     The maximum amount of hitpoints must be positive
+     *          | maxHitPoints >= 0
      *
      * @post The hero's name is equal to the provided name.
      *      |getName().equals(name)
@@ -76,8 +79,6 @@ public class Hero extends Entity {
         super(name, maxHitPoints);
         if (strength <= 0)
             throw new IllegalArgumentException("Strength must be positive");
-        if (maxHitPoints <= 0)
-            throw new IllegalArgumentException("Maximum hitpoints must be positive");
         this.isFighting = false;
         this.intrinsicStrength = Math.round(strength * 100) / 100.0;
         this.protection = 10;
@@ -426,6 +427,7 @@ public class Hero extends Entity {
 
             if (damage >= beforeHP) {
                 healAfterKill();
+                collectTreasureFrom(monster);
             }
         }
 
@@ -493,15 +495,9 @@ public class Hero extends Entity {
      **********************************************************/
 
     /**
-     * Attempts to collect equipment items from the given monster after it has been defeated.
      *
-     * @param monster
-     *        The monster whose belongings should be collected
+     * aanvullen
      *
-     * @post If monster == null, nothing happens.
-     * @post For each eligible item in monster.getAnchors():
-     *       if there is enough capacity and a valid empty anchor point,
-     *       the item is transferred and linked to this hero.
      */
     public void collectTreasureFrom(Monster monster) {
         if (monster == null) return;
@@ -509,24 +505,22 @@ public class Hero extends Entity {
         Map<String, Equipment> loot = monster.getAnchors();
 
         for (Equipment item : loot.values()) {
-            if (item == null) continue;
-            if (!canCarry(item)) continue;
-
-            // Zoek een geldig en leeg anchorpoint voor het item
-            for (AnchorPoint ap : anchorPoints) {
-                if (ap.isEmpty() && canHaveAsItemAt(item, ap)) {
-                    ap.setItem(item);
-                    if (item.getOwner() == null) {
-                        item.setOwner(this);
+            try {
+                item.setOwner(this); // stel eigenaar in en checkt ook of dit mag/kan
+            } catch (IllegalArgumentException e) {
+                // Dit item past niet in de hero, probeer in backpack te steken
+                for (Equipment heroItem : getAllItems()) {
+                    if (heroItem instanceof Backpack) {
+                        try {
+                            item.setBackpack((Backpack) heroItem); // steek item in backpack als kan/mag
+                        } catch (IllegalArgumentException a) {
+                            // Dit item past niet in de hero, probeer de volgende
+                        }
                     }
-                    // bidirectionele link
-                    this.capacity += item.getWeight();
-                    break; // item werd geplaatst, ga naar het volgende item
                 }
             }
         }
     }
-
 
     /**********************************************************
      *                   Weapon Equipment
@@ -793,27 +787,5 @@ public class Hero extends Entity {
 
         }
 
-    }
-
-    /**********************************************************
-     *                   Receiving Damage
-     **********************************************************/
-
-
-    /**
-     * Player gets damaged and loses his hitpoints
-     * if the given damage is greater than the hero's protection.
-     * @param damage
-     *        The amount of damage to apply.
-     *
-     * @post The hero's hit points are reduced by (damage - getRealProtection())
-     *
-     * @effect Calls removeHitPoints(int) with the adjusted damage value.
-     */
-    @Override
-    public void receiveDamage(int damage) {
-        int actual = damage - getProtection();
-        if (actual < 0) actual = 0;
-        super.removeHitPoints(actual);
     }
 }

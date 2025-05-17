@@ -1,4 +1,5 @@
 import be.kuleuven.cs.som.annotate.Basic;
+import be.kuleuven.cs.som.annotate.Immutable;
 import be.kuleuven.cs.som.annotate.Model;
 import be.kuleuven.cs.som.annotate.Raw;
 
@@ -307,7 +308,15 @@ public class Backpack extends StorageItem {
 
             // Iterate over each individual item in the list associated with the current identification number
             for (Equipment item : itemsWithSameID) {
-                totalWeight += item.getWeight();
+                if (item instanceof Backpack) {
+                    totalWeight += ((Backpack) item).getTotalWeight();
+                }
+                else if (item instanceof Purse) {
+                    totalWeight += ((Purse) item).getTotalWeight();
+                }
+                else {
+                    totalWeight += item.getWeight();
+                }
             }
         }
         return totalWeight;
@@ -320,7 +329,7 @@ public class Backpack extends StorageItem {
     /**
      * Returns the maximum value of a piece of equipment.
      */
-    @Override @Basic
+    @Override @Basic @Immutable
     public int getMaximumValue() {
         return 500;
     }

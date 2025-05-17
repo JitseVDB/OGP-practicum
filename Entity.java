@@ -79,10 +79,8 @@ public abstract class Entity {
         // Prime-correction at initialization, because not fighting
         if (!isPrime(getHitPoints())) {
             int p = getClosestLowerPrime(getHitPoints());
-            removeHitPoints(getHitPoints() - p);
+            this.hitPoints = p;
         }
-
-
 
         // Initialize AnchorPoints
         initializeAnchorPoints();
@@ -223,15 +221,6 @@ public abstract class Entity {
         return false;
     }
 
-    /**
-     * Reduces the hitpoints of an entity based on the amount of damage and after specific calculations
-     *
-     * @param damage
-     *        The amount of damage to apply.
-     *
-     * @post The hitpoints are reduced after calculations
-     */
-    public abstract void receiveDamage(int damage);
 
     /**
      * Check whether the entity is still alive.
@@ -380,14 +369,14 @@ public abstract class Entity {
     public int getTotalWeight() {
         int totalWeight = 0;
 
-        for (int i = 1; i < getNbAnchorPoints(); i++) {
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
             Equipment item = getAnchorPointAt(i).getItem();
             if (item == null) continue;
 
             if (item instanceof Backpack)
                 totalWeight += ((Backpack) item).getTotalWeight();
 
-            if (item instanceof Purse)
+            else if (item instanceof Purse)
                 totalWeight += ((Purse) item).getTotalWeight();
 
             else totalWeight += item.getWeight();
@@ -539,7 +528,7 @@ public abstract class Entity {
     public List<Equipment> getAllItems() {
         List<Equipment> equipmentList = new ArrayList<>();
 
-        for (int i = 1; i < getNbAnchorPoints(); i++) {
+        for (int i = 1; i <= getNbAnchorPoints(); i++) {
             Equipment item = getAnchorPointAt(i).getItem();
             if (item != null) {
                 equipmentList.add(item);

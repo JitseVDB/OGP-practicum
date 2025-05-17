@@ -102,6 +102,7 @@ public abstract class Equipment {
      * @return  True if and only if the given weight is positive.
      *          | result == (weight >= 0)
      */
+    @Raw
     public static boolean canHaveAsWeight(int weight) {
         return (weight >= 0);
     }
@@ -179,6 +180,7 @@ public abstract class Equipment {
      *          false otherwise.
      *          | result == (identification >= 0) && (isUniqueForType(instance of this ,getIdentification())
      */
+    @Raw
     public boolean canHaveAsIdentification(Class<?> equipmentType, long identification) {
         return (identification >= 0) && (isUniqueForType(equipmentType, identification));
     }

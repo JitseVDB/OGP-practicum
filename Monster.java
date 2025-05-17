@@ -173,7 +173,7 @@ public class Monster extends Entity {
      * @return  returns true always, because every item can be legally added to an anchorpoint in monster
      *
      */
-    @Override
+    @Override @Raw
     public boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorPoint ) {
         return true;
     }
@@ -232,26 +232,11 @@ public class Monster extends Entity {
      *          and is a multiple of 7.
      *          | result == (damage > 0 && damage <= maximumDamage && damage % 7 == 0)
      */
+    @Raw
     public boolean isValidDamage(int damage) {
         return damage > 0 && damage <= maximumDamage && damage % 7 == 0;
     }
 
-    /**
-     * Applies damage to this monster.
-     * The effective damage is reduced by the monster's protection factor.
-     *
-     * @param   damage
-     *          The raw damage value to apply (must be non-negative).
-     */
-    @Override
-    public void receiveDamage(int damage) {
-        if (damage < 0) return;
-
-        int effectiveDamage = Math.max(0, damage - getCurrentProtection());
-        int newHitPoints = Math.max(0, getHitPoints() - effectiveDamage);
-
-        removeHitPoints(getHitPoints() - newHitPoints);
-    }
 
     /**********************************************************
      * Protection
@@ -284,6 +269,7 @@ public class Monster extends Entity {
      * @return  True if and only if the given maximal protection is positive and does not exceed 100.
      *          | result == (value > 0 && value <= 100)
      */
+    @Raw
     public boolean isValidMaximalProtection(int maximalProtection) {
         return maximalProtection > 0 && maximalProtection <= 100;
     }
@@ -325,6 +311,7 @@ public class Monster extends Entity {
      * @return  True if and only if the given current protection is greater or equal to zero and does not exceed the maximal protection.
      *          | result == (value >= 0 && value <= maximalProtection)
      */
+    @Raw
     public boolean isValidCurrentProtection(int currentProtection) {
         return currentProtection >= 0 && currentProtection <= maximalProtection;
     }
@@ -341,6 +328,7 @@ public class Monster extends Entity {
     /**
      * Return the type of skin of this monster.
      */
+    @Basic @Immutable
     public SkinType getType() {
         return type;
     }
@@ -449,8 +437,8 @@ public class Monster extends Entity {
         List<Equipment> shinyLoot = new ArrayList<>();
         List<Equipment> nonShinyLoot = new ArrayList<>();
 
-        // Step 1: Collect all items and remove them from opponent
-        for (int i = 1; i < opponent.getNbAnchorPoints(); i++) {
+        // Step 1: Collect all items and sort between shiny and nonShiny
+        for (int i = 1; i <= opponent.getNbAnchorPoints(); i++) {
             AnchorPoint ap = opponent.getAnchorPointAt(i);
             Equipment item = ap.getItem();
             if (item != null) {
@@ -465,24 +453,30 @@ public class Monster extends Entity {
 
         // Step 2: Try to loot shiny weapons/armors
         for (Equipment item : shinyLoot) {
-            if (hasFreeAnchorPoint()) {
-                item.setOwner(this);
-            } else if ((item instanceof Weapon || item instanceof Armor)){
+            try {
+                item.setOwner(this); // stel eigenaar in en checkt ook of dit mag/kan
+            } catch (IllegalArgumentException e) {
                 // Destroy non-looted weapons and armors only
-                item.destroy();
+                if ((item instanceof Weapon || item instanceof Armor)) {
+                    // Destroy non-looted weapons and armors only
+                    item.destroy();
+                }
+                // Backpacks and purses not looted remain on the ground, do nothing
             }
-            // Backpacks and purses not looted remain on the ground, do nothing
         }
 
         // Step 3: Try to loot non-shiny weapons/armors or backpacks and purses
         for (Equipment item : nonShinyLoot) {
-            if (hasFreeAnchorPoint()) {
-                item.setOwner(this);
-            } else if ((item instanceof Weapon || item instanceof Armor)){
+            try {
+                item.setOwner(this); // stel eigenaar in en checkt ook of dit mag/kan
+            } catch (IllegalArgumentException e) {
                 // Destroy non-looted weapons and armors only
-                item.destroy();
+                if ((item instanceof Weapon || item instanceof Armor)) {
+                    // Destroy non-looted weapons and armors only
+                    item.destroy();
+                }
+                // Backpacks and purses not looted remain on the ground, do nothing
             }
-            // Backpacks and purses not looted remain on the ground, do nothing
         }
     }
 }
