@@ -173,7 +173,7 @@ public class Monster extends Entity {
      * @return  returns true always, because every item can be legally added to an anchorpoint in monster
      *
      */
-    @Override
+    @Override @Raw
     public boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorPoint ) {
         return true;
     }
@@ -232,6 +232,7 @@ public class Monster extends Entity {
      *          and is a multiple of 7.
      *          | result == (damage > 0 && damage <= maximumDamage && damage % 7 == 0)
      */
+    @Raw
     public boolean isValidDamage(int damage) {
         return damage > 0 && damage <= maximumDamage && damage % 7 == 0;
     }
@@ -284,6 +285,7 @@ public class Monster extends Entity {
      * @return  True if and only if the given maximal protection is positive and does not exceed 100.
      *          | result == (value > 0 && value <= 100)
      */
+    @Raw
     public boolean isValidMaximalProtection(int maximalProtection) {
         return maximalProtection > 0 && maximalProtection <= 100;
     }
@@ -325,6 +327,7 @@ public class Monster extends Entity {
      * @return  True if and only if the given current protection is greater or equal to zero and does not exceed the maximal protection.
      *          | result == (value >= 0 && value <= maximalProtection)
      */
+    @Raw
     public boolean isValidCurrentProtection(int currentProtection) {
         return currentProtection >= 0 && currentProtection <= maximalProtection;
     }
@@ -341,6 +344,7 @@ public class Monster extends Entity {
     /**
      * Return the type of skin of this monster.
      */
+    @Basic @Immutable
     public SkinType getType() {
         return type;
     }
