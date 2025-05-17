@@ -632,18 +632,20 @@ public class Hero extends Entity {
             AnchorPoint anchorpoint = getAnchorPointAt(i);
 
             if (anchorpoint.isEmpty()) {
-                if (anchorpoint.getName().equals("body") && item instanceof Armor) {
-                    equipArmor((Armor) item);
-                }
-                if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon) {
-                    equipLeftHand((Weapon) item);
-                }
-                if (anchorpoint.getName().equals("rightHand") && item instanceof Weapon) {
-                    equipRightHand((Weapon) item);
-                }
+                if (canHaveAsItemAt(item, anchorpoint)) {
+                    if (anchorpoint.getName().equals("body") && item instanceof Armor) {
+                        equipArmor((Armor) item);
+                    }
+                    if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon) {
+                        equipLeftHand((Weapon) item);
+                    }
+                    if (anchorpoint.getName().equals("rightHand") && item instanceof Weapon) {
+                        equipRightHand((Weapon) item);
+                    }
 
-                anchorpoint.setItem(item);
-                return;
+                    anchorpoint.setItem(item);
+                    return;
+                }
             }
         }
     }
