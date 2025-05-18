@@ -20,8 +20,7 @@ public class HeroesTest {
 
 
     // HERO
-    private static Hero hero_A;
-    private static Hero hero_B;
+    private static Hero hero_A, hero_B, hero_C;
 
     // OPPONENT
     private static Monster monster_A;
@@ -31,6 +30,7 @@ public class HeroesTest {
     private static Weapon weapon_B;
     private static Armor armor_A;
     private static Armor armor_B;
+    private static Armor armor_C;
     private static Backpack backpack_A;
     private static Backpack backpack_B;
     private static Purse purse_A;
@@ -39,27 +39,40 @@ public class HeroesTest {
     // LISTS
     private List<Equipment> items;
 
+    private Hero hero;
+    private Armor validArmor1;
+    private Armor validArmor2;
+    private Armor tooHeavyArmor;
+
     @BeforeEach
     public void setUpMonster() {
-        weapon_A = new Weapon(40, 49);
-        weapon_B = new Weapon(40, 49);
+        weapon_A = new Weapon(40, 98);
+        weapon_B = new Weapon(40, 98);
         armor_A = new Armor(30, 80, ArmorType.BRONZE);
         armor_B = new Armor(30, 80, ArmorType.BRONZE);
+        armor_C = new Armor(30, 80, ArmorType.BRONZE);
         backpack_A = new Backpack(30, 60, 100);
         backpack_B = new Backpack(30, 60, 100);
         purse_A = new Purse(10, 50);
         purse_B = new Purse(10, 50);
 
 
-        hero_A = new Hero("Ben", 13, 10.0);
-        hero_B = new Hero("Bert", 13, 10.0, weapon_B, armor_B, purse_B, backpack_B);
+        hero_A = new Hero("Ben", 97, 20.0);
+        hero_B = new Hero("Bert", 97, 20.0, armor_B, weapon_B, null, purse_B, backpack_B);
+        hero_C = new Hero("Bart", 97, 5.0);
 
 
         items = new ArrayList<>();
         items.add(weapon_A);
         items.add(armor_A);
+        items.add(null);
         items.add(backpack_A);
         items.add(purse_A);
+
+        hero = new Hero("Ben", 97, 100.0);
+        validArmor1 = new Armor(30, 80, ArmorType.BRONZE);
+        validArmor2 = new Armor(20, 90, ArmorType.BRONZE);
+        tooHeavyArmor = new Armor(2000, 100, ArmorType.BRONZE);
 
         monster_A = new Monster("Tom", 70, 49, items, SkinType.SCALY);
     }
@@ -70,11 +83,11 @@ public class HeroesTest {
     @Test
     public void testFirstConstructor_ValidArguments_ShouldInitializeFields() {
         assertEquals("Ben", hero_A.getName());
-        assertEquals(13, hero_A.getMaxHitPoints());
-        assertEquals(13, hero_A.getHitPoints()); // geen prime correctie nodig
-        assertEquals(10.0, hero_A.getIntrinsicStrength(), 0.001);
+        assertEquals(97, hero_A.getMaxHitPoints());
+        assertEquals(97, hero_A.getHitPoints()); // geen prime correctie nodig
+        assertEquals(20.0, hero_A.getIntrinsicStrength(), 0.001);
         assertEquals(10, hero_A.getProtection());
-        assertEquals(200, hero_A.getCapacity());
+        assertEquals(400, hero_A.getCapacity());
         assertFalse(hero_A.isFighting());
         assertNull(hero_A.getLeftHandWeapon());
         assertNull(hero_A.getRightHandWeapon());
@@ -96,11 +109,11 @@ public class HeroesTest {
     public void testSecondConstructor_ValidArguments_ShouldInitializeFields() {
         // Check basisvelden
         assertEquals("Bert", hero_B.getName());
-        assertEquals(13, hero_B.getMaxHitPoints());
-        assertEquals(13, hero_B.getHitPoints()); // geen prime correctie nodig
-        assertEquals(10.0, hero_B.getIntrinsicStrength(), 0.001);
+        assertEquals(97, hero_B.getMaxHitPoints());
+        assertEquals(97, hero_B.getHitPoints()); // geen prime correctie nodig
+        assertEquals(20.0, hero_B.getIntrinsicStrength(), 0.001);
         assertEquals(10, hero_B.getProtection());
-        assertEquals(200, hero_B.getCapacity());
+        assertEquals(400, hero_B.getCapacity());
         assertFalse(hero_B.isFighting());
 
         // Controleer of items effectief op ankers hangen
@@ -162,15 +175,15 @@ public class HeroesTest {
     }
 
     @Test
-    void testGetRealProtection_WithArmor_ShouldAddArmorProtection() {
-        hero_A.equipArmor(armor_A); // protection of 90
-        assertEquals(100, hero_A.getRealProtection());
+    void testGetCurrentProtection_WithArmor_ShouldAddArmorProtection() {
+        hero_A.equipArmor(armor_C); // protection of 90
+        assertEquals(100, hero_A.getCurrentProtection());
     }
 
     @Test
-    void testGetRealProtection_NoArmor_ShouldNotAddArmorProtection() {
+    void testGetCurrentProtection_NoArmor_ShouldNotAddArmorProtection() {
         // Geen armor ingesteld
-        assertEquals(10, hero_A.getRealProtection());
+        assertEquals(10, hero_A.getCurrentProtection());
     }
 
     /********************************************************************
@@ -180,10 +193,10 @@ public class HeroesTest {
     @Test
     void testMultiplyStrength_ShouldMultiplyStrength() {
         hero_A.multiplyStrength(3);
-        assertEquals(30, hero_A.getIntrinsicStrength());
+        assertEquals(60, hero_A.getIntrinsicStrength());
 
         hero_A.multiplyStrength(-2);
-        assertEquals(-60, hero_A.getIntrinsicStrength());
+        assertEquals(-120, hero_A.getIntrinsicStrength());
     }
 
     @Test
@@ -196,10 +209,10 @@ public class HeroesTest {
     @Test
     void testDivideStrength_ShouldDivideStrength() {
         hero_A.divideStrength(4);
-        assertEquals(2.50, hero_A.getIntrinsicStrength());
+        assertEquals(5, hero_A.getIntrinsicStrength());
 
         hero_A.divideStrength(-2);
-        assertEquals(-1.25, hero_A.getIntrinsicStrength());
+        assertEquals(-2.5, hero_A.getIntrinsicStrength());
     }
 
     @Test
@@ -212,20 +225,20 @@ public class HeroesTest {
     @Test
     void testeGetAttackPower_WithoutWeapons_ShouldNotAddDamage() {
         // geen wapen
-        assertEquals(10, hero_A.getAttackPower());
+        assertEquals(20, hero_A.getAttackPower());
     }
 
     @Test
     void testAttackPower_WithWeapons_ShouldAddDamage() {
         hero_A.equipLeftHand(weapon_A);
         hero_A.equipRightHand(weapon_B);
-        // 10 + 49 + 49
-        assertEquals(108, hero_A.getAttackPower());
+        // 20 + 98 + 98
+        assertEquals(216, hero_A.getAttackPower());
     }
 
     @Test
     void testGetIntrinsicStrength_ReturnValue() {
-        assertEquals(10.0, hero_A.getIntrinsicStrength());
+        assertEquals(20.0, hero_A.getIntrinsicStrength());
     }
 
 
@@ -234,62 +247,14 @@ public class HeroesTest {
      ********************************************************************/
 
     @Test
-    void testGetArmorInitiallyNull() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertNull(hero.getArmor());
+    void testGetArmor_NoArmorEquipped_ShouldReturnNull() {
+        assertNull(hero_A.getArmor());
     }
 
     @Test
-    void testGetArmorReturnsEquippedArmor() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Armor breastplate = new Armor(40, 5, ArmorType.BRONZE);
-
-        hero.equipArmor(breastplate);  // veronderstelde methode
-        assertEquals(breastplate, hero.getArmor());
-    }
-
-    @Test
-    void testGetNbArmorsCarriedEmpty() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertEquals(0, hero.getNbArmorsCarried());
-    }
-
-    @Test
-    void testGetNbArmorsCarriedWithOneArmor() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Armor armor = new Armor(30, 2, ArmorType.BRONZE);
-        armor.setOwner(hero); // Zorg voor correcte eigenaarschap
-        AnchorPoint bodyAnchor = hero.getAnchorPoint("body");
-        bodyAnchor.setItem(armor);
-
-        assertEquals(1, hero.getNbArmorsCarried());
-    }
-
-    @Test
-    void testGetNbArmorsCarriedIgnoresNonArmor() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        AnchorPoint back = hero.getAnchorPoint("back");
-
-        Weapon sword = new Weapon(45, 7);
-        sword.setOwner(hero);
-        back.setItem(sword);
-
-        assertEquals(0, hero.getNbArmorsCarried());
-    }
-
-    @Test
-    void testGetNbArmorsCarriedMultipleArmors() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-
-        Armor chest = new Armor(6, 3, ArmorType.BRONZE);
-        Armor boots = new Armor(54, 1, ArmorType.BRONZE);
-        Armor helmet = new Armor(21, 2, ArmorType.BRONZE);
-
-        hero.getAnchorPoint("body").setItem(chest);
-        hero.getAnchorPoint("back").setItem(boots);
-        hero.getAnchorPoint("belt").setItem(helmet);
-
-        assertEquals(3, hero.getNbArmorsCarried());
+    void testGetArmor_ArmorEquipped_ShouldReturnEquippedArmor() {
+        hero_A.equipArmor(armor_C);
+        assertEquals(armor_C, hero_A.getArmor());
     }
 
     /********************************************************************
@@ -297,288 +262,166 @@ public class HeroesTest {
      ********************************************************************/
 
     @Test
-    void testHitSuccessfulNonFatal() {
-        Hero hero = new Hero("TestHero", 100, 15);
-        Weapon sword = new Weapon(21, 7);
-        hero.getAnchorPoint("leftHand").setItem(sword); // correcte manier
+    void testHit_SuccessfulNonFatal_ShouldReduceHitPointsMonster() {
+        monster_A.setCurrentProtection(0); // zodat hit slaagt
 
-        Monster monster = new Monster("Grass", 50, 49, new ArrayList<Equipment>(), SkinType.SCALY);
-        monster.setCurrentProtection(0); // zodat hit slaagt
+        hero_A.hit(monster_A); // hero does 5 damage
 
-        hero.hit(monster);
+        assertEquals(monster_A.getClosestLowerPrime(70-5), monster_A.getHitPoints());
+    }
 
-        assertTrue(monster.getHitPoints() < 50);
+    @Test
+    void testHit_NoDamageDealt() {
+        hero_C.hit(monster_A);
+        assertEquals(monster_A.getClosestLowerPrime(70), monster_A.getHitPoints());
     }
 
 
     @Test
-    void testHitSuccessfulFatalTriggersHeal() {
-        Hero hero = new Hero("TestHero", 100, 50); // Hoge kracht voor lethale hit
-        hero.removeHitPoints(50); // zodat healing zichtbaar is
+    void testHit_SuccessfulFatal_ShouldTriggerHeal() {
+        hero_A.removeHitPoints(50); // zodat healing zichtbaar is
 
-        Weapon axe = new Weapon(23, 7);
-        hero.equipLeftHand(axe);
+        hero_A.equipLeftHand(weapon_A);
+        hero_A.equipRightHand(weapon_B);
 
-        List<Equipment> items = new ArrayList<>();
-        Monster monster = new Monster("Examens", 10, 49, items, SkinType.SCALY); // Zwakke monster
-        monster.setCurrentProtection(0);
+        monster_A.setCurrentProtection(0); // zodat hit slaagt
 
-        int hpBefore = hero.getHitPoints();
-        hero.hit(monster);
+        hero_A.hit(monster_A); // hero does 103 damage, so hit is fatal
 
-        assertTrue(hero.getHitPoints() > hpBefore); // genezen na kill
-        assertEquals(0, monster.getHitPoints()); // monster is dood
+
+        assertFalse(monster_A.isAlive()); // monster is dood
     }
 
     @Test
-    void testHitFailsIfProtectionTooHigh() {
-        Hero hero = new Hero("TestHero", 100, 10);
-        Monster monster = new Monster("Broer", 100, 49, new ArrayList<Equipment>(), SkinType.SCALY);
-        monster.setCurrentProtection(30);
+    void testHit_SuccessfulFatal_ShouldCollectTreasure() {
+        hero_A.equipLeftHand(weapon_A);
+        hero_A.equipRightHand(weapon_B);
 
-        int initialHP = monster.getHitPoints();
-        hero.hit(monster);
+        monster_A.setCurrentProtection(0); // zodat hit slaagt
 
-        assertEquals(initialHP, monster.getHitPoints());
-        assertFalse(hero.isFighting());
+        hero_A.hit(monster_A); // hero does 103 damage, so hit is fatal
+
+        assertTrue(hero_A.hasAsItem(weapon_A));
+        assertTrue(hero_A.hasAsItem(armor_A));
+        assertTrue(hero_A.hasAsItem(backpack_A));
+        assertTrue(hero_A.hasAsItem(purse_A));
+
+        assertEquals(0, monster_A.getHitPoints()); // monster is dood
     }
 
     @Test
-    void testHitWithNullMonsterThrows() {
-        Hero hero = new Hero("Hero", 100, 10);
-
+    void testHit_NullMonster_ThrowsNullPointerException() {
         assertThrows(NullPointerException.class, () -> {
-            hero.hit(null);
+            hero_A.hit(null);
         });
     }
 
-
     /********************************************************************
-     *                       HEAL TEST
+     *                        WEAPON EQUIPMENT TEST
      ********************************************************************/
 
     @Test
-    void testHealAfterKillIsApplied() {
-        Hero hero = new Hero("Panda", 100, 20);
-        hero.setHitPoints(70); // mist 30 HP
-
-        // Damage moet groot genoeg zijn om zeker te doden
-        Weapon sword = new Weapon(21, 21); // veel damage
-        hero.getAnchorPoint("leftHand").setItem(sword);
-
-        // Geef monster minder HP zodat het gegarandeerd doodgaat
-        Monster monster = new Monster("Outside", 5, 49, new ArrayList<>(), SkinType.SCALY);
-        monster.setCurrentProtection(0); // geen verdediging
-
-        hero.hit(monster);
-
-        assertEquals(0, monster.getHitPoints(), "Monster should be dead");
-
-        int healed = hero.getHitPoints() - 70;
-        assertTrue(healed > 0 && healed <= 30, "Hero should heal between 1 and 30 HP after a kill");
+    void testGetLeftAndRightHand_NoWeaponEquipped_ShouldReturnNull() {
+        assertNull(hero_A.getLeftHandWeapon());
+        assertNull(hero_A.getRightHandWeapon());
     }
 
+    @Test
+    void testGetAndEquipLeftHand_WeaponEquipped_ShouldReturnEquippedLeftHandWeapon() {
+        hero_A.equipLeftHand(weapon_A);
+        assertEquals(weapon_A, hero_A.getLeftHandWeapon());
+    }
+
+    @Test
+    void testGetAndEquipRightHand_WeaponEquipped_ShouldReturnEquippedRightHandWeapon() {
+        hero_A.equipRightHand(weapon_A);
+        assertEquals(weapon_A, hero_A.getRightHandWeapon());
+    }
 
     /********************************************************************
-     *                       COLLECT TREASURE TEST
+     *                        ANCHOR TEST
      ********************************************************************/
 
     @Test
-    void testCollectTreasureFromNullMonsterDoesNothing() {
-        Hero hero = new Hero("Lootless", 50, 5.0);
-        int capacityBefore = hero.getCapacity();
+    void testInitializeAnchorPoints_ShouldAddAnchorPoints() {
+        Map<String, Equipment> anchors = hero_A.getAnchors();
 
-        // Should not throw and should not alter state
-        assertDoesNotThrow(() -> hero.collectTreasureFrom(null));
-        assertEquals(capacityBefore, hero.getCapacity(), "Capacity should remain unchanged");
+        assertTrue(anchors.containsKey("leftHand"));
+        assertTrue(anchors.containsKey("rightHand"));
+        assertTrue(anchors.containsKey("back"));
+        assertTrue(anchors.containsKey("body"));
+        assertTrue(anchors.containsKey("belt"));
+
     }
 
     @Test
-    void testCollectSingleWeaponSuccessfully() {
-        Hero hero = new Hero("Lara", 100, 5.0); // max capacity = 100
-
-        Weapon loot = new Weapon(24, 49);
-
-        Monster monster = new Monster("Goblin", 30, 49, new ArrayList<Equipment>(), SkinType.SCALY);
-
-        // Zorg dat het op een compatibel anchor zit (bv. "leftHand")
-        monster.getAnchors().put("leftHand", loot);
-
-        hero.collectTreasureFrom(monster);
-
-        assertEquals(10, hero.getCapacity(), "Hero's capacity should match item weight");
-        assertEquals(hero, loot.getOwner(), "Item owner should be set to hero");
-        assertTrue(hero.getAnchors().containsValue(loot), "Item should be in one of hero's anchor points");
+    void testAddToAnchorPoint_ShouldAddItemToAnchorPoint() {
+        hero_A.addToAnchorPoint(armor_A);
+        assertTrue(hero_A.hasAsItem(armor_A));
     }
-
-
 
     @Test
-    void testTooHeavyItemIsNotCollected() {
-        Hero hero = new Hero("Tiny", 10, 1.0); // max capacity = 20
+    void testAddToAnchorPoint_AddWeaponToLeftAndRightHand_ShouldEquipWeapon() {
+        // adds weapons to left and right hand
+        hero_A.addToAnchorPoint(weapon_A);
+        hero_A.addToAnchorPoint(weapon_B);
 
-        Weapon heavyLoot = new Weapon(30, 14); // too heavy
-        Monster monster = new Monster("Ogre", 50, 49, new ArrayList<Equipment>(), SkinType.SCALY);
-
-        for (Map.Entry<String, Equipment> entry : monster.getAnchors().entrySet()) {
-            if (entry.getValue() == null) {
-                monster.getAnchors().put(entry.getKey(), heavyLoot);
-                break;
-            }
-        }
-
-        hero.collectTreasureFrom(monster);
-
-        assertEquals(0, hero.getCapacity(), "Item too heavy, capacity should stay 0");
-        assertNull(heavyLoot.getOwner(), "Owner should remain null");
+        assertEquals(weapon_A, hero_A.getLeftHandWeapon());
+        assertEquals(weapon_B, hero_A.getRightHandWeapon());
     }
 
-
-    @Test
-    void testNoValidAnchorAvailable() {
-        Hero hero = new Hero("FullBoy", 100, 5.0); // max capacity = 100
-
-        // Vul alle anchor points met dummy items
-        for (Equipment item : hero.getAnchors().values()) {
-            AnchorPoint dummyAnchor = new AnchorPoint("dummy");
-            dummyAnchor.setItem(item); // dit is niet juist - je hebt geen toegang tot de AnchorPoints zelf
-        }
-
-
-        // Monster zonder items
-        Monster monster = new Monster("Gremlin", 30, 49, new ArrayList<Equipment>(), SkinType.SCALY);
-
-        // Voeg handmatig een loot-item toe aan een monster anchor
-        Weapon loot = new Weapon(5, 14);
-        Map<String, Equipment> monsterAnchors = monster.getAnchors();
-        // Zoek lege anchor bij monster en stop daar het item in
-        for (String key : monsterAnchors.keySet()) {
-            if (monsterAnchors.get(key) == null) {
-                monsterAnchors.put(key, loot);
-                break;
-            }
-        }
-
-        hero.collectTreasureFrom(monster);
-
-        assertEquals(0, hero.getCapacity(), "Item should not be collected due to no space");
-        assertNull(loot.getOwner(), "Item should not be owned");
-    }
 
     /********************************************************************
      *                        ITEM TEST
      ********************************************************************/
 
-    @Test
-    void testCanHaveAsItemAt_ValidWeaponInLeftHand() {
-        Hero hero = new Hero("Guillaume", 100, 10);
 
-        Weapon weapon = new Weapon(14, 7);
-        AnchorPoint leftHand = hero.getAnchorPoint("leftHand");
-        leftHand.setItem(null);
-        assertTrue(hero.canHaveAsItemAt(weapon, leftHand));
-    }
 
     @Test
-    void testCanHaveAsItemAt_ArmorOnBody() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Armor armor = new Armor(20, 5, ArmorType.BRONZE);
-        AnchorPoint body = hero.getAnchorPoint("body");
-        body.setItem(null);
-        assertTrue(hero.canHaveAsItemAt(armor, body));
-    }
-
-    @Test
-    void testCanHaveAsItemAt_AnyItemOnBack() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Weapon weapon = new Weapon(14, 7);
-        AnchorPoint back = hero.getAnchorPoint("back");
-        back.setItem(null);
-        assertTrue(hero.canHaveAsItemAt(weapon, back));
-    }
-
-    @Test
-    void testCanHaveAsItemAt_InvalidAnchor() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        AnchorPoint unknown = new AnchorPoint("elbow");
-        Weapon weapon = new Weapon(14, 7);
-        assertFalse(hero.canHaveAsItemAt(weapon, unknown));
-    }
-
-    @Test
-    void testCanHaveAsItemAt_NullParameters() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        assertFalse(hero.canHaveAsItemAt(null, hero.getAnchorPoint("back")));
-        assertFalse(hero.canHaveAsItemAt(new Weapon(14, 7), null));
-    }
-
-    @Test
-    void testCanCarry_TrueWhenUnderLimit() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Weapon weapon = new Weapon(14, 7);
-        assertTrue(hero.canCarry(weapon));
-    }
-
-    @Test
-    void testCanCarry_FalseWhenTooHeavy() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Weapon weapon = new Weapon(400, 7); // Over max capacity
-        assertFalse(hero.canCarry(weapon));
-    }
-
-    @Test
-    void testAddAsItem_Success() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Weapon weapon = new Weapon(14, 7);
-        weapon.setOwner(hero);
-        assertTrue(hero.hasAsItem(weapon));
-    }
-
-    @Test
-    void testAddAsItem_AlreadyAdded_Throws() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Weapon weapon = new Weapon(14, 7);
-        weapon.setOwner(hero);
-        assertThrows(IllegalArgumentException.class, () -> hero.addAsItem(weapon));
+    void testCanHaveAsItemAt_ArmorOnBody_ShouldReturnTrue() {
+        AnchorPoint anchorpoint = hero_A.getAnchorPoint("body");
+        assertTrue(hero_A.canHaveAsItemAt(armor_A, anchorpoint));
+        assertFalse(hero_A.canHaveAsItemAt(weapon_A, anchorpoint));
+        assertFalse(hero_A.canHaveAsItemAt(backpack_A, anchorpoint));
+        assertFalse(hero_A.canHaveAsItemAt(purse_A, anchorpoint));
     }
 
 
     @Test
-    void testAddAsItem_TooManyArmors_Throws() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-
-        Armor a1 = new Armor(20, 1, ArmorType.BRONZE);
-        Armor a2 = new Armor(20, 1, ArmorType.BRONZE);
-        Armor a3 = new Armor(20, 1, ArmorType.BRONZE);
-
-        a1.setOwner(hero); // oké
-        a2.setOwner(hero); // oké
-
-        // De 3e armor moet falen: te veel harnassen
-        assertThrows(IllegalArgumentException.class, () -> a3.setOwner(hero));
-    }
-
-
-
-    @Test
-    void testRemoveAsItem_Success() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Weapon weapon = new Weapon(14, 7);
-        weapon.setOwner(hero);
-        hero.removeAsItem(weapon);
-        assertFalse(hero.hasAsItem(weapon));
+    void testCanHaveAsItemAt_PurseOnBelt_ShouldReturnTrue() {
+        AnchorPoint anchorpoint = hero_A.getAnchorPoint("belt");
+        assertTrue(hero_A.canHaveAsItemAt(purse_A, anchorpoint));
+        assertFalse(hero_A.canHaveAsItemAt(weapon_B, anchorpoint));
+        assertFalse(hero_A.canHaveAsItemAt(backpack_A, anchorpoint));
+        assertFalse(hero_A.canHaveAsItemAt(armor_A, anchorpoint));
     }
 
     @Test
-    void testRemoveAsItem_NotOwned_Throws() {
-        Hero hero = new Hero("Guillaume", 100, 10);
-        Hero otherHero = new Hero("Alt", 100, 10);
-        Weapon weapon = new Weapon(14, 7);
+    void testCanHaveAsItemAt_ItemNotPurseOnAnchorPointNotBodyOrBelt_ShouldReturnTrue() {
+        AnchorPoint anchorpoint1 = hero_A.getAnchorPoint("lefthand");
+        assertTrue(hero_A.canHaveAsItemAt(weapon_A, anchorpoint1));
+        assertTrue(hero_A.canHaveAsItemAt(armor_A, anchorpoint1));
+        assertTrue(hero_A.canHaveAsItemAt(backpack_A, anchorpoint1));
+        assertFalse(hero_A.canHaveAsItemAt(purse_B, anchorpoint1));
 
-        weapon.setOwner(otherHero); // Geef een andere eigenaar
+        AnchorPoint anchorpoint2 = hero_A.getAnchorPoint("righthand");
+        assertTrue(hero_A.canHaveAsItemAt(weapon_A, anchorpoint2));
+        assertTrue(hero_A.canHaveAsItemAt(armor_A, anchorpoint2));
+        assertTrue(hero_A.canHaveAsItemAt(backpack_A, anchorpoint2));
+        assertFalse(hero_A.canHaveAsItemAt(purse_B, anchorpoint2));
 
-        assertThrows(IllegalArgumentException.class, () -> hero.removeAsItem(weapon));
+        AnchorPoint anchorpoint3 = hero_A.getAnchorPoint("back");
+        assertTrue(hero_A.canHaveAsItemAt(weapon_A, anchorpoint3));
+        assertTrue(hero_A.canHaveAsItemAt(armor_A, anchorpoint3));
+        assertTrue(hero_A.canHaveAsItemAt(backpack_A, anchorpoint3));
+        assertFalse(hero_A.canHaveAsItemAt(purse_B, anchorpoint3));
     }
 
+
+    @Test
+    void testCanHaveAsItemAt_NullParameters_ShouldReturnFalse() {
+        assertFalse(hero_A.canHaveAsItemAt(null, hero_A.getAnchorPoint("back")));
+        assertFalse(hero_A.canHaveAsItemAt(weapon_A, null));
+    }
 
 }

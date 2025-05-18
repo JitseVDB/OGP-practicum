@@ -218,15 +218,12 @@ public abstract class Entity {
             return true;
         }
 
-        if ((hitPoints > 0) && (hitPoints <= maxHitPoints)){
-            if (!isFighting && isPrime(getHitPoints())){
-                return true;
-            }
-            if (!isFighting && !isPrime(getHitPoints())){
-                return false;
-            }
+        if ((hitPoints > 0) && (hitPoints <= maxHitPoints)) {
+            if (!isFighting)
+                return isPrime(hitPoints);
             return true;
         }
+
         return false;
     }
 
@@ -370,6 +367,22 @@ public abstract class Entity {
     @Basic
     public boolean isFighting() {
         return isFighting;
+    }
+
+
+    /**********************************************************
+     * Protection
+     **********************************************************/
+
+
+    /**
+     * Variable referencing the current protection this entity has as protection.
+     */
+    public int currentProtection;
+
+
+    public int getCurrentProtection() {
+        return currentProtection;
     }
 
     /**********************************************************

@@ -82,11 +82,13 @@ public class EntityTest {
     void testIsValidHitPoints_allCases() {
         // 1. Valid cases
         assertTrue(hero_A.isValidHitPoints(0));
-        assertTrue(hero_A.isValidHitPoints(97));
+        assertTrue(hero_A.isValidHitPoints(97)); // !isFighting and isPrime so true
+
 
         // 2. Invalid cases
         assertFalse(hero_A.isValidHitPoints(-1));
         assertFalse(hero_A.isValidHitPoints(101)); // more than maxHitPoints
+        assertFalse(hero_A.isValidHitPoints(80)); // !isFighting and !isPrime so false
     }
 
     @Test
@@ -210,6 +212,24 @@ public class EntityTest {
     // ANCHOR POINTS
 
     @Test
+    void testGetAnchorPointOfItem() {
+        // Attach armor_A to first anchor point
+        AnchorPoint anchorPoint = hero_A.getAnchorPointAt(1);
+        anchorPoint.setItem(armor_A);
+
+        // Case 1: Item is correctly attached — should return the anchor point
+        AnchorPoint result = hero_A.getAnchorPointOfItem(armor_A);
+        assertNotNull(result);
+        assertEquals(anchorPoint, result);
+
+        // Case 2: Item not attached — should return null
+        assertNull(hero_A.getAnchorPointOfItem(weapon_A));
+
+        // Case 3: Null input — should return null
+        assertNull(hero_A.getAnchorPointOfItem(null));
+    }
+
+    @Test
     void testAddAnchorPoint_ShouldIncreaseSize() {
         // 1. Effect of new anchor being added
         AnchorPoint anchor_6 = new AnchorPoint("extra");
@@ -288,4 +308,23 @@ public class EntityTest {
         assertFalse(hero_A.hasFreeAnchorPoint());
     }
 
+    @Test
+    void testCanHaveAsItem_CantCarryItem_ShouldReturnFalse() {
+        // so hero can carry this but nothing more
+        Armor heavyArmor = new Armor(2000, 20, ArmorType.BRONZE);
+        heavyArmor.setOwner(hero_A);
+        assertFalse(hero_A.canHaveAsItem(armor_A));
+    }
+
+    @Test
+    void testCanHaveAsItem_NoAvailableAnchorPoint_ShouldReturnFalse() {
+        // fill all anchorpoints
+        backpack_A.setOwner(hero_A);
+        weapon_A.setOwner(hero_A);
+        weapon_B.setOwner(hero_A);
+        armor_A.setOwner(hero_A);
+        purse_A.setOwner(hero_A);
+
+        assertFalse(hero_A.canHaveAsItem(armor_B));
+    }
 }

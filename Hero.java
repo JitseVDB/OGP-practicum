@@ -18,62 +18,76 @@ import java.util.HashMap;
  * supplied at construction, and a current amount of hit points that may change during combat.
  * The hero's intrinsic strength is stored with two decimal places and determines the hero's carrying capacity.
  *
+ * 
+ * @author Jitse Vandenberghe
+ * @author Ernest De Gres
  * @author Guillaume Vandemoortele
+  *
  * @version 1.9
  *
- * @invar The hero's intrinsic strength is always stored with two decimal places.
- *        | Math.round(intrinsicStrength * 100) / 100.0 == intrinsicStrength
- * @invar The hero's capacity is always between 0 and its maximum capacity.
- *        | 0 <= getCapacity() <= getMaxCapacity()
- * @invar All items on anchor points are valid for their location.
- *        | for (AnchorPoint ap : anchorPoints)
- *        |     if (ap.getItem() != null) ==> canHaveAsItemAt(ap.getItem(), ap)
- * @invar The armor field matches the item on the body anchor, if any.
- *        | getArmor() == getAnchorPoint("body").getItem() || getArmor() == null
+ * @invar   Each hero must have a valid protection.
+ *          | isValidProtection(getProtection());
  *
+ * @invar	  Each hero must have a properly spelled name.
+ * 			      | canHaveAsName(getName())
+ *
+ * @invar   All items on anchor points are valid for their location.
+ *          | for (AnchorPoint ap : anchorPoints)
+ *          |     if (ap.getItem() != null) ==> canHaveAsItemAt(ap.getItem(), ap)
+ *
+ * @invar   The hero's intrinsic strength is always stored with two decimal places.
+ *          | Math.round(intrinsicStrength * 100) / 100.0 == intrinsicStrength
+ *
+ * @invar   The hero's capacity is always between 0 and its maximum capacity.
+ *          | 0 <= getCapacity() <= getMaxCapacity()
+ *
+ * @invar   The hero's strength is strictly positive.
+ *          | getIntrinsicStrength > 0
+ *
+ * @invar   The armor field matches the item on the body anchor, if any.
+ *          | getArmor() == getAnchorPoint("body").getItem() || getArmor() == null
+ *
+ * @invar   The left hand field matches the item on the body anchor, if any.
+ *          | getLeftHandWeapon() == getAnchorPoint("leftHand").getItem() || getLeftHandWeapon() == null
+ *
+ * @invar   The right hand field matches the item on the body anchor, if any.
+ *          | getRightHandWeapon() == getAnchorPoint("rightHand").getItem() || getRightHandWeapon() == null
  */
 public class Hero extends Entity {
 
     /**********************************************************
-     *                      Constructors
+     * Constructors
      **********************************************************/
 
     /**
-     * Initializes a hero with the given name, maximum hit points, and intrinsic strength.
-     * A new hero is initialized as not fighting. Both weapon slots are empty and no armor is equipped.
-     * The hero's current hit points are set equal to the maximum hit points at creation.
+     * Initializes a new hero with the given name, maximum hit points, and intrinsic strength.
      *
-     * @param name
-     *        the hero's name
-     * @param maxHitPoints
-     *        the maximum number of hit points
-     * @param strength
-     *        the hero's intrinsic strength (stored rounded to two decimal places)
+     * @param   name
+     *          The name of the hero.
      *
-     * @throws IllegalArgumentException
-     *         If the name is invalid, or if maxHitPoints < 0, or if strength ≤ 0.
+     * @param   maxHitPoints
+     *          The maximum number of hit points the hero can have.
      *
-     * @pre     The maximum amount of hitpoints must be positive
-     *          | isValidMaxHitPoints(maxHitPoints)
+     * @param   strength
+     *          The intrinsic strength of the hero. Must be strictly positive.
      *
-     * @post The hero's name is equal to the provided name.
-     *      |getName().equals(name)
-     * @post The hero's maximum hit points are set correctly.
-     *      | getMaxHitPoints() == maxHitPoints
-     * @post The hero's current hit points equal the maximum hit points.
-     *      |getHitPoints() == maxHitPoints
-     * @post The hero's intrinsic strength is rounded correctly.
-     *      |getIntrinsicStrength() == Math.round(strength * 100) / 100.0
-     * @post The hero is not in a fighting state.
-     *      |!isFighting()
-     * @post The hero is not holding a weapon in the left hand.
-     *      |getLeftHandWeapon() == null
-     * @post The hero is not holding a weapon in the right hand
-     *      | getRightHandWeapon() == null
-     * @post The hero is not wearing any armor.
-     *      |getArmor() == null
-     * @post protection is set to 10;
-     *      | getProtection() = 10
+     * @effect  The hero is initialized as an entity with the given
+     *          name and maximum hit points.
+     *          | super(name, maxHitPoints)
+     *
+     * @post    The intrinsic strength of the hero is set to the given strength,
+     *          rounded to two decimal places.
+     *          | new.getIntrinsicStrength() == roundToTwoDecimals(strength)
+     *
+     * @post    The protection of the hero is initialized to 10.
+     *          | new.getProtection() == 10
+     *
+     * @post    The capacity of the hero is set to 20 times the intrinsic strength.
+     *          | new.getCapacity() == (int)(20 * getIntrinsicStrength())
+     *
+     * @throws  IllegalArgumentException
+     *          If the given strength is not strictly positive.
+     *          | strength <= 0
      */
     public Hero(String name, int maxHitPoints, double strength) {
         super(name, maxHitPoints);
@@ -87,112 +101,83 @@ public class Hero extends Entity {
     }
 
     /**
-     * Constructs a new Hero with the given name, maximum hit points, intrinsic strength,
-     * and a predefined set of equipment to be attached to specific anchor points.
+     * Initializes a new hero with the given name, maximum hit-points, intrinsic strength
+     * and an initial set of equipment items.
      *
      * @param name
-     *        the name of the hero
+     *        The hero’s name.
+     *
      * @param maxHitPoints
-     *        the maximum number of hit points
+     *        The maximum number of hit-points the hero can have.
+     *
      * @param strength
-     *        the hero's intrinsic strength (stored rounded to two decimal places)
+     *        The intrinsic strength of the hero. Must be strictly positive.
+     *
      * @param startItems
-     *        initialEquipment A list of items to assign to the hero’s anchors
+     *        Zero or more equipment items that will be assigned to this hero at creation.
      *
-     * @throws IllegalArgumentException
-     *         If any argument is invalid, or if items cannot be assigned due to anchor conflicts
+     * @effect  Calls the simpler constructor
+     *          Hero(String name, int maxHitPoints, double strength) to set the
+     *          basic fields (name, hit-points, intrinsic strength, protection and capacity).
+     *          | this(name, maxHitPoints, strength)
      *
-     * @post The hero's name is equal to the provided name.
-     *       | getName().equals(name)
-     * @post The hero's maximum hit points are set correctly.
-     *       | getMaxHitPoints() == maxHitPoints
-     * @post The hero's current hit points equal the maximum hit points.
-     *       | getHitPoints() == maxHitPoints
-     * @post The hero's intrinsic strength is correctly rounded.
-     *       | getIntrinsicStrength() == Math.round(strength * 100) / 100.0
-     * @post The hero is not in a fighting state.
-     *       | !isFighting()
-     * @post All equipment is assigned to appropriate anchors.
+     * @effect  Each equipment item in startItems is made the property of this hero.
+     *          Empty (null) elements are ignored.
+     *          | for each item in startItems:
+     *          |       if (item != null) then item.getOwner() == this
      */
-
-    public Hero(String name, int maxHitPoints, double strength, Equipment... startItems) {
-        this(name, maxHitPoints, strength); // Roep de eenvoudige constructor aan
+    public Hero(String name, int maxHitPoints, double strength, Armor armor, Equipment... startItems) {
+        this(name, maxHitPoints, strength); // delegate to base constructor
+        equipArmor(armor);
 
         for (Equipment item : startItems) {
+            if (item != null) {
                 item.setOwner(this);
-
+            }
         }
     }
 
     /**********************************************************
-     *                          Name
+     * Name
      **********************************************************/
 
     /**
-     * Checks whether the given name is valid according to these specific rules:
-     *      non-null, non-empty, starts with an uppercase letter
-     *      and contains only letters, spaces, colons (each followed by a space),
-     *      and at maximum 2 apostrophes
-     * @param	name
-     * 			The name to be validated.
+     * Check whether the given name is a legal name for a hero.
      *
-     * @post	If the name is null, empty, or does not start with an uppercase letter,
-     * 			the result is false.
-     * 			If the name contains characters other than letters
-     * 		   	or the name isn't part of the allowed characters
-     * 			or more than two apostrophes, or if a colon is not followed by a space,
-     * 			the result is false.
-     * 			In all other cases, the result is true.
-     * 			| if (name == null || name.isEmpty() || !Character.isUpperCase(name.charAt(0)))
-     * 			|		then result == false
-     * 			| else if (name contains invalid characters
-     * 			|			or more than two apostrophes
-     * 			|			or ':' not followed by ' ')
-     * 			|		then result == false
-     * 			| else result == true
+     * @param  	name
+     *			The name to be checked
      *
-     *
-     * @effect	The method does not alter any state or have side effects. It just checks
-     *          if the name is valid and gives back true or false.
-     * 			| result == true <==> name is valid according to the defined format
+     * @return	True if the given string is effective, not
+     * 			empty, the name start with a capital letter,
+     * 		    has at most 2 apostrophes, consisting only of
+     * 		    letters, spaces apostrophes and colons, and
+     * 		    each colon must be followed by a space ; false otherwise.
+     *          | result ==
+     *          |     (name != null)
+     *          |     && !name.isEmpty()
+     *          |     && Character.isUpperCase(name.charAt(0))
+     *          |     && name.chars().filter(c -> c == '\'').count() <= 2
+     *          |     && name.matches("[A-Za-z ':]+")
+     *          |     && (for all i in [0..name.length()-1]:
+     *          |         if (name.charAt(i) == ':') then (i+1 < name.length() && name.charAt(i+1) == ' '))
      */
     @Override
     public boolean canHaveAsName(String name) {
-        char[] allowedChars = {' ', ':', '\''};
+        if (name == null || name.isEmpty()) return false;
 
-        if (name == null || name.isEmpty() || !Character.isUpperCase(name.charAt(0))) {
-            return false;
-        }
+        // Must start with uppercase
+        if (!Character.isUpperCase(name.charAt(0))) return false;
 
-        int apostrophes = 0;
+        // At most two apostrophes
+        long apostropheCount = name.chars().filter(c -> c == '\'').count();
+        if (apostropheCount > 2) return false;
 
+        // Must match allowed pattern
+        if (!name.matches("[A-Za-z' :]+")) return false;
+
+        // Each ':' must be followed by a space
         for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-
-            if (Character.isLetter(c)) {
-                continue;
-            }
-
-            boolean allowed = false;
-            for (char ac : allowedChars) {
-                if (c == ac) {
-                    allowed = true;
-                    break;
-                }
-            }
-
-            if (!allowed) {
-                return false;
-            }
-
-            if (c == '\'') {
-                apostrophes++;
-                if (apostrophes > 2) {
-                    return false;
-                }
-            }
-
-            if (c == ':') {
+            if (name.charAt(i) == ':') {
                 if (i + 1 >= name.length() || name.charAt(i + 1) != ' ') {
                     return false;
                 }
@@ -215,21 +200,22 @@ public class Hero extends Entity {
     /**
      * Returns the protection factor of the entity.
      */
-    @Raw
-    @Basic
+    @Raw @Basic
     public int getProtection() {
         return protection;
     }
 
     /**
-     * Sets the raw protection value of this entity.
+     * Sets the raw protection value of this hero.
      *
-     * @param protection
-     *        The new base protection value.
+     * @param   protection
+     *          The new base protection value.
      *
-     * @pre isValidProtection()
+     * @pre     The given protection must be legal.
+     *          | isValidProtection()
      *
-     * @post geProtection() == protection
+     * @post    The given protection is registered as the protection of this hero.
+     *          | new.getProtection() == protection
      */
     public void setProtection(int protection) {
         this.protection = protection;
@@ -242,54 +228,59 @@ public class Hero extends Entity {
      *          The protection factor to check.
      *
      * @return  True if and only if the protection factor is strictly positive.
-     *          | result == (protection >= 0)
+     *          | result == (protection > 0)
      */
     public static boolean isValidProtection(int protection) {
         return protection > 0;
     }
 
     /**
-     * Calculates the total protection value of this hero during combat.
-     * The total protection is the hero’s base protection value + the protection provided by the equipped armor (if armor != null)
+     * Returns the total protection value of this hero during combat.
      *
-     * @return The total protection value of this hero.
+     * The total protection is the sum of the hero’s base protection
+     * and the protection provided by the equipped armor, if any.
      *
-     * @post The result is equal to getProtection() + armor.getCurrentProtection()
+     * @return The hero’s base protection plus armor protection if armor is equipped;
+     *         otherwise just the base protection.
+     *         | if getArmor() == null
+     *         |    then result == getProtection()
+     *         |    else result == getProtection() + getArmor().getCurrentProtection()
      */
-
-    @Basic
-    public int getRealProtection() {
-        int base = getProtection(); // = standaardbescherming (bv. 10)
+    @Override @Basic
+    public int getCurrentProtection() {
+        int base = getProtection(); // = standard protection
         int armorBonus = 0;
         if (armor != null) {
-            armorBonus = armor.getCurrentProtection(); // bv. 20
+            armorBonus = armor.getCurrentProtection();
         }
         return base + armorBonus;
     }
 
 
     /**********************************************************
-     *                      Strenght
+     * Strength
      **********************************************************/
 
     /**
-     * The intrinsic strength of the hero.
-     * Must be a positive decimal number, typically with 2 digits after the comma.
+     * The intrinsic strength of the hero, stored as a decimal number
+     * rounded to two decimal places.
      */
     private double intrinsicStrength;
 
 
-    /**
+     /**
      * Multiply the strength by a given integer.
      *
-     * @param factor
-     *        A non-zero integer.
+     * @param   factor
+     *          A non-zero integer.
      *
-     * @post The intrinsic strength is updated to its previous value multiplied by the factor,
-     *       rounded to two decimal places.
-     *       | getIntrinsicStrength() == Math.round(old(getIntrinsicStrength()) * factor * 100) / 100.0
+     * @post    The intrinsic strength is updated to its previous value multiplied by the factor,
+     *          rounded to two decimal places.
+     *          | new.getIntrinsicStrength() == Math.round(old(getIntrinsicStrength()) * factor * 100) / 100.0
      *
-     * @throws IllegalArgumentException if factor is zero.
+     * @throws  IllegalArgumentException
+     *          If the given factor is not 0.
+     *          | factor == 0
      */
     public void multiplyStrength(int factor) {
         if (factor == 0)
@@ -303,14 +294,16 @@ public class Hero extends Entity {
     /**
      * Divide the strength by a given integer.
      *
-     * @param divisor
-     *        A non-zero integer.
+     * @param   divisor
+     *          A non-zero integer.
      *
-     * @post The intrinsic strength is updated to its previous value divided by the divisor,
-     *       rounded to two decimal places.
-     *     | getIntrinsicStrength() == Math.round(old(getIntrinsicStrength()) / divisor * 100) / 100.0
+     * @post    The intrinsic strength is updated to its previous value divided by the divisor,
+     *          rounded to two decimal places.
+     *          | new.getIntrinsicStrength() == Math.round(old(getIntrinsicStrength()) / divisor * 100) / 100.0
      *
-     * @throws IllegalArgumentException if divisor is zero.
+     * @throws  IllegalArgumentException
+     *          If the given factor is not 0.
+     *          | factor == 0
      */
     public void divideStrength(int divisor) {
         if (divisor == 0)
@@ -324,15 +317,14 @@ public class Hero extends Entity {
     /**
      * Calculates the current attack power of this hero.
      * The attack power is the sum of the hero’s intrinsic strength,
-     * ,the damage of the weapon in the left hand (if any)
-     * ,the damage of the weapon in the right hand (if any)
+     * the damage of the weapon in the left hand (if any),
+     * and the damage of the weapon in the right hand (if any).
      *
-     * @return The total attack power as a double.
-     *
-     * @post The result is equal to the hero's intrinsic strength plus the damage of both equipped weapons.
-     *     | result == intrinsicStrength
-     *     |          + (leftHandWeapon.getDamage())
-     *     |          + (rightHandWeapon.getDamage())
+     * @return  The total attack power as a double.
+     *          | let weaponDamage = 0;
+     *          | if (getLeftHandWeapon() != null) then weaponDamage += getLeftHandWeapon().getDamage()
+     *          | if (getRightHandWeapon() != null) then weaponDamage += getRightHandWeapon().getDamage()
+     *          | result == getIntrinsicStrength() + weaponDamage
      */
     @Basic
     public double getAttackPower() {
@@ -344,6 +336,7 @@ public class Hero extends Entity {
         return intrinsicStrength + weaponDamage;
     }
 
+
     /**
      * Return the intrinsic strength of this hero
      */
@@ -353,7 +346,7 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                      Armor
+     * Armor
      **********************************************************/
 
     /**
@@ -370,7 +363,11 @@ public class Hero extends Entity {
     }
 
     /**
-     * Returns how many Armor items this hero is currently carrying.
+     * Returns the number of armor items this hero is currently carrying.
+     *
+     * @return  The number of equipment items currently carried by the hero
+     *          that are instances of Armor.
+     *          | result == the number of anchor points where getItem() instanceof Armor
      */
     @Basic
     public int getNbArmorsCarried() {
@@ -384,33 +381,105 @@ public class Hero extends Entity {
         return count;
     }
 
+    /**
+     * Equips the given armor to this entity by placing it at the "body" anchor point.
+     *
+     * If another armor is already equipped, it is unequipped first, and the new armor is
+     * equipped if possible. If the operation fails (e.g., due to invalid placement or capacity),
+     * the original armor is restored.
+     *
+     * @param armor
+     *        The armor to equip.
+     *
+     * @post If no armor was equipped before, and the given armor can be equipped at the "body"
+     *       anchor point, it is placed there and set as the currently equipped armor.
+     *       | if (oldArmor == null && anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint))
+     *       |     getEquippedArmor() == armor
+     *
+     * @post If an armor was already equipped, it is temporarily unequipped, and the new armor is
+     *       equipped only if valid. Otherwise, the old armor is restored.
+     *       | if (oldArmor != null && validNewArmor)
+     *       |     getEquippedArmor() == armor
+     *       | else if (equipping fails)
+     *       |     getEquippedArmor() == oldArmor
+     *
+     * @throws IllegalArgumentException
+     *         If the armor cannot be equipped (e.g., anchor point is not empty,
+     *         or the armor is not valid for the position or weight limit).
+     *         | !achorpoint.isEmpty() || !canCarry(armor) || !canHaveAsItemAt(armor, acnhorpoint)
+     */
     public void equipArmor(Armor armor) {
-        this.armor = armor;
+        if (armor.getOwner() != null && armor.getOwner() != this) {
+            throw new IllegalArgumentException("Armor already belongs to another entity.");
+        }
+
+        Armor oldArmor = this.armor;
+        AnchorPoint anchorpoint = getAnchorPoint("body");
+
+        if (oldArmor != null) {
+            unequipArmor(oldArmor);
+        }
+
+        if (anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint)) {
+            armor.setOwner(this);
+            anchorpoint.setItem(armor);
+            this.armor = armor;
+        } else {
+            // Zet oude armor terug als equippen mislukt
+            if (oldArmor != null) {
+                this.armor = oldArmor;
+                oldArmor.setOwner(this);
+                getAnchorPoint("body").setItem(oldArmor);
+            }
+            throw new IllegalArgumentException("Cannot equip armor.");
+        }
+    }
+
+    /**
+     * Unequips the given armor.
+     *
+     * @param   armor
+     *          The armor to unequip
+     *
+     * @effect  The owner of the old armor is set to null
+     *          | armor.setOwner(null)
+     *
+     * @post    The armor currently equipped is set to null
+     *          | this.armor = null
+     */
+    public void unequipArmor(Armor armor){
+        armor.setOwner(null);
+        this.armor = null;
     }
 
 
     /**********************************************************
-     *                      Hit
+     * Hit
      **********************************************************/
 
     /**
-     * Attempt to hit the given monster.
-     * A random number between 0 and 100 is rolled. If the result is greater than or
-     * equal to the monster's real protection, the hit succeeds and damage is applied.
-     * The damage is calculated based on the hero’s intrinsic strength and equipped weapons.
-     * If the damage kills the monster, the hero heals a random percentage of their missing
-     * hit points using healAfterKill().
+     * Attacks the given monster. If the random attack roll exceeds or equals
+     * the monster's current protection value, damage is dealt.
+     * 
+     * If the monster is defeated (i.e. its hit points drop to 0 or below),
+     * the hero is healed and any treasure the monster was carrying is collected.
      *
-     * @param monster
-     *        The monster to attack
-     * @throws NullPointerException
-     *         if monster is null
+     * @param    monster
+     *           The monster to be attacked.
      *
-     * @effect If the hit is successful and fatal, the hero heals.
-     *         | healAfterKill()
-     * @effect The monster's hit points are reduced.
-     * @effect The hero's fighting state is toggled on and off around the attack.
+     * @effect    If the random attack roll exceeds or equals the monster's
+     *            current protection value, damage is dealt.
+     *            | if (roll >= monster.getCurrentProtection() then monster.removeHitPoints(calaculateDamage)
      *
+     * @effect    If the damage exceeds the hitpoints of the monster the hero is healed.
+     *            | if (damage >= old.monster.getHitPoints) then healAfterKill()
+     *
+     * @effect    If the  damage exceeds the hitpoints of the monster the hero collects the treasure from the monster.
+     *            | if (damage >= old.monster.getHitPoints) then collectTreasureFrom(monster)
+     *
+     * @throws   NullPointerException
+     *           If the given monster is null.
+     *           | monster == null
      */
     public void hit(Monster monster) {
         if (monster == null) {
@@ -422,28 +491,35 @@ public class Hero extends Entity {
 
         if (roll >= monster.getCurrentProtection()) {
             int damage = calculateDamage();
-            int beforeHP = monster.getHitPoints();
 
             monster.removeHitPoints(damage);
 
-            if (damage >= beforeHP) {
+            if (!monster.isAlive()) {
                 healAfterKill();
                 collectTreasureFrom(monster);
             }
         }
-
     }
 
     /**
      * Calculates the damage dealt by this hero when a hit is successful.
-     * The total power is the hero’s intrinsic strength + the damage values of any weapons held in the left and right hands
-     * From this total, 10 is subtracted and the result is divided by 2.
-     * Any negative result is rounded up to zero. All decimals are truncated.
      *
-     * @return The integer damage value to apply.
+     * The damage is based on the sum of the hero’s intrinsic strength and the damage values
+     * of any weapons held in the left and right hands. From this total, 10 is subtracted,
+     * and the result is divided by 2. If the result is negative, it is rounded up to 0.
+     * The final result is truncated to an integer.
      *
-     * @post The result is equal to (totalPower - 10) / 2)
-     *       where totalPower = intrinsicStrength + damage from left and right hand weapons.
+     * @return The damage dealt as a non-negative integer.
+     *         | totalPower = getIntrinsicStrength()
+     *         | if (getLeftHandWeapon() != null)
+     *         |     totalPower += getLeftHandWeapon().getDamage()
+     *         | if (getRightHandWeapon() != null)
+     *         |     totalPower += getRightHandWeapon().getDamage()
+     *         | rawResult = (totalPower - 10) / 2
+     *         | if (rawResult < 0)
+     *         |     result == 0
+     *         | else
+     *         |     result == (int) rawResult
      */
     private int calculateDamage() {
         int leftDamage = 0;
@@ -468,26 +544,33 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                      Heal
+     * Heal
      **********************************************************/
 
-    /**
-     * Heals this hero after killing a monster.
-     * A random integer percentage between 0 and 100 is generated.
-     * The hero recovers that percentage of the missing hit points, rounded down.
-     *
-     *
-     * @post If the hero had missing hit points, they are increased by a random
-     *       percentage of that missing amount, via addHitPoints(int).
-     * @effect Uses addHitPoints(int) to apply the healing.
-     */
+     /**
+      * Heals this hero after successfully killing a monster.
+      *
+      * A random percentage between 0 and 100 (inclusive) is generated.
+      * The hero then regains that percentage of their missing hit points.
+      * The amount healed is rounded down to the nearest integer.
+      *
+      * @post If the hero is already at full health, no healing is applied.
+      *       Otherwise, the number of hit points gained is equal to
+      *       (getMaxHitPoints() - getHitPoints()) * percentage / 100,
+      *       where percentage is a random integer from 0 to 100.
+      *       | missing = getMaxHitPoints() - getHitPoints()
+      *       | if (missing <= 0)
+      *       |     then no change
+      *       | else
+      *       |     result of addHitPoints == (missing * percentage) / 100
+      */
     private void healAfterKill() {
-        int missing = getMaxHitPoints() - getHitPoints();     // left over (missing) hitpoints (100-70 = 30 hitpoints left)
-        if (missing <= 0) return;                                   // the leftover hitpoints can't be an negative number
-        Random d= new Random();                                     //
-        int percentage = d.nextInt(101);                     // percentage random number between 0-100
-        int healAmount = (missing * percentage) / 100;      //
-        addHitPoints(healAmount);                           // add healAmount to hitpoints
+        int missing = getMaxHitPoints() - getHitPoints();
+        if (missing <= 0) return;
+        Random d= new Random();
+        int percentage = d.nextInt(101); 
+        int healAmount = (missing * percentage) / 100;
+        addHitPoints(healAmount); 
     }
 
 
@@ -496,9 +579,27 @@ public class Hero extends Entity {
      **********************************************************/
 
     /**
+     * Collects all treasure items from the given monster.
      *
-     * aanvullen
+     * @param monster
+     *        The monster from which to collect treasure. If null, no action is performed.
      *
+     * @post For each non-null item in the monster’s anchors, if setting this hero as owner succeeds,
+     *       then the item’s owner is this hero.
+     *       | if (item != null && item.setOwner(this) succeeds)
+     *       |    then item.getOwner() == this
+     *
+     * @post For each non-null item in the monster’s anchors, if setting this hero as owner throws an exception
+     *       and the item can be placed in a backpack owned by this hero, then the item is placed in such backpack.
+     *       | if (item != null && item.setOwner(this) throws IllegalArgumentException &&
+     *       |     exists Backpack bp in getAllItems() where item.setBackpack(bp) succeeds)
+     *       |    then item.getBackpack() != null && getAllItems().contains(item.getBackpack())
+     *
+     * @post For each non-null item in the monster’s anchors, if neither ownership nor backpack placement succeeds,
+     *       the item remains unassigned (owner and backpack unchanged).
+     *       | if (item != null && item.setOwner(this) throws IllegalArgumentException &&
+     *       |     forall Backpack bp in getAllItems(), item.setBackpack(bp) throws IllegalArgumentException)
+     *       |    then item.getOwner() != this && item.getBackpack() == null
      */
     public void collectTreasureFrom(Monster monster) {
         if (monster == null) return;
@@ -506,16 +607,18 @@ public class Hero extends Entity {
         Map<String, Equipment> loot = monster.getAnchors();
 
         for (Equipment item : loot.values()) {
-            try {
-                item.setOwner(this); // stel eigenaar in en checkt ook of dit mag/kan
-            } catch (IllegalArgumentException e) {
-                // Dit item past niet in de hero, probeer in backpack te steken
-                for (Equipment heroItem : getAllItems()) {
-                    if (heroItem instanceof Backpack) {
-                        try {
-                            item.setBackpack((Backpack) heroItem); // steek item in backpack als kan/mag
-                        } catch (IllegalArgumentException a) {
-                            // Dit item past niet in de hero, probeer de volgende
+            if (item != null) {
+                try {
+                    item.setOwner(this); // stel eigenaar in en checkt ook of dit mag/kan
+                } catch (IllegalArgumentException e) {
+                    // Dit item past niet in de hero, probeer in backpack te steken
+                    for (Equipment heroItem : getAllItems()) {
+                        if (heroItem instanceof Backpack) {
+                            try {
+                                item.setBackpack((Backpack) heroItem); // steek item in backpack als kan/mag
+                            } catch (IllegalArgumentException a) {
+                                // Dit item past niet in de hero, probeer de volgende
+                            }
                         }
                     }
                 }
@@ -524,42 +627,47 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                   Weapon Equipment
+     * Weapon Equipment
      **********************************************************/
-
+ 
     /**
-     * Stands for which weapon is carried in the left and right hand.
-     * Standard the hero carries no weapons
+     * The weapon currently equipped in the hero's left hand.
      */
     private Weapon leftHandWeapon = null;
+    
+    /**
+     * The weapon currently equipped in the hero's right hand.
+     */
     private Weapon rightHandWeapon = null;
 
 
     /**
-     * Equips the given weapon in the hero’s left hand.
-     * The weapon is assigned to the leftHandWeapon field and linked to the "leftHand" anchor point.
-     * The weapon’s weight is added to the hero’s current capacity.
+     * Set the weapon equiped in the left hand to the given weapon.
      *
-     * @param weapon
-     *        The weapon to equip
+     * @param   weapon
+     *          The weapon to equip
      *
-     * @post The weapon is assigned to the hero’s left hand.
-     *       | this.leftHandWeapon = weapon
+     * @post    The equipped weapon is set to the given weapon.
+     *          | new.getLeftHandWeapon() = weapon
+     *
+     * @note    This method does not handle the logic of equipping the weapon itself;  
+     *          it only updates the reference to the currently equipped weapon.
      */
     public void equipLeftHand(Weapon weapon) {
         this.leftHandWeapon = weapon;
     }
 
     /**
-     * Equips the given weapon in the hero’s right hand.
-     * The weapon is stored in the rightHandWeapon field and linked to the "rightHand" anchor point.
-     * The weapon’s weight is added to the hero’s current capacity.
+     * Set the weapon equiped in the right hand to the given weapon.
      *
-     * @param weapon
-     *        The weapon to equip
+     * @param   weapon
+     *          The weapon to equip
      *
-     * @post The weapon is assigned to the hero’s right hand.
-     *     | this.rightHandWeapon = weapon
+     * @post    The equipped weapon is set to the given weapon.
+     *          | new.getRightHandWeapon() = weapon
+     *
+     * @note    This method does not handle the logic of equipping the weapon itself;  
+     *          it only updates the reference to the currently equipped weapon.
      */
     public void equipRightHand(Weapon weapon) {
         this.rightHandWeapon = weapon;
@@ -580,15 +688,21 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                      AnchorPoints
+     * AnchorPoints
      **********************************************************/
 
-    /**
-     *  Initializes the default anchor points for this hero.
-     *
-     *  @post The hero has exactly five anchor points with the names:
-     *       "leftHand", "rightHand", "back", "body", and "belt".
-     */
+   /**
+    * Initializes the default anchor points for this hero.
+    *
+    * @post The hero has exactly five anchor points.
+    *       | getAnchorPoints().size() == 5
+    *
+    * @post The hero has anchor points named
+    *       "leftHand", "rightHand", "back", "body", and "belt".
+    *       | getAnchorPoints().stream().allMatch(ap -> 
+    *       |     ap.getName().equals("leftHand") || ap.getName().equals("rightHand") ||
+    *       |     ap.getName().equals("back") || ap.getName().equals("body") || ap.getName().equals("belt"))
+    */
     @Override
     public void initializeAnchorPoints() {
         addAnchorPoint(new AnchorPoint("leftHand"));
@@ -601,25 +715,21 @@ public class Hero extends Entity {
     /**
      * Add the given item to the first anchorpoint of this entity that accepts it.
      *
-     * @param item
-     *        The equipment to add.
+     * @param   item
+     *          The equipment to add.
      *
-     * @effect The item is added to the first valid anchor point.
-     *       | anchorpoint.setItem(item)
-     *
-     * @effect if item is armor and is added to body, equip armor.
-     *         | if (item == armor)
-     *         |      getArmor() = item
-     *
-     * @effect if item is weapon and is added to righthand , equip weapon to righthand.
-     *         | if (item == weapon && anchorpoint == righthand )
-     *         |      getRightHandWeapon() = item
-     *
-     * @effect if item is weapon and is added to lefthand , equip weapon to lefthand.
-     *         | if (item == weapon && anchorpoint == lefthand )
-     *         |      getLeftHandWeapon() = item
-     *
-     *
+     * @effect  The item is added to the first valid anchor point.
+     *          | anchorpoint.setItem(item)
+     * 
+     * @effect If the item is a weapon and is added to the "leftHand" anchor point,
+     *         the hero equips that weapon on the left hand.
+     *         | if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon)
+     *         |     then getLeftHandWeapon() == item
+     * 
+     * @effect If the item is a weapon and is added to the "rightHand" anchor point,
+     *         the hero equips that weapon on the right hand.
+     *         | if (anchorpoint.getName().equals("rightHand") && item instanceof Weapon)
+     *         |     then getRightHandWeapon() == item
      */
     @Override
     public void addToAnchorPoint(Equipment item) {
@@ -628,9 +738,6 @@ public class Hero extends Entity {
 
             if (anchorpoint.isEmpty()) {
                 if (canHaveAsItemAt(item, anchorpoint)) {
-                    if (anchorpoint.getName().equals("body") && item instanceof Armor) {
-                        equipArmor((Armor) item);
-                    }
                     if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon) {
                         equipLeftHand((Weapon) item);
                     }
@@ -646,28 +753,46 @@ public class Hero extends Entity {
     }
 
     /**********************************************************
-     *                      Items
+     * Items
      **********************************************************/
 
     /**
      * Determines whether the given item can legally be placed at the specified anchor point.
-     *
-     * The legality is based on the type of the item and the name of the anchor point:
-     * - "leftHand" or "rightHand": only weapons are allowed
+     * 
+     * The rules for legality depend on the anchor point's name:
+     * - "leftHand" and "rightHand": only weapons are allowed
      * - "body": only armor is allowed
      * - "belt": only purses are allowed
      * - "back": any item is allowed
-     * - unknown or unsupported anchors: not allowed
-     *
+     * - For any other or unknown anchor names, no items are allowed.
+     * 
      * @param item
-     *        The item to check.
+     *        The equipment item to check.
      * @param anchorpoint
-     *        The anchor point to check against
-     * @post Returns false if item == null, or anchorpoint == null, or anchorpoint.getName() == null.
-     * @post For a known anchor name, returns true if the item type matches the allowed type.
-     * @post For unknown anchor names, returns false.
-     *
-     * @return true if the item is allowed at the given anchor point, false otherwise.
+     *        The anchor point where the item would be placed.
+     * 
+     * @post Returns false if item, anchorpoint, or anchorpoint's name is null.
+     *       | (item == null) || (anchorpoint == null) || (anchorpoint.getName() == null) ==> result == false
+     * 
+     * @post For anchor points "body", returns true only if the item is an Armor.
+     *       | anchorpoint.getName().equals("body") ==> result == (item instanceof Armor)
+     * 
+     * @post For anchor point "belt", returns true only if the item is a Purse.
+     *       | anchorpoint.getName().equals("belt") ==> result == (item instanceof Purse)
+     * 
+     * @post For anchor points "leftHand" or "rightHand", returns true only if the item is a Weapon.
+     *       | (anchorpoint.getName().equals("leftHand") || anchorpoint.getName().equals("rightHand")) 
+     *       |    ==> result == (item instanceof Weapon)
+     * 
+     * @post For anchor point "back", any item is allowed.
+     *       | anchorpoint.getName().equals("back") ==> result == true
+     * 
+     * @post For any other anchor names, returns false.
+     *       | !(anchorpoint.getName().equals("body") || anchorpoint.getName().equals("belt") 
+     *       |   || anchorpoint.getName().equals("leftHand") || anchorpoint.getName().equals("rightHand") 
+     *       |   || anchorpoint.getName().equals("back")) ==> result == false
+     * 
+     * @return True if the item is allowed at the specified anchor point; false otherwise.
      */
     @Override
     public boolean canHaveAsItemAt(Equipment item, AnchorPoint anchorpoint) {
@@ -686,76 +811,59 @@ public class Hero extends Entity {
     }
 
     /**
-     * Add the given item to the anchor points registered to this entity.
+     * Add the given item to the anchor points registered to this hero.
      *
      * @param   item
      *          The equipment to be added.
      *
-     * @effect  The equipment is added to available anchor point.
-     *        | addToAnchorPoint(item)
-     *
-     *
-     * @throws  IllegalArgumentException
-     *          The item is already stored in this entity.
-     *        | hasAsItem(item)
+     * @effect  The item is added to this hero’s anchor points by calling the superclass method.
+     *          | super.addAsItem(item)
      *
      * @throws  IllegalArgumentException
      *          Hero can carry at most 2 armors
      *          | item == armor && getNbArmorsCarried() >= 2
-     *
-     * @throws  IllegalStateException
-     *          The reference from the item to this entity has not yet been set.
-     *        | (item != null) && !item.getOwner() == this
-     *
-     * @note    This is an auxiliary method that completes a bidirectional relationship.
-     *          It should only be called from within the controlling class.
-     *          At that point, the other direction of the relationship is already set up,
-     *          so the given item is in a raw state.
-     *          All methods called with this raw item thus require a raw annotation of their parameter.
-     * @note    The throws clauses of the effects are cancelled by the throws clauses of this method.
      */
-    @Override
+    @Model @Override
     protected void addAsItem(Equipment item) throws IllegalArgumentException {
         if (item instanceof Armor && getNbArmorsCarried() >= 2)
             throw new IllegalArgumentException("Hero can carry at most 2 armors.");
         super.addAsItem(item);
     }
 
-    /**
-     * Remove the given item from this entity.
-     *
-     * @param item
-     *        The equipment to remove.
-     *
-     * @effect The item is removed from the anchor point it was registered at.
-     *         | anchorpoint.setItem(null)
-     *
-     * @effect if item is armor and is removed from body, unequip armor.
-     *         | if (item == armor && anchorpoint == body)
-     *         |      getArmor() = null
-     *
-     * @effect if item is weapon and is removed from lefthand , unequip weapon.
-     *         | if (item == weapon && anchorpoint == lefthand )
-     *         |      getLeftHandWeapon() = null
-     *
-     * @effect if item is weapon and is removed from righthand , unequip weapon.
-     *         | if (item == weapon && anchorpoint == righthand )
-     *         |      getRightHandWeapon() = null
-     *
-     * @throws IllegalArgumentException
-     *        Entity does not have the given item.
-     *       | !hasAsItem(item)
-     * @throws IllegalStateException
-     *         The reference of the given (effective) item to its owner must already be broken down.
-     *       | (item != null) && item.getOwner() == this
-     *
-     * @note This is an auxiliary method used to break a bidirectional relationship.
-     *       It should only be called from within the controlling class.
-     *       At that point, the reference from the item to this entity must already be cleared.
-     */
-    @Model
-    @Raw
-    @Override
+   /**
+    * Removes the given item from this hero.
+    *
+    * @param  item
+    *         The equipment to remove.
+    *
+    * @effect The item is removed from the anchor point where it is currently registered.
+    *         | anchorpoint.setItem(null)
+    *
+    * @effect If the removed item is armor and was equipped on the body, the hero’s armor reference is cleared.
+    *         | if (item instanceof Armor && anchorpoint.getName().equals("body"))
+    *         |     getArmor() == null
+    *
+    * @effect If the removed item is a weapon and was equipped on the left hand, the left hand weapon reference is cleared.
+    *         | if (item instanceof Weapon && anchorpoint.getName().equals("leftHand"))
+    *         |     getLeftHandWeapon() == null
+    *
+    * @effect If the removed item is a weapon and was equipped on the right hand, the right hand weapon reference is cleared.
+    *         | if (item instanceof Weapon && anchorpoint.getName().equals("rightHand"))
+    *         |     getRightHandWeapon() == null
+    *
+    * @throws IllegalArgumentException
+    *         If this hero does not have the given item.
+    *         | !hasAsItem(item)
+    *
+    * @throws IllegalStateException
+    *         If the given item still references this hero as its owner.
+    *         | (item != null) && item.getOwner() == this
+    *
+    * @note This is an auxiliary method used to break a bidirectional association.
+    *       It should only be called internally by the controlling class,
+    *       and only after the reference from the item back to this hero has been cleared.
+    */
+    @Model @Raw @Override
     protected void removeAsItem(@Raw Equipment item) throws IllegalArgumentException, IllegalStateException {
         if (!hasAsItem(item))
             throw new IllegalArgumentException("This entity does not have the item.");
@@ -768,7 +876,7 @@ public class Hero extends Entity {
             if (anchorpoint.getItem() == item) {
                 // Als dit armor was op het body-anker: reset armor-referentie
                 if (anchorpoint.getName().equals("body") && item instanceof Armor) {
-                    equipArmor(null);
+                    unequipArmor((Armor) item);
                 }
                 if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon) {
                     equipLeftHand(null);
@@ -779,10 +887,7 @@ public class Hero extends Entity {
 
                 anchorpoint.setItem(null);
                 return;
-
             }
-
         }
-
     }
 }

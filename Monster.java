@@ -14,6 +14,7 @@ import be.kuleuven.cs.som.annotate.*;
  *          | isValidDamage(getDamage());
  *
  * @author  Jitse Vandenberghe
+ * @author  Ernest De Gres
  *
  * @version 1.1
  */
@@ -121,7 +122,7 @@ public class Monster extends Entity {
      *
      * @effect  Each newly created anchor point is added to this monster using addAnchorPoint.
      *          | for each i in 1..amount:
-     *          |   addAnchorPoint(new AnchorPoint(null))
+     *          |   addAnchorPoint(new AnchorPoint(anchor_i))
      *
      * @post    The total number of anchor points for this monster will increase by the generated amount.
      *          | getNbAnchorPoints() == amount
@@ -134,7 +135,7 @@ public class Monster extends Entity {
         int amount = random.nextInt(101);
 
         for (int i = 1; i <= amount; i++) {
-            addAnchorPoint(new AnchorPoint(null));
+            addAnchorPoint(new AnchorPoint("anchor_" + i));
         }
     }
 
@@ -158,8 +159,10 @@ public class Monster extends Entity {
 
         for (int i = 1; i <= maxItems; i++) {
             Equipment item = items.get(i-1);
-            AnchorPoint anchorPoint = getAnchorPointAt(i);
-            anchorPoint.setItem(item);
+            if (item != null) {
+                this.capacity += item.getWeight(); // zodat monster altijd item kan dragen
+                item.setOwner(this);
+            }
         }
     }
 
@@ -248,11 +251,6 @@ public class Monster extends Entity {
     private final int maximalProtection;
 
     /**
-     * Variable referencing the current protection this monster has as natural protection.
-     */
-    private int currentProtection;
-
-    /**
      * Return the maximum protection this monster has as natural protection.
      */
     @Basic @Immutable
@@ -274,13 +272,6 @@ public class Monster extends Entity {
         return maximalProtection > 0 && maximalProtection <= 100;
     }
 
-    /**
-     * Return the current protection this monster can provide
-     */
-    @Basic
-    public int getCurrentProtection() {
-        return currentProtection;
-    }
 
     /**
      * Set the current protection of this monster to the given protection.
@@ -366,7 +357,7 @@ public class Monster extends Entity {
         }
 
 
-        if (impact >= ((Hero)opponent).getRealProtection()) {
+        if (impact >= (opponent.getCurrentProtection())) {
             // land a succesful hit
             int damage = getDamage();
             int newHitPoints = opponent.getHitPoints() - damage;

@@ -17,22 +17,19 @@ public class MonsterTest {
 
     // MONSTER
     private static Monster monster_A;
+    private static Monster monster_B;
 
     // OPPONENT
     private static Hero hero_A;
 
     // EQUIPMENT
-    private static Weapon weapon_A;
-    private static Weapon weapon_B;
-    private static Armor armor_A;
-    private static Armor armor_B;
-    private static Backpack backpack_A;
-    private static Backpack backpack_B;
-    private static Purse purse_A;
-    private static Purse purse_B;
+    private static Weapon weapon_A, weapon_B, weapon_C;
+    private static Armor armor_A, armor_B, armor_C;
+    private static Backpack backpack_A, backpack_B, backpack_C;
+    private static Purse purse_A, purse_B, purse_C;
 
     // LISTS
-    private List<Equipment> items;
+    private List<Equipment> items, itemsC;
 
     @BeforeEach
     public void setUpMonster() {
@@ -40,12 +37,16 @@ public class MonsterTest {
 
         weapon_A = new Weapon(40, 49);
         weapon_B = new Weapon(40, 49);
+        weapon_C = new Weapon(40, 49);
         armor_A = new Armor(30, 80, ArmorType.BRONZE);
         armor_B = new Armor(30, 80, ArmorType.BRONZE);
+        armor_C = new Armor(30, 80, ArmorType.BRONZE);
         backpack_A = new Backpack(30, 60, 100);
         backpack_B = new Backpack(30, 60, 100);
+        backpack_C = new Backpack(30, 60, 100);
         purse_A = new Purse(10, 50);
         purse_B = new Purse(10, 50);
+        purse_C = new Purse(10, 50);
 
         items = new ArrayList<>();
         items.add(weapon_A);
@@ -53,11 +54,26 @@ public class MonsterTest {
         items.add(backpack_A);
         items.add(purse_A);
 
+        itemsC = new ArrayList<>();
+        itemsC.add(weapon_C);
+        itemsC.add(armor_C);
+        itemsC.add(backpack_C);
+        itemsC.add(purse_C);
+
         monster_A = new Monster("Tom", 70, 49, items, SkinType.SCALY);
-        // 1. Adds two anchorpoints because we have to have 2 free anchorpoints for the tests
-        monster_A.addAnchorPoint(new AnchorPoint(null));
-        monster_A.addAnchorPoint(new AnchorPoint(null));
+        // 1. Adds 6 anchorpoints because we have to have 2 free anchorpoints for the tests and have to make sure every startitem also has an anchorpoint to be added on.
+        monster_A.addAnchorPoint(new AnchorPoint("anchor_1"));
+        monster_A.addAnchorPoint(new AnchorPoint("anchor_2"));
+        monster_A.addAnchorPoint(new AnchorPoint("anchor_3"));
+        monster_A.addAnchorPoint(new AnchorPoint("anchor_4"));
+        monster_A.addAnchorPoint(new AnchorPoint("anchor_5"));
+        monster_A.addAnchorPoint(new AnchorPoint("anchor_6"));
+
+        monster_B = new Monster("Tom", 70, 49, itemsC, SkinType.SCALY);
+
     }
+
+
 
     /**
      * CONSTRUCTORS
@@ -67,36 +83,42 @@ public class MonsterTest {
     void testConstructor_ValidArguments_ShouldInitializeFields() {
         // 1. effect of super(name, maxHitPoints)
         // 1.1 postcondition on name
-        assertEquals("Tom", monster_A.getName());
+        assertEquals("Tom", monster_B.getName());
         // 1.2 postcondition on hitpoints
-        assertEquals(70, monster_A.getMaxHitPoints());
-        assertEquals(67, monster_A.getHitPoints());
+        assertEquals(70, monster_B.getMaxHitPoints());
+        assertEquals(67, monster_B.getHitPoints());
         // 1.3 postcondition on fighting status
-        assertFalse(monster_A.isFighting());
+        assertFalse(monster_B.isFighting());
         // 1.4 effect of initializeAnchorPoint
-        assertTrue(monster_A.getNbAnchorPoints() >= 0 && monster_A.getNbAnchorPoints() <= 100);
+        assertTrue(monster_B.getNbAnchorPoints() >= 0 && monster_B.getNbAnchorPoints() <= 100);
 
         // 2. postcondition on skin type
-        assertEquals(SkinType.SCALY, monster_A.getType());
+        assertEquals(SkinType.SCALY, monster_B.getType());
 
         // 3. postcondition on maximal protection
-        assertEquals(SkinType.SCALY.getMaxProtection(), monster_A.getMaximalProtection());
+        assertEquals(SkinType.SCALY.getMaxProtection(), monster_B.getMaximalProtection());
 
         // 4. postcondition on current protection
-        assertEquals(SkinType.SCALY.getMaxProtection(), monster_A.getMaximalProtection());
+        assertEquals(SkinType.SCALY.getMaxProtection(), monster_B.getMaximalProtection());
 
         // 5. postcondition on damage
-        assertEquals(49, monster_A.getDamage());
+        assertEquals(49, monster_B.getDamage());
 
         // 7. effect of distributeInitial
         // 7.1 postcondition on items and anchorpoints
-        assertEquals(weapon_A, monster_A.getAnchorPointAt(1).getItem());
-        assertEquals(armor_A, monster_A.getAnchorPointAt(2).getItem());
-        assertEquals(backpack_A, monster_A.getAnchorPointAt(3).getItem());
-        assertEquals(purse_A, monster_A.getAnchorPointAt(4).getItem());
+        // It is not gauranteed that all items will have a free anchor point.
+        int nbAnchors = monster_B.getNbAnchorPoints();
+        if (nbAnchors >= 1)
+            assertEquals(weapon_C, monster_B.getAnchorPointAt(1).getItem());
+        if (nbAnchors >= 2)
+            assertEquals(armor_C, monster_B.getAnchorPointAt(2).getItem());
+        if (nbAnchors >= 3)
+            assertEquals(backpack_C, monster_B.getAnchorPointAt(3).getItem());
+        if (nbAnchors >= 4)
+            assertEquals(purse_C, monster_B.getAnchorPointAt(4).getItem());
 
         // 8. postcondition on capacity
-        assertTrue(monster_A.getCapacity() >= monster_A.getTotalWeight());
+        assertTrue(monster_B.getCapacity() >= monster_B.getTotalWeight());
     }
 
     @Test
@@ -127,16 +149,22 @@ public class MonsterTest {
 
     @Test
     void testInitializeAnchorPoints_ShouldCreateAnchorPoints() {
-        assertTrue(monster_A.getNbAnchorPoints() >= 0 && monster_A.getNbAnchorPoints() <= 100);
+        assertTrue(monster_B.getNbAnchorPoints() >= 0 && monster_B.getNbAnchorPoints() <= 100);
     }
 
     @Test
     void testDistributeInitialItems_ShouldAssignToAnchorPoints() {
         // 2. Items distributed in initialization
-        assertEquals(weapon_A, monster_A.getAnchorPointAt(1).getItem());
-        assertEquals(armor_A, monster_A.getAnchorPointAt(2).getItem());
-        assertEquals(backpack_A, monster_A.getAnchorPointAt(3).getItem());
-        assertEquals(purse_A, monster_A.getAnchorPointAt(4).getItem());
+        // It is not gauranteed that all items will have a free anchor point.
+        int nbAnchors = monster_B.getNbAnchorPoints();
+        if (nbAnchors >= 1)
+            assertEquals(weapon_C, monster_B.getAnchorPointAt(1).getItem());
+        if (nbAnchors >= 2)
+            assertEquals(armor_C, monster_B.getAnchorPointAt(2).getItem());
+        if (nbAnchors >= 3)
+            assertEquals(backpack_C, monster_B.getAnchorPointAt(3).getItem());
+        if (nbAnchors >= 4)
+            assertEquals(purse_C, monster_B.getAnchorPointAt(4).getItem());
     }
 
     @Test
