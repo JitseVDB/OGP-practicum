@@ -14,6 +14,7 @@ import be.kuleuven.cs.som.annotate.*;
  *          | isValidDamage(getDamage());
  *
  * @author  Jitse Vandenberghe
+ * @author  Ernest De Gres
  *
  * @version 1.1
  */
