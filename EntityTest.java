@@ -212,6 +212,24 @@ public class EntityTest {
     // ANCHOR POINTS
 
     @Test
+    void testGetAnchorPointOfItem() {
+        // Attach armor_A to first anchor point
+        AnchorPoint anchorPoint = hero_A.getAnchorPointAt(1);
+        anchorPoint.setItem(armor_A);
+
+        // Case 1: Item is correctly attached — should return the anchor point
+        AnchorPoint result = hero_A.getAnchorPointOfItem(armor_A);
+        assertNotNull(result);
+        assertEquals(anchorPoint, result);
+
+        // Case 2: Item not attached — should return null
+        assertNull(hero_A.getAnchorPointOfItem(weapon_A));
+
+        // Case 3: Null input — should return null
+        assertNull(hero_A.getAnchorPointOfItem(null));
+    }
+
+    @Test
     void testAddAnchorPoint_ShouldIncreaseSize() {
         // 1. Effect of new anchor being added
         AnchorPoint anchor_6 = new AnchorPoint("extra");
