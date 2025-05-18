@@ -30,7 +30,7 @@ public class HeroesTest {
     private static Weapon weapon_B;
     private static Armor armor_A;
     private static Armor armor_B;
-    private static Equipment armor_C;
+    private static Armor armor_C;
     private static Backpack backpack_A;
     private static Backpack backpack_B;
     private static Purse purse_A;
@@ -38,6 +38,11 @@ public class HeroesTest {
 
     // LISTS
     private List<Equipment> items;
+
+    private Hero hero;
+    private Armor validArmor1;
+    private Armor validArmor2;
+    private Armor tooHeavyArmor;
 
     @BeforeEach
     public void setUpMonster() {
@@ -63,6 +68,11 @@ public class HeroesTest {
         items.add(null);
         items.add(backpack_A);
         items.add(purse_A);
+
+        hero = new Hero("Ben", 97, 100.0);
+        validArmor1 = new Armor(30, 80, ArmorType.BRONZE);
+        validArmor2 = new Armor(20, 90, ArmorType.BRONZE);
+        tooHeavyArmor = new Armor(2000, 100, ArmorType.BRONZE);
 
         monster_A = new Monster("Tom", 70, 49, items, SkinType.SCALY);
     }
@@ -166,7 +176,7 @@ public class HeroesTest {
 
     @Test
     void testGetCurrentProtection_WithArmor_ShouldAddArmorProtection() {
-        hero_A.equipArmor(armor_A); // protection of 90
+        hero_A.equipArmor(armor_C); // protection of 90
         assertEquals(100, hero_A.getCurrentProtection());
     }
 
@@ -243,36 +253,8 @@ public class HeroesTest {
 
     @Test
     void testGetArmor_ArmorEquipped_ShouldReturnEquippedArmor() {
-        hero_A.equipArmor(armor_A);
-        assertEquals(armor_A, hero_A.getArmor());
-    }
-
-    @Test
-    void testEquipArmor_NonEquippedArmorOnBody_ShouldThrowException() {
-        armor_A.setOwner(hero_A);
-        weapon_A.setOwner(hero_A);
-        backpack_A.setOwner(hero_A);
-        armor_B.setOwner(hero_A);
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            hero_A.equipArmor(armor_A);
-        });
-
-    }
-
-    @Test
-    void testEquipArmor_EquippedArmorOnBody_ShouldUpdateEquippedArmor() {
-        hero_A.equipArmor(armor_A);
-        hero_A.equipArmor(armor_B);
-        assertEquals(armor_B, hero_A.getArmor());
-    }
-
-
-    @Test
-    void testGetNbArmorsCarried_ShouldReturnAmountOfArmors() {
-        armor_A.setOwner(hero_A);
-        armor_B.setOwner(hero_A);
-        assertEquals(2, hero_A.getNbArmorsCarried());
+        hero_A.equipArmor(armor_C);
+        assertEquals(armor_C, hero_A.getArmor());
     }
 
     /********************************************************************

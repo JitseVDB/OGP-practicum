@@ -409,30 +409,30 @@ public class Hero extends Entity {
      *         | !achorpoint.isEmpty() || !canCarry(armor) || !canHaveAsItemAt(armor, acnhorpoint)
      */
     public void equipArmor(Armor armor) {
+        if (armor.getOwner() != null && armor.getOwner() != this) {
+            throw new IllegalArgumentException("Armor already belongs to another entity.");
+        }
+
         Armor oldArmor = this.armor;
         AnchorPoint anchorpoint = getAnchorPoint("body");
+
+        if (oldArmor != null) {
+            unequipArmor(oldArmor);
+        }
+
+        if (anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint)) {
+            armor.setOwner(this);
+            anchorpoint.setItem(armor);
+            this.armor = armor;
+        } else {
+            // Zet oude armor terug als equippen mislukt
             if (oldArmor != null) {
-                unequipArmor(oldArmor);
-                armor.setOwner(null);
-                if (anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint)) {
-                    armor.owner = this;
-                    anchorpoint.setItem(armor);
-                    this.armor = armor;
-                }
-                else {
-                    throw new IllegalArgumentException("Cannot equip armor.");
-                }
-                oldArmor.setOwner(this); // oude armor terug plaatsen ergens in hero
-            } else {
-                if (anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint)) {
-                    armor.setOwner(null);
-                    armor.owner = this;
-                    anchorpoint.setItem(armor);
-                    this.armor = armor;
-                } else {
-                    throw new IllegalArgumentException("Cannot equip armor.");
-                }
+                this.armor = oldArmor;
+                oldArmor.setOwner(this);
+                getAnchorPoint("body").setItem(oldArmor);
             }
+            throw new IllegalArgumentException("Cannot equip armor.");
+        }
     }
 
     /**
