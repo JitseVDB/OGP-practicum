@@ -435,11 +435,10 @@ public class Hero extends Entity {
 
         if (roll >= monster.getCurrentProtection()) {
             int damage = calculateDamage();
-            int beforeHP = monster.getHitPoints();
 
             monster.removeHitPoints(damage);
 
-            if (damage >= beforeHP) {
+            if (monster.isAlive()) {
                 healAfterKill();
                 collectTreasureFrom(monster);
             }

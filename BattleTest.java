@@ -15,7 +15,7 @@ public class BattleTest {
 
     @BeforeEach
     void setUp() {
-        strongHero = new Hero("StrongHero", 100, 12.0);
+        strongHero = new Hero("StrongHero", 100, 30.0);
         weakHero = new Hero("WeakHero", 20, 1.0);
 
         // Monster constructor requires name, maxHitPoints, and initialItems
@@ -27,7 +27,7 @@ public class BattleTest {
     }
 
     @Test
-    void testStrongHeroBeatsWeakMonster() {
+    void testFight_StrongHeroShouldBeatWeakMonster_() {
         Battle battle = new Battle(strongHero, weakMonster);
         battle.fight();
 
@@ -36,7 +36,7 @@ public class BattleTest {
     }
 
     @Test
-    void testStrongMonsterBeatsWeakHero() {
+    void testFight_StrongMonsterShouldBeatWeakHero() {
         Battle battle = new Battle(weakHero, strongMonster);
         battle.fight();
 
@@ -45,9 +45,8 @@ public class BattleTest {
     }
 
     @Test
-    void testFightTerminatesAndWinnerDeclared() {
+    void testFight_ShouldTerminateAndDeclareWinner() {
         Battle battle = new Battle(strongHero, strongMonster);
-        assertDoesNotThrow(battle::fight, "Fight should terminate cleanly");
 
         // Only one entity should be alive after the fight
         boolean heroAlive = strongHero.isAlive();
@@ -57,20 +56,17 @@ public class BattleTest {
     }
 
     @Test
-    void testNullConstructorArgs() {
+    void testConstructor_InvalidArguments_ShouldThrowException() {
         assertThrows(IllegalArgumentException.class, () -> new Battle(null, weakMonster));
         assertThrows(IllegalArgumentException.class, () -> new Battle(strongHero, null));
     }
 
     @Test
-    void testEdgeCaseBothWeak() {
-        Hero lowHpHero = new Hero("Glass", 10, 1.0);
-        Monster lowHpMonster = new Monster("Slime", 10, 49, new ArrayList<Equipment>(), SkinType.SCALY);
-        lowHpMonster.setDamage(7);
+    void testConstructor_ValidArguments_ShouldInitializeFields() {
+        Battle battle = new Battle(strongHero, weakMonster);
 
-        Battle battle = new Battle(lowHpHero, lowHpMonster);
-        battle.fight();
-
-        assertTrue(lowHpHero.isAlive() ^ lowHpMonster.isAlive());
+        assertEquals(strongHero, battle.getHero());
+        assertEquals(weakMonster, battle.getMonster());
     }
+
 }

@@ -166,13 +166,13 @@ public class HeroesTest {
     @Test
     void testGetRealProtection_WithArmor_ShouldAddArmorProtection() {
         hero_A.equipArmor(armor_A); // protection of 90
-        assertEquals(100, hero_A.getRealProtection());
+        assertEquals(100, hero_A.getCurrentProtection());
     }
 
     @Test
     void testGetRealProtection_NoArmor_ShouldNotAddArmorProtection() {
         // Geen armor ingesteld
-        assertEquals(10, hero_A.getRealProtection());
+        assertEquals(10, hero_A.getCurrentProtection());
     }
 
     /********************************************************************
