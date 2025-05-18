@@ -17,6 +17,7 @@ public class MonsterTest {
 
     // MONSTER
     private static Monster monster_A;
+    private static Monster monster_B;
 
     // OPPONENT
     private static Hero hero_A;
@@ -33,6 +34,7 @@ public class MonsterTest {
 
     // LISTS
     private List<Equipment> items;
+    private List<Equipment> noItems;
 
     @BeforeEach
     public void setUpMonster() {
@@ -54,14 +56,21 @@ public class MonsterTest {
         items.add(purse_A);
 
         monster_A = new Monster("Tom", 70, 49, items, SkinType.SCALY);
-        // 1. Adds 6 anchorpoints because we have to have 2 free anchorpoints for the tests and have to make sure every item also has an anchorpoint to be added on.
+        // 1. Adds 6 anchorpoints because we have to have 2 free anchorpoints for the tests and have to make sure every startitem also has an anchorpoint to be added on.
         monster_A.addAnchorPoint(new AnchorPoint("anchor_1"));
         monster_A.addAnchorPoint(new AnchorPoint("anchor_2"));
         monster_A.addAnchorPoint(new AnchorPoint("anchor_3"));
         monster_A.addAnchorPoint(new AnchorPoint("anchor_4"));
         monster_A.addAnchorPoint(new AnchorPoint("anchor_5"));
         monster_A.addAnchorPoint(new AnchorPoint("anchor_6"));
+
+        noItems = new ArrayList<>();
+
+        monster_B = new Monster("Tom", 70, 49, noItems, SkinType.SCALY);
+
     }
+
+
 
     /**
      * CONSTRUCTORS
@@ -78,7 +87,7 @@ public class MonsterTest {
         // 1.3 postcondition on fighting status
         assertFalse(monster_A.isFighting());
         // 1.4 effect of initializeAnchorPoint
-        assertTrue(monster_A.getNbAnchorPoints() >= 0 && monster_A.getNbAnchorPoints() <= 100);
+        assertTrue(monster_B.getNbAnchorPoints() >= 0 && monster_B.getNbAnchorPoints() <= 100);
 
         // 2. postcondition on skin type
         assertEquals(SkinType.SCALY, monster_A.getType());
