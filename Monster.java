@@ -159,8 +159,10 @@ public class Monster extends Entity {
 
         for (int i = 1; i <= maxItems; i++) {
             Equipment item = items.get(i-1);
-            this.capacity += item.getWeight(); // zodat monster altijd item kan dragen
-            item.setOwner(this);
+            if (item != null) {
+                this.capacity += item.getWeight(); // zodat monster altijd item kan dragen
+                item.setOwner(this);
+            }
         }
     }
 
