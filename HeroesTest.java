@@ -53,7 +53,7 @@ public class HeroesTest {
 
 
         hero_A = new Hero("Ben", 97, 20.0);
-        hero_B = new Hero("Bert", 97, 20.0, weapon_B, armor_B, null, purse_B, backpack_B);
+        hero_B = new Hero("Bert", 97, 20.0, armor_B, weapon_B, null, purse_B, backpack_B);
         hero_C = new Hero("Bart", 97, 5.0);
 
 

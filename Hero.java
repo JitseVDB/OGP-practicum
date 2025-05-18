@@ -126,8 +126,9 @@ public class Hero extends Entity {
      *          | for each item in startItems:
      *          |       if (item != null) then item.getOwner() == this
      */
-    public Hero(String name, int maxHitPoints, double strength, Equipment... startItems) {
+    public Hero(String name, int maxHitPoints, double strength, Armor armor, Equipment... startItems) {
         this(name, maxHitPoints, strength); // delegate to base constructor
+        equipArmor(armor);
 
         for (Equipment item : startItems) {
             if (item != null) {
