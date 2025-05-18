@@ -247,6 +247,26 @@ public class HeroesTest {
         assertEquals(armor_A, hero_A.getArmor());
     }
 
+    @Test
+    void testEquipArmor_NonEquippedArmorOnBody_ShouldThrowException() {
+        armor_A.setOwner(hero_A);
+        weapon_A.setOwner(hero_A);
+        backpack_A.setOwner(hero_A);
+        armor_B.setOwner(hero_A);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            hero_A.equipArmor(armor_A);
+        });
+
+    }
+
+    @Test
+    void testEquipArmor_EquippedArmorOnBody_ShouldUpdateEquippedArmor() {
+        hero_A.equipArmor(armor_A);
+        hero_A.equipArmor(armor_B);
+        assertEquals(armor_B, hero_A.getArmor());
+    }
+
 
     @Test
     void testGetNbArmorsCarried_ShouldReturnAmountOfArmors() {

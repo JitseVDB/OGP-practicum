@@ -393,26 +393,34 @@ public class Hero extends Entity {
     public void equipArmor(Armor armor) {
         Armor oldArmor = this.armor;
         AnchorPoint anchorpoint = getAnchorPoint("body");
-        if (anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint)) {
             if (oldArmor != null) {
                 unequipArmor(oldArmor);
                 armor.setOwner(null);
-                armor.owner = this;
-                anchorpoint.setItem(armor);
+                if (anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint)) {
+                    armor.owner = this;
+                    anchorpoint.setItem(armor);
+                    this.armor = armor;
+                }
+                else {
+                    throw new IllegalArgumentException("Cannot equip armor.");
+                }
                 oldArmor.setOwner(this); // oude armor terug plaatsen ergens in hero
             } else {
-                armor.setOwner(null);
-                armor.owner = this;
-                anchorpoint.setItem(armor);
+                if (anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint)) {
+                    armor.setOwner(null);
+                    armor.owner = this;
+                    anchorpoint.setItem(armor);
+                    this.armor = armor;
+                } else {
+                    throw new IllegalArgumentException("Cannot equip armor.");
+                }
             }
-        } else {
-            throw new IllegalArgumentException("Cannot equip armor.");
-        }
     }
 
 
     public void unequipArmor(Armor armor){
         armor.setOwner(null);
+        this.armor = null;
     }
 
 
@@ -839,7 +847,7 @@ public class Hero extends Entity {
             if (anchorpoint.getItem() == item) {
                 // Als dit armor was op het body-anker: reset armor-referentie
                 if (anchorpoint.getName().equals("body") && item instanceof Armor) {
-                    equipArmor(null);
+                    unequipArmor((Armor) item);
                 }
                 if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon) {
                     equipLeftHand(null);
