@@ -369,6 +369,22 @@ public abstract class Entity {
         return isFighting;
     }
 
+
+    /**********************************************************
+     * Protection
+     **********************************************************/
+
+
+    /**
+     * Variable referencing the current protection this entity has as protection.
+     */
+    public int currentProtection;
+
+
+    public int getCurrentProtection() {
+        return currentProtection;
+    }
+
     /**********************************************************
      * Capacity
      **********************************************************/

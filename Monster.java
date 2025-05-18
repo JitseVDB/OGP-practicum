@@ -249,11 +249,6 @@ public class Monster extends Entity {
     private final int maximalProtection;
 
     /**
-     * Variable referencing the current protection this monster has as natural protection.
-     */
-    private int currentProtection;
-
-    /**
      * Return the maximum protection this monster has as natural protection.
      */
     @Basic @Immutable
@@ -275,13 +270,6 @@ public class Monster extends Entity {
         return maximalProtection > 0 && maximalProtection <= 100;
     }
 
-    /**
-     * Return the current protection this monster can provide
-     */
-    @Basic
-    public int getCurrentProtection() {
-        return currentProtection;
-    }
 
     /**
      * Set the current protection of this monster to the given protection.
@@ -367,7 +355,7 @@ public class Monster extends Entity {
         }
 
 
-        if (impact >= ((Hero)opponent).getRealProtection()) {
+        if (impact >= (opponent.getCurrentProtection())) {
             // land a succesful hit
             int damage = getDamage();
             int newHitPoints = opponent.getHitPoints() - damage;

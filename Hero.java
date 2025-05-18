@@ -245,8 +245,8 @@ public class Hero extends Entity {
      *         |    then result == getProtection()
      *         |    else result == getProtection() + getArmor().getCurrentProtection()
      */
-    @Basic
-    public int getRealProtection() {
+    @Override @Basic
+    public int getCurrentProtection() {
         int base = getProtection(); // = standard protection
         int armorBonus = 0;
         if (armor != null) {
