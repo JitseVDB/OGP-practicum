@@ -20,8 +20,7 @@ public class HeroesTest {
 
 
     // HERO
-    private static Hero hero_A;
-    private static Hero hero_B;
+    private static Hero hero_A, hero_B, hero_C;
 
     // OPPONENT
     private static Monster monster_A;
@@ -54,12 +53,14 @@ public class HeroesTest {
 
 
         hero_A = new Hero("Ben", 97, 20.0);
-        hero_B = new Hero("Bert", 97, 20.0, weapon_B, armor_B, purse_B, backpack_B);
+        hero_B = new Hero("Bert", 97, 20.0, weapon_B, armor_B, null, purse_B, backpack_B);
+        hero_C = new Hero("Bart", 97, 5.0);
 
 
         items = new ArrayList<>();
         items.add(weapon_A);
         items.add(armor_A);
+        items.add(null);
         items.add(backpack_A);
         items.add(purse_A);
 
@@ -164,13 +165,13 @@ public class HeroesTest {
     }
 
     @Test
-    void testGetRealProtection_WithArmor_ShouldAddArmorProtection() {
+    void testGetCurrentProtection_WithArmor_ShouldAddArmorProtection() {
         hero_A.equipArmor(armor_A); // protection of 90
         assertEquals(100, hero_A.getCurrentProtection());
     }
 
     @Test
-    void testGetRealProtection_NoArmor_ShouldNotAddArmorProtection() {
+    void testGetCurrentProtection_NoArmor_ShouldNotAddArmorProtection() {
         // Geen armor ingesteld
         assertEquals(10, hero_A.getCurrentProtection());
     }
