@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>C:/Users/Jitse/Desktop/OGP/project-RPG3.0</OriginalElement>
+  <nodes>
+    <node x="1825.1256141178264" y="-51.07812500000023">Armor</node>
+    <node x="3232.0162372788263" y="540.7656249999991">SkinType</node>
+    <node x="2498.5709256983264" y="-51.07812500000023">Weapon</node>
+    <node x="3864.4615488593263" y="-51.07812500000023">Hero</node>
+    <node x="2731.8472789401094" y="-881.3535156249997">Battle</node>
+    <node x="1843.0318634057578" y="-1219.0468749999993">Equipment</node>
+    <node x="3503.910767006233" y="-1219.088867187499">Entity</node>
+    <node x="1166.5582322248265" y="110.66503906249955">StorageItem</node>
+    <node x="3188.5562633151085" y="-1198.788085937499">AnchorPoint</node>
+    <node x="820.3258098569681" y="485.8339843749993">Backpack</node>
+    <node x="3172.0162372788263" y="-51.07812500000023">Monster</node>
+    <node x="1875.6256141178264" y="485.8339843749993">ArmorType</node>
+    <node x="1386.4757119873973" y="485.8339843749993">Purse</node>
+    <node x="2306.7750151186847" y="-1198.788085937499">Condition</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="StorageItem" target="Equipment" relationship="GENERALIZATION">
+      <point x="0.0" y="-77.5" />
+      <point x="1283.5582322248265" y="-865.5468749999993" />
+      <point x="-187.0" y="0.0" />
+    </edge>
+    <edge source="Hero" target="Equipment" relationship="DEPENDENCY">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Monster" target="Entity" relationship="GENERALIZATION">
+      <point x="196.4997627211742" y="0.0" />
+      <point x="3595.516" y="206.42187499999977" />
+      <point x="3595.516" y="-733.5888671874991" />
+      <point x="-196.5002366783201" y="0.0" />
+    </edge>
+    <edge source="Entity" target="Equipment" relationship="DEPENDENCY">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Equipment" target="Entity" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Monster" target="AnchorPoint" relationship="DEPENDENCY">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Monster" target="Equipment" relationship="DEPENDENCY">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="AnchorPoint" target="Equipment" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Battle" target="Hero" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Equipment" target="Backpack" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Monster" target="SkinType" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Backpack" target="StorageItem" relationship="GENERALIZATION">
+      <point x="1.9014303188669146E-4" y="-170.49998437499931" />
+      <point x="992.826" y="376.0" />
+      <point x="1283.558" y="376.0" />
+      <point x="-2.3222482650453458E-4" y="77.49996093750048" />
+    </edge>
+    <edge source="Backpack" target="Equipment" relationship="DEPENDENCY">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Battle" target="Monster" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Hero" target="AnchorPoint" relationship="DEPENDENCY">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Entity" target="AnchorPoint" relationship="TO_MANY">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Hero" target="Weapon" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Hero" target="Entity" relationship="GENERALIZATION">
+      <point x="-2.3575623345095664E-4" y="413.5" />
+      <point x="4060.961313103093" y="510.5" />
+      <point x="3596.0" y="510.5" />
+      <point x="3596.0" y="-733.5888671874991" />
+      <point x="-196.5002366783201" y="0.0" />
+    </edge>
+    <edge source="Armor" target="ArmorType" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Hero" target="Armor" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Purse" target="StorageItem" relationship="GENERALIZATION">
+      <point x="2.880126028230734E-4" y="-185.49998437499931" />
+      <point x="1520.476" y="376.0" />
+      <point x="1283.558" y="376.0" />
+      <point x="-2.3222482650453458E-4" y="77.49996093750048" />
+    </edge>
+    <edge source="Hero" target="Monster" relationship="DEPENDENCY">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Armor" target="Equipment" relationship="GENERALIZATION">
+      <point x="-187.0002391178266" y="0.0" />
+      <point x="1504.0" y="158.42187499999977" />
+      <point x="1504.0" y="-371.0" />
+      <point x="2030.0316250000003" y="-371.0" />
+      <point x="-2.3840575750000426E-4" y="-353.5" />
+    </edge>
+    <edge source="Equipment" target="Condition" relationship="TO_ONE">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="Weapon" target="Equipment" relationship="GENERALIZATION">
+      <point x="-2.378544627390511E-4" y="-185.5" />
+      <point x="2685.5706878438637" y="-371.0" />
+      <point x="2030.0316250000003" y="-371.0" />
+      <point x="-2.3840575750000426E-4" y="-353.5" />
+    </edge>
+  </edges>
+  <settings layout="Family" zoom="0.3276800000000005" showDependencies="true" x="2700.906005859372" y="-40.88940429687614" />
+  <SelectedNodes>
+    <node>StorageItem</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Constructors</Category>
+    <Category>Fields</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
