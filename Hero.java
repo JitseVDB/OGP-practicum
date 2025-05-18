@@ -381,14 +381,31 @@ public class Hero extends Entity {
     }
 
     /**
-     * Set the equipped armor to the given armor.
+     * Equips the given armor to this entity by placing it at the "body" anchor point.
      *
-     * @param   armor
-     *          The armor to equip
+     * If another armor is already equipped, it is unequipped first, and the new armor is
+     * equipped if possible. If the operation fails (e.g., due to invalid placement or capacity),
+     * the original armor is restored.
      *
-     * @post    The equipped armor is set to the given armor.
-     *          | new.getArmor() = armor
+     * @param armor
+     *        The armor to equip.
      *
+     * @post If no armor was equipped before, and the given armor can be equipped at the "body"
+     *       anchor point, it is placed there and set as the currently equipped armor.
+     *       | if (oldArmor == null && anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint))
+     *       |     getEquippedArmor() == armor
+     *
+     * @post If an armor was already equipped, it is temporarily unequipped, and the new armor is
+     *       equipped only if valid. Otherwise, the old armor is restored.
+     *       | if (oldArmor != null && validNewArmor)
+     *       |     getEquippedArmor() == armor
+     *       | else if (equipping fails)
+     *       |     getEquippedArmor() == oldArmor
+     *
+     * @throws IllegalArgumentException
+     *         If the armor cannot be equipped (e.g., anchor point is not empty,
+     *         or the armor is not valid for the position or weight limit).
+     *         | !achorpoint.isEmpty() || !canCarry(armor) || !canHaveAsItemAt(armor, acnhorpoint)
      */
     public void equipArmor(Armor armor) {
         Armor oldArmor = this.armor;
@@ -417,7 +434,18 @@ public class Hero extends Entity {
             }
     }
 
-
+    /**
+     * Unequips the given armor.
+     *
+     * @param   armor
+     *          The armor to unequip
+     *
+     * @effect  The owner of the old armor is set to null
+     *          | armor.setOwner(null)
+     *
+     * @post    The armor currently equipped is set to null
+     *          | this.armor = null
+     */
     public void unequipArmor(Armor armor){
         armor.setOwner(null);
         this.armor = null;
@@ -465,7 +493,7 @@ public class Hero extends Entity {
 
             monster.removeHitPoints(damage);
 
-            if (monster.isAlive()) {
+            if (!monster.isAlive()) {
                 healAfterKill();
                 collectTreasureFrom(monster);
             }
