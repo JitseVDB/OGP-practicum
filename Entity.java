@@ -218,15 +218,12 @@ public abstract class Entity {
             return true;
         }
 
-        if ((hitPoints > 0) && (hitPoints <= maxHitPoints)){
-            if (!isFighting && isPrime(getHitPoints())){
-                return true;
-            }
-            if (!isFighting && !isPrime(getHitPoints())){
-                return false;
-            }
+        if ((hitPoints > 0) && (hitPoints <= maxHitPoints)) {
+            if (!isFighting)
+                return isPrime(hitPoints);
             return true;
         }
+
         return false;
     }
 
