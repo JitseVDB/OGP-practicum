@@ -241,10 +241,11 @@ public class HeroesTest {
     }
 
     @Test
-    void testGetAndEquipArmor_ArmorEquipped_ShouldReturnEquippedArmor() {
+    void testGetArmor_ArmorEquipped_ShouldReturnEquippedArmor() {
         hero_A.equipArmor(armor_A);
         assertEquals(armor_A, hero_A.getArmor());
     }
+
 
     @Test
     void testGetNbArmorsCarried_ShouldReturnAmountOfArmors() {
@@ -350,19 +351,6 @@ public class HeroesTest {
     void testAddToAnchorPoint_ShouldAddItemToAnchorPoint() {
         hero_A.addToAnchorPoint(armor_A);
         assertTrue(hero_A.hasAsItem(armor_A));
-    }
-
-    @Test
-    void testAddToAnchorPoint_AddArmorToBody_ShouldEquipArmor() {
-        // fill anchorpoints, so adds armor to body
-        hero_A.addToAnchorPoint(weapon_A);
-        hero_A.addToAnchorPoint(weapon_B);
-        hero_A.addToAnchorPoint(backpack_A);
-
-        // adds armor to body
-        hero_A.addToAnchorPoint(armor_A);
-
-        assertEquals(armor_A, hero_A.getArmor());
     }
 
     @Test

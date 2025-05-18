@@ -389,11 +389,30 @@ public class Hero extends Entity {
      * @post    The equipped armor is set to the given armor.
      *          | new.getArmor() = armor
      *
-     * @note    This method does not handle the logic of equipping the armor itself;  
-     *          it only updates the reference to the currently worn armor.
      */
     public void equipArmor(Armor armor) {
-        this.armor = armor;
+        Armor oldArmor = this.armor;
+        AnchorPoint anchorpoint = getAnchorPoint("body");
+        if (anchorpoint.isEmpty() && canCarry(armor) && canHaveAsItemAt(armor, anchorpoint)) {
+            if (oldArmor != null) {
+                unequipArmor(oldArmor);
+                armor.setOwner(null);
+                armor.owner = this;
+                anchorpoint.setItem(armor);
+                oldArmor.setOwner(this); // oude armor terug plaatsen ergens in hero
+            } else {
+                armor.setOwner(null);
+                armor.owner = this;
+                anchorpoint.setItem(armor);
+            }
+        } else {
+            throw new IllegalArgumentException("Cannot equip armor.");
+        }
+    }
+
+
+    public void unequipArmor(Armor armor){
+        armor.setOwner(null);
     }
 
 
@@ -664,11 +683,6 @@ public class Hero extends Entity {
      *
      * @effect  The item is added to the first valid anchor point.
      *          | anchorpoint.setItem(item)
-     *
-     * @effect If the item is armor and is added to the "body" anchor point,
-     *         the hero equips that armor.
-     *         | if (anchorpoint.getName().equals("body") && item instanceof Armor)
-     *         |     then getArmor() == item
      * 
      * @effect If the item is a weapon and is added to the "leftHand" anchor point,
      *         the hero equips that weapon on the left hand.
@@ -687,9 +701,6 @@ public class Hero extends Entity {
 
             if (anchorpoint.isEmpty()) {
                 if (canHaveAsItemAt(item, anchorpoint)) {
-                    if (anchorpoint.getName().equals("body") && item instanceof Armor) {
-                        equipArmor((Armor) item);
-                    }
                     if (anchorpoint.getName().equals("leftHand") && item instanceof Weapon) {
                         equipLeftHand((Weapon) item);
                     }

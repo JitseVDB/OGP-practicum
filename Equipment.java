@@ -309,7 +309,7 @@ public abstract class Equipment {
      *
      * @note 	This class is the controlling class for the bidirectional relationship.
      */
-    private Entity owner = null;
+    public Entity owner = null;
 
     /**
      * Return the owner of this piece of equipment (if any).
