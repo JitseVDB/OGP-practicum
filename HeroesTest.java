@@ -307,7 +307,7 @@ public class HeroesTest {
         hero_A.hit(monster_A); // hero does 103 damage, so hit is fatal
 
 
-        assertEquals(0, monster_A.getHitPoints()); // monster is dood
+        assertFalse(monster_A.isAlive()); // monster is dood
     }
 
     @Test
@@ -316,8 +316,6 @@ public class HeroesTest {
         hero_A.equipRightHand(weapon_B);
 
         monster_A.setCurrentProtection(0); // zodat hit slaagt
-
-        int hpBefore = hero_A.getHitPoints();
 
         hero_A.hit(monster_A); // hero does 103 damage, so hit is fatal
 
