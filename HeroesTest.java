@@ -264,7 +264,13 @@ public class HeroesTest {
 
         hero_A.hit(monster_A); // hero does 5 damage
 
-        assertEquals(61, monster_A.getHitPoints());
+        assertEquals(monster_A.getClosestLowerPrime(70-5), monster_A.getHitPoints());
+    }
+
+    @Test
+    void testHit_NoDamageDealt() {
+        hero_C.hit(monster_A);
+        assertEquals(monster_A.getClosestLowerPrime(70), monster_A.getHitPoints());
     }
 
 
